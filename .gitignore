@@ -1,5 +1,7 @@
 .classpath
 .project
 .settings
-.target
-
+target
+*.log
+build-dist.sh
+*.tgz
