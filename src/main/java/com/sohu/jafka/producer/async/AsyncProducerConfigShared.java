@@ -44,4 +44,5 @@ public interface AsyncProducerConfigShared {
     String getEventHandler();
 
     Properties getEventHandlerProperties();
+    
 }

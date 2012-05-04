@@ -17,7 +17,6 @@
 
 package com.sohu.jafka.producer.async;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.message.ByteBufferMessageSet;
@@ -46,10 +47,15 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
 
     private final CompressionCodec codec;
 
+    private final Logger logger = Logger.getLogger(DefaultEventHandler.class);
+
+    private final int numRetries;
+
     public DefaultEventHandler(ProducerConfig producerConfig, CallbackHandler<T> callbackHandler) {
         this.callbackHandler = callbackHandler;
         this.compressedTopics = new HashSet<String>(producerConfig.getCompressedTopics());
         this.codec = producerConfig.getCompressionCodec();
+        this.numRetries = producerConfig.getNumRetries();
     }
 
     public void init(Properties properties) {
@@ -64,8 +70,20 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
     }
 
     private void send(List<ProducerRequest> produces, SyncProducer syncProducer) {
-        if (produces.size() > 0) {
-            syncProducer.multiSend(produces);
+        if (produces.isEmpty()) {
+            return;
+        }
+        final int maxAttempts = 1 + numRetries;
+        for (int i = 0; i < maxAttempts; i++) {
+            try {
+                syncProducer.multiSend(produces);
+                break;
+            } catch (RuntimeException e) {
+                logger.warn("error sending message, attempts times: " + i, e);
+                if (i == maxAttempts - 1) {
+                    throw e;
+                }
+            }
         }
     }
 
@@ -103,7 +121,8 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
                 && (compressedTopics.isEmpty() || compressedTopics.contains(topic))) {
             return new ByteBufferMessageSet(codec, messages.toArray(new Message[messages.size()]));
         }
-        return new ByteBufferMessageSet(CompressionCodec.NoCompressionCodec, messages.toArray(new Message[messages.size()]));
+        return new ByteBufferMessageSet(CompressionCodec.NoCompressionCodec, messages.toArray(new Message[messages
+                .size()]));
     }
 
     public void close() {
