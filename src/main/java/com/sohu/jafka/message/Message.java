@@ -19,7 +19,6 @@ package com.sohu.jafka.message;
 
 import static java.lang.String.format;
 
-
 import java.nio.ByteBuffer;
 
 import com.sohu.jafka.api.ICalculable;
@@ -28,7 +27,7 @@ import com.sohu.jafka.utils.Utils;
 
 /**
  * * A message. The format of an N byte message is the following:
- *
+ * 
  * <p>
  * magic byte is 1
  * 
@@ -43,22 +42,21 @@ import com.sohu.jafka.utils.Utils;
  * </p>
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
-public class Message implements ICalculable{
-
+public class Message implements ICalculable {
 
     private static final byte MAGIC_VERSION2 = 1;
 
     public static final byte CurrentMagicValue = 1;
 
-    public static final byte MagicOffset = 0;
+    public static final byte MAGIC_OFFSET = 0;
 
-    public static final byte MagicLength = 1;
+    public static final byte MAGIC_LENGTH = 1;
 
-    public static final byte AttributeOffset = MagicOffset + MagicLength;
+    public static final byte ATTRIBUTE_OFFSET = MAGIC_OFFSET + MAGIC_LENGTH;
 
-    public static final byte AttributeLength = 1;
+    public static final byte ATTRIBUT_ELENGTH = 1;
 
     /**
      * Specifies the mask for the compression code. 2 bits to hold the
@@ -71,13 +69,13 @@ public class Message implements ICalculable{
     /**
      * Computes the CRC value based on the magic byte
      * 
-     * @param magic Specifies the magic byte value. Possible values are 0
-     *        and 1 0 for no compression 1 for compression
+     * @param magic Specifies the magic byte value. Possible values are 1
+     *        (compression)
      */
     public static int crcOffset(byte magic) {
         switch (magic) {
             case MAGIC_VERSION2:
-                return AttributeOffset + AttributeLength;
+                return ATTRIBUTE_OFFSET + ATTRIBUT_ELENGTH;
 
         }
         throw new UnknownMagicByteException(format("Magic byte value of %d is unknown", magic));
@@ -112,6 +110,7 @@ public class Message implements ICalculable{
     public static final int MinHeaderSize = headerSize((byte) 1);
 
     final ByteBuffer buffer;
+
     private final int messageSize;
 
     public Message(ByteBuffer buffer) {
@@ -140,6 +139,12 @@ public class Message implements ICalculable{
         this(Utils.crc32(bytes), bytes, compressionCodec);
     }
 
+    /**
+     * create no compression message
+     * 
+     * @param bytes message data
+     * @see CompressionCodec#NoCompressionCodec
+     */
     public Message(byte[] bytes) {
         this(bytes, CompressionCodec.NoCompressionCodec);
     }
@@ -149,8 +154,13 @@ public class Message implements ICalculable{
         return messageSize;
     }
 
+    /**
+     * magic code ( constant 1)
+     * 
+     * @return 1
+     */
     public byte magic() {
-        return buffer.get(MagicOffset);
+        return buffer.get(MAGIC_OFFSET);
     }
 
     public int payloadSize() {
@@ -158,7 +168,7 @@ public class Message implements ICalculable{
     }
 
     public byte attributes() {
-        return buffer.get(AttributeOffset);
+        return buffer.get(ATTRIBUTE_OFFSET);
     }
 
     public CompressionCodec compressionCodec() {
@@ -167,7 +177,7 @@ public class Message implements ICalculable{
             case 0:
                 return CompressionCodec.NoCompressionCodec;
             case 1:
-                return CompressionCodec.valueOf(buffer.get(AttributeOffset) & CompressionCodeMask);
+                return CompressionCodec.valueOf(buffer.get(ATTRIBUTE_OFFSET) & CompressionCodeMask);
         }
         throw new RuntimeException("Invalid magic byte " + magicByte);
     }
@@ -176,6 +186,10 @@ public class Message implements ICalculable{
         return Utils.getUnsignedInt(buffer, crcOffset(magic()));
     }
 
+    /**
+     * get the real data without message header
+     * @return message data(without header)
+     */
     public ByteBuffer payload() {
         ByteBuffer payload = buffer.duplicate();
         payload.position(headerSize(magic()));

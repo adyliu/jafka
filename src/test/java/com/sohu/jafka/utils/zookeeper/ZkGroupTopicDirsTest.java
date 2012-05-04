@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.utils;
+package com.sohu.jafka.utils.zookeeper;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 
 /**
- * A generic range value with a start and end
- * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 2012-5-4
  */
-public interface Range {
+public class ZkGroupTopicDirsTest {
 
-    /** The first index in the range */
-    long start();
-
-    /** The total number of indexes in the range */
-    long size();
-
-    /** Return true iff the range is empty */
-    boolean isEmpty();
-
-    /** if value is in range */
-    boolean contains(long value);
-
-    String toString();
+    /**
+     * Test method for {@link com.sohu.jafka.utils.zookeeper.ZkGroupTopicDirs#ZkGroupTopicDirs(java.lang.String, java.lang.String)}.
+     */
+    @Test
+    public void testZkGroupTopicDirs() {
+       ZkGroupTopicDirs dirs = new ZkGroupTopicDirs("demo", "topic1");
+       assertEquals("topic1", dirs.topic);
+       assertEquals(ZkUtils.ConsumersPath+"/demo/offsets/topic1", dirs.consumerOffsetDir);
+       assertEquals(ZkUtils.ConsumersPath+"/demo/owners/topic1", dirs.consumerOwnerDir);
+    }
 
 }

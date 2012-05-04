@@ -21,7 +21,7 @@ package com.sohu.jafka.utils;
  * two elements tuple
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-9
+ * @since 1.0
  */
 public class KV<K, V> {
 

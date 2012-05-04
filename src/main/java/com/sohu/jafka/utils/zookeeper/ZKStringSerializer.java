@@ -17,16 +17,16 @@
 
 package com.sohu.jafka.utils.zookeeper;
 
-
-
 import com.github.zkclient.exception.ZkMarshallingError;
 import com.github.zkclient.serialize.ZkSerializer;
 import com.sohu.jafka.common.annotations.ThreadSafe;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * String encoding for zookeeper data
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-12
+ * @since 1.0
  */
 @ThreadSafe
 public class ZKStringSerializer implements ZkSerializer {

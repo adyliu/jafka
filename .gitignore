@@ -5,3 +5,4 @@ target
 *.log
 build-dist.sh
 *.tgz
+/jafka-1.0*

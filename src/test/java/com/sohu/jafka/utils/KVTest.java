@@ -17,26 +17,33 @@
 
 package com.sohu.jafka.utils;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+
 /**
- * A generic range value with a start and end
- * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since <version>
  */
-public interface Range {
+public class KVTest {
 
-    /** The first index in the range */
-    long start();
+    /**
+     * Test method for {@link com.sohu.jafka.utils.KV#KV(java.lang.Object, java.lang.Object)}.
+     */
+    @Test
+    public void testKV() {
+        KV<String,Long> kv = new KV<String, Long>("demo",100L);
+        assertEquals("demo", kv.k);
+        assertEquals(100L, kv.v.longValue());
+    }
 
-    /** The total number of indexes in the range */
-    long size();
-
-    /** Return true iff the range is empty */
-    boolean isEmpty();
-
-    /** if value is in range */
-    boolean contains(long value);
-
-    String toString();
+    /**
+     * Test method for {@link com.sohu.jafka.utils.KV#equals(java.lang.Object)}.
+     */
+    @Test
+    public void testEqualsObject() {
+       assertEquals(new KV<String,Long>("demo",100L),new KV<String,Long>("demo",100L));
+    }
 
 }

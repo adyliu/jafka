@@ -19,7 +19,7 @@ package com.sohu.jafka.utils.zookeeper;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-13
+ * @since 1.0
  * @see com.sohu.jafka.consumer.ZookeeperConsumerConnector
  */
 public class ZkGroupDirs {

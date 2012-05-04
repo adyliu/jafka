@@ -17,18 +17,16 @@
 
 package com.sohu.jafka.log;
 
-
 import java.io.File;
 
 import com.sohu.jafka.message.FileMessageSet;
 import com.sohu.jafka.utils.Range;
-import com.sohu.jafka.utils.Range.AbstractRange;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-9
+ * @since 1.0
  */
-public class LogSegment extends AbstractRange implements Range, Comparable<LogSegment> {
+public class LogSegment implements Range, Comparable<LogSegment> {
 
     private final File file;
 
@@ -84,6 +82,17 @@ public class LogSegment extends AbstractRange implements Range, Comparable<LogSe
 
     public int compareTo(LogSegment o) {
         return this.start > o.start ? 1 : this.start < o.start ? -1 : 0;
+    }
+
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    public boolean contains(long value) {
+        long size = size();
+        long start = start();
+        return ((size == 0 && value == start) //
+        || (size > 0 && value >= start && value <= start + size - 1));
     }
 
     @Override
