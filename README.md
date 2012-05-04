@@ -1,6 +1,6 @@
 #A fast Message-Queue base on zookeeper.
 
-Jafka mq is a distributed publish-subscribe messaging system cloning from Apache Kafka.
+Jafka mq is a distributed publish-subscribe messaging system cloning from [Apache Kafka](http://incubator.apache.org/kafka/).
 
 So it has following features:
 
@@ -9,10 +9,12 @@ So it has following features:
 * Explicit support for partitioning messages over broker servers and distributing consumption over a cluster of consumer machines while maintaining per-partition ordering semantics.
 * Simple message format for many language clients.
 
+If you are interesting in [scala](http://www.scala-lang.org/), please using the origin kafka at [apache](http://incubator.apache.org/kafka/). Also it has git repository at [github](https://github.com/apache/kafka/).
+
 ##Quick Start
 
 Quick start [link](https://github.com/adyliu/jafka/wiki/quickstart)
 
 ##Wiki
 
-Wiki: https://github.com/adyliu/jafka/wiki
+Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wiki)
