@@ -6,3 +6,5 @@ target
 build-dist.sh
 *.tgz
 /jafka-1.0*
+/data
+/docs
