@@ -17,6 +17,7 @@
 
 package com.sohu.jafka;
 
+import java.io.Closeable;
 import java.util.Properties;
 
 import com.sohu.jafka.consumer.ConsumerConfig;
@@ -29,9 +30,13 @@ import com.sohu.jafka.utils.Utils;
  * Jafka Main point
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
-public class Jafka {
+public class Jafka implements Closeable {
+
+    private volatile Thread shutdownHook;
+
+    private ServerStartable serverStartable;
 
     public void start(String mainFile, String consumerFile, String producerFile) {
         start(Utils.loadProps(mainFile),//
@@ -41,40 +46,57 @@ public class Jafka {
 
     public void start(Properties mainProperties, Properties consumerProperties, Properties producerProperties) {
         final Config config = new Config(mainProperties);
-        final ConsumerConfig consumerConfig = consumerProperties == null ? null : new ConsumerConfig(consumerProperties);
+        final ConsumerConfig consumerConfig = consumerProperties == null ? null
+                : new ConsumerConfig(consumerProperties);
         final ProducerConfig producerConfig = consumerConfig == null ? null : new ProducerConfig(producerProperties);
         start(config, consumerConfig, producerConfig);
     }
 
     public void start(Config config, ConsumerConfig consumerConfig, ProducerConfig producerConfig) {
-        final ServerStartable serverStartable;
         if (consumerConfig == null) {
             serverStartable = new ServerStartable(config);
         } else {
             serverStartable = new ServerStartable(config, consumerConfig, producerConfig);
         }
         //
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        shutdownHook = new Thread() {
 
             @Override
             public void run() {
                 serverStartable.shutdown();
                 serverStartable.awaitShutdown();
             }
-        });
+        };
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
         //
         serverStartable.startup();
-        serverStartable.awaitShutdown();
+    }
+
+    public void awaitShutdown() {
+        if (serverStartable != null) {
+            serverStartable.awaitShutdown();
+        }
+    }
+
+    @Override
+    public void close() {
+        if (shutdownHook != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+            shutdownHook.run();
+            shutdownHook = null;
+        }
     }
 
     public static void main(String[] args) {
         int argsSize = args.length;
         if (argsSize != 1 && argsSize != 3) {
-            System.out.println("USAGE: java [options] Jafka server.properties [consumer.properties producer.properties]");
+            System.out
+                    .println("USAGE: java [options] Jafka server.properties [consumer.properties producer.properties]");
             System.exit(1);
         }
         //
         Jafka jafka = new Jafka();
         jafka.start(args[0], argsSize > 1 ? args[1] : null, argsSize > 1 ? args[2] : null);
+        jafka.awaitShutdown();
     }
 }

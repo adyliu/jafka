@@ -30,7 +30,7 @@ public abstract class AbstractSend extends AbstractTransmission implements Send 
     public int writeCompletely(GatheringByteChannel channel) throws IOException {
         int written = 0;
         while(!complete()) {
-            written = writeTo(channel);
+            written += writeTo(channel);
         }
         return written;
     }

@@ -38,9 +38,9 @@ public class Config extends ZKConfig {
         super(props);
     }
 
-    /** the port to listen and accept connections on (default 6667)*/
+    /** the port to listen and accept connections on (default 9092)*/
     public int getPort() {
-        return getInt(props, "port", 6667);
+        return getInt(props, "port", 9092);
     }
 
     /** hostname of broker. If not set, will pick up from the value returned from getLocalHost. If there are multiple interfaces getLocalHost may not be what you want. */
@@ -93,7 +93,7 @@ public class Config extends ZKConfig {
     public int getLogCleanupIntervalMinutes(){ return getIntInRange(props, "log.cleanup.interval.mins", 10,   1,Integer.MAX_VALUE);}
     
     /** enable zookeeper registration in the server */
-    public boolean getEnableZookeeper(){ return getBoolean(props, "enable.zookeeper", true);}
+    public boolean getEnableZookeeper(){ return getBoolean(props, "enable.zookeeper", false);}
 
     /** the maximum time in ms that a message in selected topics is kept in memory before flushed to disk, e.g., topic1:3000,topic2: 6000  */
     public Map<String,Integer> getFlushIntervalMap(){ return getTopicFlushIntervals(getString(props, "topic.flush.intervals.ms", ""));}

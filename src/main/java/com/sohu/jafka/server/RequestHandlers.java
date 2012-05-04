@@ -133,7 +133,7 @@ public class RequestHandlers {
             if (logger.isDebugEnabled()) {
                 logger.debug(messageSize + " bytes written to logs " + log);
                 for (MessageAndOffset m : request.getMessages()) {
-                    logger.debug("wrote message " + m.message.checksum() + " to disk");
+                    logger.debug("wrote message " + m.offset + " to disk");
                 }
             }
             BrokerTopicStat.getInstance(request.getTopic()).recordBytesIn(messageSize);

@@ -49,7 +49,7 @@ import com.sohu.jafka.utils.Utils;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public class Log  implements Closeable{
 
@@ -213,9 +213,9 @@ public class Log  implements Closeable{
         synchronized (lock) {
             try {
                 LogSegment lastSegment = segments.getLastView();
-                lastSegment.getMessageSet().append(validMessages);
+                long written = lastSegment.getMessageSet().append(validMessages);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("save " + numberOfMessages + " messages");
+                    logger.debug(lastSegment.getName()+" save " + numberOfMessages + " messages, bytes "+written);
                 }
                 maybeFlush(numberOfMessages);
                 maybeRoll(lastSegment);

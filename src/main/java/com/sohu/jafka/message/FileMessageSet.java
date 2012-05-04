@@ -169,13 +169,15 @@ public class FileMessageSet extends MessageSet {
      * Append this message to the message set
      * 
      * @throws IOException
+     * @return the written size
      */
-    public void append(MessageSet messages) throws IOException {
+    public long append(MessageSet messages) throws IOException {
         checkMutable();
         long written = 0L;
         while (written < messages.getSizeInBytes())
             written += messages.writeTo(channel, 0, messages.getSizeInBytes());
         setSize.getAndAdd(written);
+        return written;
     }
 
     /**

@@ -17,6 +17,7 @@
 
 package com.sohu.jafka.producer;
 
+import static java.lang.String.format;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -76,7 +77,8 @@ public class SyncProducer implements Closeable {
         this.host = config.getHost();
         this.port = config.getPort();
         //
-        lastConnectionTime = System.currentTimeMillis() - (long) (randomGenerator.nextDouble() * config.reconnectInterval);
+        lastConnectionTime = System.currentTimeMillis()
+                - (long) (randomGenerator.nextDouble() * config.reconnectInterval);
     }
 
     public void send(String topic, ByteBufferMessageSet message) {
@@ -100,15 +102,17 @@ public class SyncProducer implements Closeable {
             verifySendBuffer(send.getBuffer().slice());
             long startTime = Time.SystemTime.nanoseconds();
             getOrMakeConnection();
-            if (logger.isDebugEnabled()) {
-                logger.debug("write data to " + host + ":" + port);
-            }
+            int written = -1;
             try {
-                send.writeCompletely(channel);
+                written = send.writeCompletely(channel);
             } catch (IOException e) {
                 // no way to tell if write succeeded. Disconnect and re-throw exception to let client handle retry
                 disconnect();
                 throw new RuntimeException(e);
+            } finally {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(format("write %d bytes data to %s:%d", written, host, port));
+                }
             }
             sentOnConnection++;
             if (sentOnConnection >= config.reconnectInterval//
@@ -145,11 +149,12 @@ public class SyncProducer implements Closeable {
                 disconnect();
                 long endTimeMs = Time.SystemTime.milliseconds();
                 if ((endTimeMs - beginTimeMs + connectBackoffMs) > config.connectTimeoutMs) {
-                    logger.error(
-                            "Producer connection to " + config.getHost() + ":" + config.getPort() + " timing out after " + config.connectTimeoutMs + " ms", e);
+                    logger.error("Producer connection to " + config.getHost() + ":" + config.getPort()
+                            + " timing out after " + config.connectTimeoutMs + " ms", e);
                     throw new RuntimeException(e.getMessage(), e);
                 }
-                logger.error("Connection attempt to " + config.getHost() + ":" + config.getPort() + " failed, next attempt in " + connectBackoffMs + " ms", e);
+                logger.error("Connection attempt to " + config.getHost() + ":" + config.getPort()
+                        + " failed, next attempt in " + connectBackoffMs + " ms", e);
                 try {
                     Time.SystemTime.sleep(connectBackoffMs);
                 } catch (InterruptedException e1) {

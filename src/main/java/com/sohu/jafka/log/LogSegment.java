@@ -99,4 +99,8 @@ public class LogSegment implements Range, Comparable<LogSegment> {
     public String toString() {
         return "(file=" + file + ", start=" + start + ", size=" + size() + ")";
     }
+    
+    public String getName() {
+        return file.getName();
+    }
 }
