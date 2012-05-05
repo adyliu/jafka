@@ -45,15 +45,15 @@ import com.sohu.jafka.utils.zookeeper.ZkUtils;
  * </pre>
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-04-19
+ * @since 1.0
  */
-public class Zookeeper implements IZkStateListener, Closeable {
+public class ServerRegister implements IZkStateListener, Closeable {
 
-    private final Config config;
+    private final ServerConfig config;
 
     private final LogManager logManager;
 
-    private static final Logger logger = Logger.getLogger(Zookeeper.class);
+    private static final Logger logger = Logger.getLogger(ServerRegister.class);
 
     private final String brokerIdPath;
 
@@ -67,7 +67,7 @@ public class Zookeeper implements IZkStateListener, Closeable {
      * @param config
      * @param logManager
      */
-    public Zookeeper(Config config, LogManager logManager) {
+    public ServerRegister(ServerConfig config, LogManager logManager) {
         this.config = config;
         this.logManager = logManager;
         //

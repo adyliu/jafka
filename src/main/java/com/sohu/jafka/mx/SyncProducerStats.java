@@ -18,7 +18,6 @@
 package com.sohu.jafka.mx;
 
 import com.sohu.jafka.common.annotations.ThreadSafe;
-import com.sohu.jafka.utils.SnapshotStats;
 import com.sohu.jafka.utils.Utils;
 
 /**

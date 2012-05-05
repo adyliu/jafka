@@ -17,7 +17,6 @@
 
 package com.sohu.jafka.mx;
 
-import com.sohu.jafka.utils.SnapshotStats;
 import com.sohu.jafka.utils.Utils;
 
 /**

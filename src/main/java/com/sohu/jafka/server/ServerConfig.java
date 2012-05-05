@@ -32,9 +32,9 @@ import com.sohu.jafka.utils.ZKConfig;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class Config extends ZKConfig {
+public class ServerConfig extends ZKConfig {
 
-    public Config(Properties props) {
+    public ServerConfig(Properties props) {
         super(props);
     }
 

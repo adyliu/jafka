@@ -36,7 +36,6 @@ import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.mx.SyncProducerStats;
 import com.sohu.jafka.network.BoundedByteBufferSend;
 import com.sohu.jafka.utils.Closer;
-import com.sohu.jafka.utils.Time;
 
 /**
  * file{producer/SyncProducer.scala}
@@ -100,7 +99,7 @@ public class SyncProducer implements Closeable {
     private void send(BoundedByteBufferSend send) {
         synchronized (lock) {
             verifySendBuffer(send.getBuffer().slice());
-            long startTime = Time.SystemTime.nanoseconds();
+            long startTime = System.nanoTime();
             getOrMakeConnection();
             int written = -1;
             try {
@@ -122,7 +121,7 @@ public class SyncProducer implements Closeable {
                 sentOnConnection = 0;
                 lastConnectionTime = System.currentTimeMillis();
             }
-            final long endTime = Time.SystemTime.nanoseconds();
+            final long endTime = System.nanoTime();
             SyncProducerStats.recordProduceRequest(endTime - startTime);
         }
     }
@@ -135,7 +134,7 @@ public class SyncProducer implements Closeable {
 
     private SocketChannel connect() {
         long connectBackoffMs = 1;
-        long beginTimeMs = Time.SystemTime.milliseconds();
+        long beginTimeMs =  System.currentTimeMillis();
         while (channel == null && !shutdown) {
             try {
                 channel = SocketChannel.open();
@@ -147,7 +146,7 @@ public class SyncProducer implements Closeable {
                 logger.info("Connected to " + config.getHost() + ":" + config.getPort() + " for producing");
             } catch (IOException e) {
                 disconnect();
-                long endTimeMs = Time.SystemTime.milliseconds();
+                long endTimeMs =  System.currentTimeMillis();
                 if ((endTimeMs - beginTimeMs + connectBackoffMs) > config.connectTimeoutMs) {
                     logger.error("Producer connection to " + config.getHost() + ":" + config.getPort()
                             + " timing out after " + config.connectTimeoutMs + " ms", e);
@@ -156,7 +155,7 @@ public class SyncProducer implements Closeable {
                 logger.error("Connection attempt to " + config.getHost() + ":" + config.getPort()
                         + " failed, next attempt in " + connectBackoffMs + " ms", e);
                 try {
-                    Time.SystemTime.sleep(connectBackoffMs);
+                    Thread.sleep(connectBackoffMs);
                 } catch (InterruptedException e1) {
                     logger.warn(e1.getMessage());
                     Thread.currentThread().interrupt();

@@ -15,19 +15,22 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.utils;
+package com.sohu.jafka.mx;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * statistic tools
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-9
+ * @since 1.0
  */
 public class SnapshotStats {
 
-    final Time time = com.sohu.jafka.utils.Time.SystemTime;
+    //final Time time = com.sohu.jafka.utils.Time.SystemTime;
+
     private final long monitorDurationNs;
 
     private final AtomicReference<Stats> complete = new AtomicReference<Stats>(new Stats());
@@ -37,7 +40,6 @@ public class SnapshotStats {
     private final AtomicLong total = new AtomicLong(0);
 
     private final AtomicLong numCumulatedRequests = new AtomicLong(0);
-
 
     public SnapshotStats(long monitorDurationNs) {
         this.monitorDurationNs = monitorDurationNs;
@@ -52,13 +54,13 @@ public class SnapshotStats {
         stats.add(requestNs);
         total.getAndAdd(requestNs);
         numCumulatedRequests.getAndAdd(1);
-        long ageNs = time.nanoseconds() - stats.start;
+        long ageNs = System.nanoTime() - stats.start;
         // if the current stats are too old it is time to swap
         if (ageNs >= monitorDurationNs) {
             boolean swapped = current.compareAndSet(stats, new Stats());
             if (swapped) {
                 complete.set(stats);
-                stats.end.set(time.nanoseconds());
+                stats.end.set(System.nanoTime());
             }
         }
     }
@@ -66,13 +68,13 @@ public class SnapshotStats {
     public void recordThroughputMetric(long data) {
         Stats stats = current.get();
         stats.addData(data);
-        long ageNs = time.nanoseconds() - stats.start;
+        long ageNs = System.nanoTime() - stats.start;
         // if the current stats are too old it is time to swap
         if (ageNs >= monitorDurationNs) {
             boolean swapped = current.compareAndSet(stats, new Stats());
             if (swapped) {
                 complete.set(stats);
-                stats.end.set(time.nanoseconds());
+                stats.end.set(System.nanoTime());
             }
         }
     }
@@ -111,7 +113,11 @@ public class SnapshotStats {
     //================================================================
     class Stats {
 
-        final long start = time.nanoseconds();
+        final long start = System.nanoTime();
+
+        static final double SECOND2NANO = 1000.0 * 1000.0 * 1000.0;
+
+        static final double MILLISECOND2NANO = 1000.0 * 1000.0;
 
         AtomicLong end = new AtomicLong(-1);
 
@@ -142,11 +148,11 @@ public class SnapshotStats {
         }
 
         double durationSeconds() {
-            return (end.get() - start) / (1000.0 * 1000.0 * 1000.0);
+            return (end.get() - start) / SECOND2NANO;
         }
 
         double durationMs() {
-            return (end.get() - start) / (1000.0 * 1000.0);
+            return (end.get() - start) / MILLISECOND2NANO;
         }
     }
 }

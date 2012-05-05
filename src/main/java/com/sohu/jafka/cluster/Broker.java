@@ -17,7 +17,7 @@
 
 package com.sohu.jafka.cluster;
 
-import com.sohu.jafka.server.Zookeeper;
+import com.sohu.jafka.server.ServerRegister;
 
 /**
  * messages store broker
@@ -35,7 +35,7 @@ public class Broker {
     /**
      * the broker creator (hostname with created time)
      * 
-     * @see Zookeeper#registerBrokerInZk()
+     * @see ServerRegister#registerBrokerInZk()
      */
     public final String creatorId;
 

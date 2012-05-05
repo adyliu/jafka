@@ -37,14 +37,13 @@ import org.apache.log4j.Logger;
 import com.sohu.jafka.api.OffsetRequest;
 import com.sohu.jafka.api.PartitionChooser;
 import com.sohu.jafka.common.InvalidPartitionException;
-import com.sohu.jafka.server.Config;
-import com.sohu.jafka.server.Zookeeper;
+import com.sohu.jafka.server.ServerConfig;
+import com.sohu.jafka.server.ServerRegister;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.IteratorTemplate;
 import com.sohu.jafka.utils.KV;
 import com.sohu.jafka.utils.Pool;
 import com.sohu.jafka.utils.Scheduler;
-import com.sohu.jafka.utils.Time;
 import com.sohu.jafka.utils.Utils;
 
 /**
@@ -53,11 +52,10 @@ import com.sohu.jafka.utils.Utils;
  */
 public class LogManager implements PartitionChooser, Closeable {
 
-    final Config config;
+    final ServerConfig config;
 
     private final Scheduler scheduler;
 
-    private final Time time;
 
     final long logCleanupIntervalMs;
 
@@ -97,22 +95,21 @@ public class LogManager implements PartitionChooser, Closeable {
     final int logRetentionSize;
 
     /////////////////////////////////////////////////////////////////////////
-    private Zookeeper zookeeper;
+    private ServerRegister zookeeper;
 
     private final Map<String, Integer> topicPartitionsMap;
 
     private RollingStrategy rollingStategy;
 
-    public LogManager(Config config, //
+    public LogManager(ServerConfig config, //
             Scheduler scheduler, //
-            Time time, //
             long logCleanupIntervalMs, //
             long logCleanupDefaultAgeMs, //
             boolean needRecovery) {
         super();
         this.config = config;
         this.scheduler = scheduler;
-        this.time = time;
+//        this.time = time;
         this.logCleanupIntervalMs = logCleanupIntervalMs;
         this.logCleanupDefaultAgeMs = logCleanupDefaultAgeMs;
         this.needRecovery = needRecovery;
@@ -179,7 +176,7 @@ public class LogManager implements PartitionChooser, Closeable {
         }
         //
         if (config.getEnableZookeeper()) {
-            final Zookeeper zk = new Zookeeper(config, this);
+            final ServerRegister zk = new ServerRegister(config, this);
             this.zookeeper = zk;
             zk.startup();
             Utils.newThread("jafka.logmanager", new Runnable() {
@@ -232,15 +229,15 @@ public class LogManager implements PartitionChooser, Closeable {
         logger.trace("Beginning log cleanup...");
         int total = 0;
         Iterator<Log> iter = getLogIterator();
-        long startMs = time.milliseconds();
+        long startMs = System.currentTimeMillis();
         while (iter.hasNext()) {
             Log log = iter.next();
             total += cleanupExpiredSegments(log) + cleanupSegmentsToMaintainSize(log);
         }
         if (total > 0) {
-            logger.warn("Log cleanup completed. " + total + " files deleted in " + (time.milliseconds() - startMs) / 1000 + " seconds");
+            logger.warn("Log cleanup completed. " + total + " files deleted in " + (System.currentTimeMillis() - startMs) / 1000 + " seconds");
         } else {
-            logger.trace("Log cleanup completed. " + total + " files deleted in " + (time.milliseconds() - startMs) / 1000 + " seconds");
+            logger.trace("Log cleanup completed. " + total + " files deleted in " + (System.currentTimeMillis() - startMs) / 1000 + " seconds");
         }
     }
 

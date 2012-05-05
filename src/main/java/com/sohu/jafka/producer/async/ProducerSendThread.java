@@ -30,11 +30,10 @@ import org.apache.log4j.Logger;
 import com.sohu.jafka.common.IllegalQueueStateException;
 import com.sohu.jafka.producer.SyncProducer;
 import com.sohu.jafka.producer.serializer.Encoder;
-import com.sohu.jafka.utils.Time;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class ProducerSendThread<T> extends Thread {
 
@@ -111,13 +110,13 @@ public class ProducerSendThread<T> extends Thread {
     }
 
     private List<QueueItem<T>> processEvents() {
-        long lastSend = Time.SystemTime.milliseconds();
+        long lastSend = System.currentTimeMillis();
         final List<QueueItem<T>> events = new ArrayList<QueueItem<T>>();
         boolean full = false;
         while (!shutdown) {
             try {
-                QueueItem<T> item = queue.poll(Math.max(0, (lastSend + queueTime) - Time.SystemTime.milliseconds()), TimeUnit.MILLISECONDS);
-                long elapsed = Time.SystemTime.milliseconds() - lastSend;
+                QueueItem<T> item = queue.poll(Math.max(0, (lastSend + queueTime) - System.currentTimeMillis()), TimeUnit.MILLISECONDS);
+                long elapsed =  System.currentTimeMillis()- lastSend;
                 boolean expired = item == null;
                 if (item != null) {
                     if (callbackHandler != null) {
@@ -137,7 +136,7 @@ public class ProducerSendThread<T> extends Thread {
                         }
                     }
                     tryToHandle(events);
-                    lastSend = Time.SystemTime.milliseconds();
+                    lastSend = System.currentTimeMillis();
                     events.clear();
                 }
             } catch (InterruptedException e) {

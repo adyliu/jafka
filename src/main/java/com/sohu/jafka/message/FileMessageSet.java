@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 
 import com.sohu.jafka.mx.LogFlushStats;
 import com.sohu.jafka.utils.IteratorTemplate;
-import com.sohu.jafka.utils.Time;
 import com.sohu.jafka.utils.Utils;
 
 /**
@@ -74,8 +73,7 @@ public class FileMessageSet extends MessageSet {
                 // set the file position to the end of the file for appending messages
                 long startMs = System.currentTimeMillis();
                 long truncated = recover();
-                logger.info("Recovery succeeded in " + (System.currentTimeMillis() - startMs) / 1000 + " seconds. "
-                        + truncated + " bytes truncated.");
+                logger.info("Recovery succeeded in " + (System.currentTimeMillis() - startMs) / 1000 + " seconds. " + truncated + " bytes truncated.");
             } else {
                 setSize.set(channel.size());
                 setHighWaterMark.set(getSizeInBytes());
@@ -194,9 +192,9 @@ public class FileMessageSet extends MessageSet {
      */
     public void flush() throws IOException {
         checkMutable();
-        long startTime = Time.SystemTime.milliseconds();
+        long startTime = System.currentTimeMillis();
         channel.force(true);
-        long elapsedTime = Time.SystemTime.milliseconds() - startTime;
+        long elapsedTime = System.currentTimeMillis() - startTime;
         LogFlushStats.recordFlushRequest(elapsedTime);
         logger.debug("flush time " + elapsedTime);
         setHighWaterMark.set(getSizeInBytes());

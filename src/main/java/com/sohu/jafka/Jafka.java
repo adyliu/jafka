@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import com.sohu.jafka.consumer.ConsumerConfig;
 import com.sohu.jafka.producer.ProducerConfig;
-import com.sohu.jafka.server.Config;
+import com.sohu.jafka.server.ServerConfig;
 import com.sohu.jafka.server.ServerStartable;
 import com.sohu.jafka.utils.Utils;
 
@@ -45,14 +45,14 @@ public class Jafka implements Closeable {
     }
 
     public void start(Properties mainProperties, Properties consumerProperties, Properties producerProperties) {
-        final Config config = new Config(mainProperties);
+        final ServerConfig config = new ServerConfig(mainProperties);
         final ConsumerConfig consumerConfig = consumerProperties == null ? null
                 : new ConsumerConfig(consumerProperties);
         final ProducerConfig producerConfig = consumerConfig == null ? null : new ProducerConfig(producerProperties);
         start(config, consumerConfig, producerConfig);
     }
 
-    public void start(Config config, ConsumerConfig consumerConfig, ProducerConfig producerConfig) {
+    public void start(ServerConfig config, ConsumerConfig consumerConfig, ProducerConfig producerConfig) {
         if (consumerConfig == null) {
             serverStartable = new ServerStartable(config);
         } else {

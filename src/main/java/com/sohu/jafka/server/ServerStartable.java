@@ -32,20 +32,20 @@ public class ServerStartable {
 
     
     private final Logger logger = Logger.getLogger(ServerStartable.class);
-    final Config config;
+    final ServerConfig config;
     final ConsumerConfig consumerConfig;
     final ProducerConfig producerConfig;
     //
     private Server server;
     private EmbeddedConsumer embeddedConsumer;
-    public ServerStartable(Config config, ConsumerConfig consumerConfig, ProducerConfig producerConfig) {
+    public ServerStartable(ServerConfig config, ConsumerConfig consumerConfig, ProducerConfig producerConfig) {
         super();
         this.config = config;
         this.consumerConfig = consumerConfig;
         this.producerConfig = producerConfig;
         init();
     }
-    public ServerStartable(Config config) {
+    public ServerStartable(ServerConfig config) {
         this(config,null,null);
     }
     

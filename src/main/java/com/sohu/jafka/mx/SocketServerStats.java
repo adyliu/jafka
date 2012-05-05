@@ -18,8 +18,6 @@
 package com.sohu.jafka.mx;
 
 import com.sohu.jafka.api.RequestKeys;
-import com.sohu.jafka.utils.SnapshotStats;
-import com.sohu.jafka.utils.Time;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -28,8 +26,6 @@ import com.sohu.jafka.utils.Time;
 public class SocketServerStats implements SocketServerStatsMBean, IMBeanName {
 
     final long monitorDurationNs;
-
-    final Time time;
 
     //=======================================
     final SnapshotStats produceTimeStats;
@@ -41,17 +37,12 @@ public class SocketServerStats implements SocketServerStatsMBean, IMBeanName {
     final SnapshotStats fetchBytesStats;
 
     //=======================================
-    public SocketServerStats(long monitorDurationNs, Time time) {
+    public SocketServerStats(long monitorDurationNs) {
         this.monitorDurationNs = monitorDurationNs;
-        this.time = time;
         produceTimeStats = new SnapshotStats(monitorDurationNs);
         fetchTimeStats = new SnapshotStats(monitorDurationNs);
         produceBytesStats = new SnapshotStats(monitorDurationNs);
         fetchBytesStats = new SnapshotStats(monitorDurationNs);
-    }
-
-    public SocketServerStats(long monitorDurationNs) {
-        this(monitorDurationNs, Time.SystemTime);
     }
 
     /**

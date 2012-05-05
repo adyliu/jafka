@@ -28,12 +28,12 @@ import com.sohu.jafka.mx.SocketServerStats;
 import com.sohu.jafka.network.SocketServer;
 import com.sohu.jafka.utils.Mx4jLoader;
 import com.sohu.jafka.utils.Scheduler;
-import com.sohu.jafka.utils.Time;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * The main server container
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class Server {
 
@@ -41,7 +41,7 @@ public class Server {
 
     final private Logger logger = Logger.getLogger(Server.class);
 
-    final Config config;
+    final ServerConfig config;
 
     final Scheduler scheduler = new Scheduler(1, "jafka-logcleaner-", false);
 
@@ -56,7 +56,7 @@ public class Server {
     private final File logDir;
 
     //
-    public Server(Config config) {
+    public Server(ServerConfig config) {
         this.config = config;
         logDir = new File(config.getLogDir());
         if (!logDir.exists()) {
@@ -75,7 +75,6 @@ public class Server {
             }
             LogManager logManager = new LogManager(config,//
                     scheduler,//
-                    Time.SystemTime,//
                     1000L * 60 * config.getLogCleanupIntervalMinutes(),//
                     1000L * 60 * 60 * config.getLogRetentionHours(),//
                     needRecovery);

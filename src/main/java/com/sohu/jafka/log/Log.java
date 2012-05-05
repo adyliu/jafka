@@ -44,7 +44,6 @@ import com.sohu.jafka.mx.BrokerTopicStat;
 import com.sohu.jafka.mx.LogStats;
 import com.sohu.jafka.utils.KV;
 import com.sohu.jafka.utils.Range;
-import com.sohu.jafka.utils.Time;
 import com.sohu.jafka.utils.Utils;
 
 /**
@@ -396,7 +395,7 @@ public class Log implements Closeable {
                 } else {
                     // If the last segment to be deleted is empty and we roll the log, the new segment will have the same
                     // file name. So simply reuse the last segment and reset the modified time.
-                    view.get(numToDelete - 1).getFile().setLastModified(Time.SystemTime.milliseconds());
+                    view.get(numToDelete - 1).getFile().setLastModified(System.currentTimeMillis());
                     numToDelete -= 1;
                 }
             }
@@ -416,7 +415,7 @@ public class Log implements Closeable {
         }
         if (lastSegmentNotEmpty) {
             offsetTimes.add(new KV<Long, Long>(lastLogSegent.start() + lastLogSegent.getMessageSet().highWaterMark(),
-                    Time.SystemTime.milliseconds()));
+                    System.currentTimeMillis()));
         }
         int startIndex = -1;
         final long requestTime = offsetRequest.getTime();
