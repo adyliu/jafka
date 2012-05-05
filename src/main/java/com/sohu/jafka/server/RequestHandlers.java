@@ -37,13 +37,15 @@ import com.sohu.jafka.message.MessageSet;
 import com.sohu.jafka.mx.BrokerTopicStat;
 import com.sohu.jafka.network.HandlerMapping;
 import com.sohu.jafka.network.HandlerMappingFactory;
+import com.sohu.jafka.network.MultiMessageSetSend;
 import com.sohu.jafka.network.OffsetArraySend;
 import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Send;
 
 /**
+ * Request Handlers
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public class RequestHandlers {
 

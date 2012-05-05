@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.server;
+package com.sohu.jafka.network;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.sohu.jafka.common.annotations.NotThreadSafe;
-import com.sohu.jafka.network.ByteBufferSend;
-import com.sohu.jafka.network.MultiSend;
-import com.sohu.jafka.network.Send;
+import com.sohu.jafka.server.MessageSetSend;
 
 /**
  * A set of message sets prefixed by size
