@@ -26,7 +26,7 @@ import com.sohu.jafka.message.InvalidMessageException;
  * A bi-directional mapping between error codes and exceptions x
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public enum ErrorMapping {
 

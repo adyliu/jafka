@@ -79,7 +79,10 @@ public final class Closer {
     }
 
     /**
-     * @param channel
+     * Close a closeable object quietly(not throwing {@link IOException})
+     * 
+     * @param closeable A closeable object
+     * @see java.io.Closeable
      */
     public static void closeQuietly(java.io.Closeable closeable) {
         closeQuietly(closeable, closerLogger);

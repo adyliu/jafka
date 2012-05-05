@@ -17,7 +17,6 @@
 
 package com.sohu.jafka.consumer;
 
-
 import java.util.Properties;
 
 import com.sohu.jafka.api.OffsetRequest;
@@ -25,8 +24,17 @@ import com.sohu.jafka.utils.Utils;
 import com.sohu.jafka.utils.ZKConfig;
 
 /**
+ * the consumer configuration
+ * <p>
+ * The minimal configurations have these names:
+ * <ul>
+ * <li>groupid: the consumer group name</li>
+ * <li>zk.connect: the zookeeper connection string</li>
+ * </ul>
+ * </p>
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class ConsumerConfig extends ZKConfig {
 
@@ -84,16 +92,15 @@ public class ConsumerConfig extends ZKConfig {
     }
 
     /**
-     * a string that uniquely identifies a set of consumers within the same
-     * consumer group
+     * a string that uniquely identifies a set of consumers within the same consumer group
      */
     public String getGroupId() {
         return groupId;
     }
 
     /**
-     * consumer id: generated automatically if not set. Set this explicitly
-     * for only testing purpose.
+     * consumer id: generated automatically if not set. Set this explicitly for only testing
+     * purpose.
      */
     public String getConsumerId() {
         return consumerId;
@@ -115,24 +122,23 @@ public class ConsumerConfig extends ZKConfig {
     }
 
     /**
-     * to avoid repeatedly polling a broker node which has no new data we
-     * will backoff every time we get an empty set from the broker
+     * to avoid repeatedly polling a broker node which has no new data we will backoff every
+     * time we get an empty set from the broker
      */
     public long getFetchBackoffMs() {
         return fetchBackoffMs;
     }
 
     /**
-     * if true, periodically commit to zookeeper the offset of messages
-     * already fetched by the consumer
+     * if true, periodically commit to zookeeper the offset of messages already fetched by the
+     * consumer
      */
     public boolean isAutoCommit() {
         return autoCommit;
     }
 
     /**
-     * the frequency in ms that the consumer offsets are committed to
-     * zookeeper
+     * the frequency in ms that the consumer offsets are committed to zookeeper
      */
     public int getAutoCommitIntervalMs() {
         return autoCommitIntervalMs;
@@ -167,24 +173,23 @@ public class ConsumerConfig extends ZKConfig {
     }
 
     /**
-     * throw a timeout exception to the consumer if no message is available
-     * for consumption after the specified interval
+     * throw a timeout exception to the consumer if no message is available for consumption
+     * after the specified interval
      */
     public int getConsumerTimeoutMs() {
         return consumerTimeoutMs;
     }
 
     /**
-     * Whitelist of topics for this mirror's embedded consumer to consume.
-     * At most one of whitelist/blacklist may be specified.
+     * Whitelist of topics for this mirror's embedded consumer to consume. At most one of
+     * whitelist/blacklist may be specified.
      */
     public String getMirrorTopicsWhitelist() {
         return mirrorTopicsWhitelist;
     }
 
     /**
-     * Topics to skip mirroring. At most one of whitelist/blacklist may be
-     * specified
+     * Topics to skip mirroring. At most one of whitelist/blacklist may be specified
      */
     public String getMirrorTopicsBlackList() {
         return mirrorTopicsBlackList;

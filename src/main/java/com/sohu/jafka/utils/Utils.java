@@ -43,11 +43,17 @@ import javax.management.ObjectName;
 import com.sohu.jafka.mx.IMBeanName;
 
 /**
+ * common utilities
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class Utils {
-
+    /**
+     * loading Properties from files
+     * @param filename file path
+     * @return properties
+     * @throws RuntimeException while file not exist or loading fail
+     */
     public static Properties loadProps(String filename) {
         Properties props = new Properties();
         FileInputStream fis = null;
@@ -58,9 +64,7 @@ public class Utils {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         } finally {
-            if (fis != null) {
-                Closer.closeQuietly(fis);
-            }
+            Closer.closeQuietly(fis);
         }
 
     }
@@ -132,7 +136,7 @@ public class Utils {
         return "true".equalsIgnoreCase(props.getProperty(name));
     }
 
-    static Map<String, Integer> getCSVMap(String value, String exceptionMsg, String successMsg) {
+    private static Map<String, Integer> getCSVMap(String value, String exceptionMsg, String successMsg) {
         Map<String, Integer> map = new LinkedHashMap<String, Integer>();
         if (value == null || value.trim().length() < 3) return map;
         for (String one : value.trim().split(",")) {
@@ -333,8 +337,8 @@ public class Utils {
     /**
      * caculate string length with size prefix
      * 
-     * @param topic the string value
-     * @return string size with short prefix
+     * @param topic the string value (support UTF-8 bytes)
+     * @return string size with short prefix (2+topic.length)
      * @see #readShortString(ByteBuffer)
      */
     public static int caculateShortString(String topic) {

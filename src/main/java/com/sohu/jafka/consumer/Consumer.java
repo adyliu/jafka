@@ -17,10 +17,11 @@
 
 package com.sohu.jafka.consumer;
 
-
 /**
+ * Consumer factory
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-13
+ * @since 1.0
  */
 public class Consumer {
 
@@ -28,8 +29,9 @@ public class Consumer {
      * create a ConsumerConnector
      * 
      * @param config at the minium, need to specify these properties:
-     * <pre>
-     *  groupid: the consumer
+     * 
+     *        <pre>
+     *  groupid: the consumer group name
      *  zk.connect: the zookeeper connection string
      * </pre>
      * @return

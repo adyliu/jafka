@@ -28,20 +28,40 @@ import com.sohu.jafka.utils.Utils;
  * fetching data from server
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @ClientSide
 @ServerSide
 public class FetchRequest implements Request {
 
-    private final String topic;
+    /**
+     * message topic
+     */
+    public final String topic;
 
-    private final int partition;
+    /**
+     * partition of log file
+     */
+    public final int partition;
 
-    private final long offset;
+    /**
+     * ofset of topic(log file)
+     */
+    public final long offset;
 
-    private final int maxSize;
+    /**
+     * the max data size in bytes for this request
+     */
+    public final int maxSize;
 
+    /**
+     * create a fetch request
+     * 
+     * @param topic the topic with messages
+     * @param partition the partition of log file
+     * @param offset offset of the topic(log file)
+     * @param maxSize the max data size in bytes
+     */
     public FetchRequest(String topic, int partition, long offset, int maxSize) {
         this.topic = topic;
         if (topic == null) {
@@ -54,22 +74,6 @@ public class FetchRequest implements Request {
 
     public RequestKeys getRequestKey() {
         return RequestKeys.Fetch;
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public int getPartition() {
-        return partition;
-    }
-
-    public long getOffset() {
-        return offset;
-    }
-
-    public int getMaxSize() {
-        return maxSize;
     }
 
     public int getSizeInBytes() {

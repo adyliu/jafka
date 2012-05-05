@@ -28,13 +28,24 @@ import com.sohu.jafka.common.annotations.ServerSide;
  * Client-Server communication
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @ClientSide
 @ServerSide
-public interface Request extends ICalculable{
+public interface Request extends ICalculable {
 
+    /**
+     * request type
+     * 
+     * @return request type
+     * @see RequestKeys
+     */
     RequestKeys getRequestKey();
 
+    /**
+     * write the request data to buffer
+     * 
+     * @param buffer data buffer
+     */
     void writeTo(ByteBuffer buffer);
 }

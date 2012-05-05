@@ -183,15 +183,15 @@ public class RequestHandlers {
     }
 
     private MessageSetSend readMessageSet(FetchRequest fetchRequest) {
-        final String topic = fetchRequest.getTopic();
+        final String topic = fetchRequest.topic;
         MessageSetSend response = null;
         try {
-            Log log = logManager.getLog(topic, fetchRequest.getPartition());
+            Log log = logManager.getLog(topic, fetchRequest.partition);
             if (logger.isDebugEnabled()) {
                 logger.debug("Fetching log segment for request=" + fetchRequest + ", log=" + log);
             }
             if (log != null) {
-                response = new MessageSetSend(log.read(fetchRequest.getOffset(), fetchRequest.getMaxSize()));
+                response = new MessageSetSend(log.read(fetchRequest.offset, fetchRequest.maxSize));
                 BrokerTopicStat.getInstance(topic).recordBytesOut(response.messages.getSizeInBytes());
                 BrokerTopicStat.getBrokerAllTopicStat().recordBytesOut(response.messages.getSizeInBytes());
             } else {
@@ -199,7 +199,7 @@ public class RequestHandlers {
             }
         } catch (Exception e) {
             logger.error("error when processing request " + fetchRequest, e);
-            BrokerTopicStat.getInstance(fetchRequest.getTopic()).recordFailedFetchRequest();
+            BrokerTopicStat.getInstance(topic).recordFailedFetchRequest();
             BrokerTopicStat.getBrokerAllTopicStat().recordFailedFetchRequest();
             response = new MessageSetSend(MessageSet.Empty, ErrorMapping.valueOf(e));
         }

@@ -27,10 +27,10 @@ import com.sohu.jafka.utils.ZKConfig;
 
 
 /**
- * Configuration settings for the jafka server
+ * Configuration for the jafka server
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class Config extends ZKConfig {
 

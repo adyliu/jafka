@@ -127,7 +127,7 @@ public class SimpleConsumer implements Closeable {
                 }
             }
             //
-            return new ByteBufferMessageSet(response.k.buffer(), request.getOffset(), response.v);
+            return new ByteBufferMessageSet(response.k.buffer(), request.offset, response.v);
         }
     }
 
@@ -185,7 +185,7 @@ public class SimpleConsumer implements Closeable {
             }
             List<Long> offsets = new ArrayList<Long>();
             for (FetchRequest fetch : fetches) {
-                offsets.add(fetch.getOffset());
+                offsets.add(fetch.offset);
             }
             return new MultiFetchResponse(response.k.buffer(), fetches.size(), offsets);
         }

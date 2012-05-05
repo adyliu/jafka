@@ -17,20 +17,46 @@
 
 package com.sohu.jafka.cluster;
 
+import com.sohu.jafka.server.Zookeeper;
+
 /**
+ * messages store broker
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class Broker {
 
+    /**
+     * the global unique broker id
+     */
     public final int id;
 
+    /**
+     * the broker creator (hostname with created time)
+     * 
+     * @see Zookeeper#registerBrokerInZk()
+     */
     public final String creatorId;
 
+    /**
+     * broker hostname
+     */
     public final String host;
 
+    /**
+     * broker port
+     */
     public final int port;
 
+    /**
+     * create a broker
+     * 
+     * @param id broker id
+     * @param creatorId
+     * @param host broker hostname
+     * @param port broker port
+     */
     public Broker(int id, String creatorId, String host, int port) {
         super();
         this.id = id;
@@ -39,6 +65,14 @@ public class Broker {
         this.port = port;
     }
 
+    /**
+     * the broker info saved in zookeeper
+     * <p>
+     * format: <b>creatorId:host:port</b>
+     * </p>
+     * 
+     * @return broker info saved in zookeeper
+     */
     public String getZKString() {
         return creatorId + ":" + host + ":" + port;
     }
@@ -72,6 +106,14 @@ public class Broker {
         return true;
     }
 
+    /**
+     * create a broker with given broker info
+     * 
+     * @param id broker id
+     * @param brokerInfoString broker info format: <b>creatorId:host:port</b>
+     * @return broker instance with connection config
+     * @see #getZKString()
+     */
     public static Broker createBroker(int id, String brokerInfoString) {
         String[] brokerInfo = brokerInfoString.split(":");
         return new Broker(id, brokerInfo[0], brokerInfo[1], Integer.parseInt(brokerInfo[2]));

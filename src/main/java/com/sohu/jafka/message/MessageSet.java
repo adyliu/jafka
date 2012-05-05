@@ -77,7 +77,7 @@ public abstract class MessageSet implements Iterable<MessageAndOffset> {
     }
 
     /**
-     * Gives the total size of this message set in bytes
+     * get the total size of this message set in bytes
      */
     public abstract long getSizeInBytes();
 

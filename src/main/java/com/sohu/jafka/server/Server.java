@@ -79,6 +79,7 @@ public class Server {
                     1000L * 60 * config.getLogCleanupIntervalMinutes(),//
                     1000L * 60 * 60 * config.getLogRetentionHours(),//
                     needRecovery);
+            logManager.load();
 
             RequestHandlers handlers = new RequestHandlers(logManager);
             socketServer = new SocketServer(config.getPort(),//

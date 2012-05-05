@@ -24,7 +24,7 @@ import com.sohu.jafka.common.annotations.ServerSide;
  * Request Type
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @ClientSide
 @ServerSide

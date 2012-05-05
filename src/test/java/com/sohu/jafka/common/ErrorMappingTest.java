@@ -15,37 +15,36 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka;
+package com.sohu.jafka.common;
 
-import java.util.Properties;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
-
-import com.sohu.jafka.utils.Closer;
 
 /**
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class JafkaTest {
+public class ErrorMappingTest {
 
     /**
-     * Test method for
-     * {@link com.sohu.jafka.Jafka#start(java.util.Properties, java.util.Properties, java.util.Properties)}
-     * .
-     * 
-     * @throws InterruptedException
+     * Test method for {@link com.sohu.jafka.common.ErrorMapping#valueOf(java.lang.Exception)}.
      */
     @Test
-    public void testStartPropertiesPropertiesProperties() {
-        DataLogCleaner.cleanDataLogDir();
-        Jafka jafka = new Jafka();
-        Properties mainProperties = new Properties();
-        mainProperties.setProperty("brokerid", "0");
-        mainProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath);
-        jafka.start(mainProperties, null, null);
-        Closer.closeQuietly(jafka);
-        jafka.awaitShutdown();
+    public void testValueOfException() {
+        assertEquals(ErrorMapping.OffsetOutOfRangeCode, ErrorMapping.valueOf(new OffsetOutOfRangeException()));
+        assertEquals(ErrorMapping.InvalidFetchSizeCode, ErrorMapping.valueOf(new InvalidMessageSizeException()));
+        assertEquals(ErrorMapping.UnkonwCode, ErrorMapping.valueOf(new NullPointerException()));
     }
 
+    /**
+     * Test method for {@link com.sohu.jafka.common.ErrorMapping#valueOf(short)}.
+     */
+    @Test
+    public void testValueOfShort() {
+        assertEquals(ErrorMapping.UnkonwCode, ErrorMapping.valueOf((short) 100));
+        for (ErrorMapping em : ErrorMapping.values()) {
+            assertEquals(em, ErrorMapping.valueOf(em.code));
+        }
+    }
 }

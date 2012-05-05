@@ -21,12 +21,12 @@ package com.sohu.jafka.api;
  * Mark a calculable object(request/message/data...)
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-20
+ * @since 1.0
  */
 public interface ICalculable {
 
     /**
-     * get the size of object(in bytes)
+     * get the size of current object(in bytes)
      * 
      * @return the object size
      */

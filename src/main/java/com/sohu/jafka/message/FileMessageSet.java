@@ -17,7 +17,6 @@
 
 package com.sohu.jafka.message;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -35,11 +34,10 @@ import com.sohu.jafka.utils.Time;
 import com.sohu.jafka.utils.Utils;
 
 /**
- * An on-disk message set. The set can be opened either mutably or
- * immutably. Mutation attempts will fail on an immutable message set. An
- * optional limit and offset can be applied to the message set which will
- * control the offset into the file and the effective length into the file
- * from which messages will be read
+ * An on-disk message set. The set can be opened either mutably or immutably. Mutation attempts
+ * will fail on an immutable message set. An optional limit and offset can be applied to the
+ * message set which will control the offset into the file and the effective length into the
+ * file from which messages will be read
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 2012-4-5
@@ -76,7 +74,8 @@ public class FileMessageSet extends MessageSet {
                 // set the file position to the end of the file for appending messages
                 long startMs = System.currentTimeMillis();
                 long truncated = recover();
-                logger.info("Recovery succeeded in " + (System.currentTimeMillis() - startMs) / 1000 + " seconds. " + truncated + " bytes truncated.");
+                logger.info("Recovery succeeded in " + (System.currentTimeMillis() - startMs) / 1000 + " seconds. "
+                        + truncated + " bytes truncated.");
             } else {
                 setSize.set(channel.size());
                 setHighWaterMark.set(getSizeInBytes());
@@ -160,6 +159,14 @@ public class FileMessageSet extends MessageSet {
         return channel.transferTo(offset + writeOffset, Math.min(maxSize, getSizeInBytes()), destChannel);
     }
 
+    /**
+     * read message from file
+     * 
+     * @param readOffset data offset
+     * @param size max data size
+     * @return messages sharding data with file log
+     * @throws IOException reading file failed
+     */
     public MessageSet read(long readOffset, long size) throws IOException {
         return new FileMessageSet(channel, this.offset + readOffset, //
                 Math.min(this.offset + readOffset + size, highWaterMark()), false, new AtomicBoolean(false));
@@ -207,8 +214,8 @@ public class FileMessageSet extends MessageSet {
     }
 
     /**
-     * Recover log up to the last complete entry. Truncate off any bytes
-     * from any incomplete messages written
+     * Recover log up to the last complete entry. Truncate off any bytes from any incomplete
+     * messages written
      * 
      * @throws IOException
      */
@@ -233,8 +240,8 @@ public class FileMessageSet extends MessageSet {
     }
 
     /**
-     * Read, validate, and discard a single message, returning the next
-     * valid offset, and the message being validated
+     * Read, validate, and discard a single message, returning the next valid offset, and the
+     * message being validated
      * 
      * @throws IOException
      */
