@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sohu.jafka.common.annotations.NotThreadSafe;
-import com.sohu.jafka.server.MessageSetSend;
 
 /**
  * A set of message sets prefixed by size

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.server;
+package com.sohu.jafka.network;
 
 
 import java.io.IOException;
@@ -24,7 +24,6 @@ import java.nio.channels.GatheringByteChannel;
 
 import com.sohu.jafka.common.ErrorMapping;
 import com.sohu.jafka.message.MessageSet;
-import com.sohu.jafka.network.AbstractSend;
 
 /**
  * A zero-copy message response that writes the bytes needed directly from
@@ -42,9 +41,9 @@ public class MessageSetSend extends AbstractSend {
     private final ByteBuffer header = ByteBuffer.allocate(6);
 
     //
-    final MessageSet messages;
+    public final MessageSet messages;
 
-    final ErrorMapping errorCode;
+    public final ErrorMapping errorCode;
 
     public MessageSetSend(MessageSet messages, ErrorMapping errorCode) {
         super();
