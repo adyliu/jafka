@@ -23,7 +23,7 @@ import com.sohu.jafka.producer.async.QueueItem;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-11
+ * @since 1.0
  */
 public class AsyncProducerQueueSizeStats<T> implements AsyncProducerQueueSizeStatsMBean, IMBeanName {
 

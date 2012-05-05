@@ -39,7 +39,7 @@ import com.sohu.jafka.utils.Utils;
  * file from which messages will be read
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class FileMessageSet extends MessageSet {
 

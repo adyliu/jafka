@@ -21,7 +21,7 @@ package com.sohu.jafka.common;
  * Indicates a producer pool initialization problem
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class UnavaliableProducerException extends RuntimeException {
 

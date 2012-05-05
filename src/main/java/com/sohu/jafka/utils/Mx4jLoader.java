@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * -Dmx4jenable=true
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  * @see org.apache.cassandra.utils.Mx4jTool
  */
 public class Mx4jLoader {

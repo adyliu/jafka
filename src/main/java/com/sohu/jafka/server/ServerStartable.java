@@ -26,7 +26,7 @@ import com.sohu.jafka.producer.ProducerConfig;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class ServerStartable {
 

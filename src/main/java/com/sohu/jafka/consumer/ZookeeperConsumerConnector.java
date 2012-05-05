@@ -134,7 +134,7 @@ import com.sohu.jafka.utils.zookeeper.ZkUtils;
  * </p>
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-13
+ * @since 1.0
  */
 public class ZookeeperConsumerConnector implements ConsumerConnector {
 

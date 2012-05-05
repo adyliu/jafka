@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
  * A scheduler for running jobs in the background
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class Scheduler {
 

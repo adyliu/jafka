@@ -21,7 +21,7 @@ package com.sohu.jafka.common;
 /**
  * If we don't know what else it is, call it this
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class UnkonwnException extends RuntimeException{
     private static final long serialVersionUID = 1L;

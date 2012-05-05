@@ -26,7 +26,7 @@ import com.sohu.jafka.message.CompressionCodec;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public final class CompressionFactory {
 

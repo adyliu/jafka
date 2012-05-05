@@ -27,7 +27,7 @@ import com.sohu.jafka.network.Request;
  * Multi fetch request
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class MultiFetchRequest implements Request {
 

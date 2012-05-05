@@ -27,7 +27,7 @@ import com.sohu.jafka.cluster.Partition;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public interface BrokerPartitionInfo extends Closeable{
 

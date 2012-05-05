@@ -22,7 +22,7 @@ import com.sohu.jafka.console.GetOffsetShell;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-23
+ * @since 1.0
  */
 public class GetOffsetShellDemo {
 

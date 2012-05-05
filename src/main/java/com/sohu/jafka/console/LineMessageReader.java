@@ -27,7 +27,7 @@ import java.util.Properties;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-23
+ * @since 1.0
  */
 public class LineMessageReader implements MessageReader {
 

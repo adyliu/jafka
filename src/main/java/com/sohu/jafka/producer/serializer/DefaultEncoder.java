@@ -21,7 +21,7 @@ import com.sohu.jafka.message.Message;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-10
+ * @since 1.0
  */
 public class DefaultEncoder implements Encoder<Message> {
 

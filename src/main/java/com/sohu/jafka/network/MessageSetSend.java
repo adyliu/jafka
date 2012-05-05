@@ -30,7 +30,7 @@ import com.sohu.jafka.message.MessageSet;
  * the file wholly in kernel space
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class MessageSetSend extends AbstractSend {
 

@@ -21,7 +21,7 @@ package com.sohu.jafka.common;
  * Indicates that client is sending event to a closed queue
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-11
+ * @since 1.0
  */
 public class QueueClosedException extends RuntimeException {
 

@@ -21,7 +21,7 @@ package com.sohu.jafka.common;
 /**
  * Indicates that the given config parameter has invalid value
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class InvalidConfigException extends RuntimeException {
 

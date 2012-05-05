@@ -24,7 +24,7 @@ import com.sohu.jafka.common.annotations.ClientSide;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @ClientSide
 public class DefaultPartitioner<T> implements Partitioner<T> {

@@ -21,7 +21,7 @@ package com.sohu.jafka.common;
 /**Thrown when a request is made for broker but no brokers with that topic
  * exist.
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class NoBrokersForPartitionException extends RuntimeException {
 

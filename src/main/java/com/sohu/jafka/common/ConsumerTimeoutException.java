@@ -20,7 +20,7 @@ package com.sohu.jafka.common;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-16
+ * @since 1.0
  */
 public class ConsumerTimeoutException extends RuntimeException {
 

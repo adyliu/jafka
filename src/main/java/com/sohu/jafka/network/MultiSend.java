@@ -26,7 +26,7 @@ import java.util.List;
  * A set of composite sends, sent one after another
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public abstract class MultiSend<S extends Send> extends AbstractSend {
 

@@ -22,7 +22,7 @@ package com.sohu.jafka.message;
  * length (whatever that happens to be)
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class MessageLengthException extends RuntimeException {
 

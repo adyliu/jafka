@@ -50,7 +50,7 @@ import com.sohu.jafka.utils.ZKConfig;
  * Message producer
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @ClientSide
 public class Producer<K, V> implements Callback, Closeable {

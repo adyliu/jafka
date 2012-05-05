@@ -20,7 +20,7 @@ package demo.client;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-20
+ * @since 1.0
  */
 public class SizeDemo {
 

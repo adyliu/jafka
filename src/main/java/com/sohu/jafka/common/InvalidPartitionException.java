@@ -21,7 +21,7 @@ package com.sohu.jafka.common;
  * Indicates that the partition id is not between 0 and numPartitions-1
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class InvalidPartitionException extends RuntimeException {
 

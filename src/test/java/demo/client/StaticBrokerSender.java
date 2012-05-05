@@ -26,7 +26,7 @@ import com.sohu.jafka.producer.serializer.StringEncoder;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-11
+ * @since 1.0
  */
 public class StaticBrokerSender {
 

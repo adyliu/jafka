@@ -31,7 +31,7 @@ import com.sohu.jafka.utils.Closer;
 /**
  * Thread that accepts and configures new connections. There is only need for one of these
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 class Acceptor extends AbstractServerThread {
 

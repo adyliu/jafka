@@ -30,7 +30,7 @@ import com.sohu.jafka.message.ByteBufferMessageSet;
 /**
  * a response with mulit-data
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class MultiFetchResponse implements Iterable<ByteBufferMessageSet> {
 

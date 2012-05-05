@@ -23,7 +23,7 @@ import java.nio.channels.GatheringByteChannel;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public abstract class AbstractSend extends AbstractTransmission implements Send {
 

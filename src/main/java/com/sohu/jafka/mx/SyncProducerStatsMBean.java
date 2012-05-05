@@ -21,7 +21,7 @@ package com.sohu.jafka.mx;
  * file{producer/SyncProducer.scala#SyncProducerStatsMBean}
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-10
+ * @since 1.0
  */
 public interface SyncProducerStatsMBean {
 

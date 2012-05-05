@@ -26,7 +26,7 @@ import com.sohu.jafka.producer.serializer.Decoder;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @ClientSide
 public class MessageStream<T> implements Iterable<T> {

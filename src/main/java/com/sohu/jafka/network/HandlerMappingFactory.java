@@ -22,7 +22,7 @@ import com.sohu.jafka.api.RequestKeys;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public interface HandlerMappingFactory {
 

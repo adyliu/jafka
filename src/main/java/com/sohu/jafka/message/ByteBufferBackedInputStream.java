@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class ByteBufferBackedInputStream extends InputStream {
 

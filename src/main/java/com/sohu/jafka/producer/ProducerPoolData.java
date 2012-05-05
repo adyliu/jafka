@@ -24,7 +24,7 @@ import com.sohu.jafka.cluster.Partition;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-11
+ * @since 1.0
  */
 public class ProducerPoolData<V> {
 

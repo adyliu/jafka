@@ -37,7 +37,7 @@ import com.sohu.jafka.producer.serializer.Encoder;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class DefaultEventHandler<T> implements EventHandler<T> {
 

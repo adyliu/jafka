@@ -35,7 +35,7 @@ import com.sohu.jafka.utils.ImmutableMap;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-19
+ * @since 1.0
  */
 public class ZookeeperConsumerDemo {
 

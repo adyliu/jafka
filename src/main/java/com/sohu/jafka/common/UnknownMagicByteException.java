@@ -21,7 +21,7 @@ package com.sohu.jafka.common;
 /**
  * Indicates the client has requested a range no longer available on the server
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class UnknownMagicByteException extends RuntimeException {
 

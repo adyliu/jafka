@@ -39,7 +39,7 @@ import com.sohu.jafka.mx.SocketServerStats;
  * of these running in parallel each of which has its own selectors
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public class Processor extends AbstractServerThread {
 

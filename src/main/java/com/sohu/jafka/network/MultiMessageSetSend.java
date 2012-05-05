@@ -27,7 +27,7 @@ import com.sohu.jafka.common.annotations.NotThreadSafe;
  * A set of message sets prefixed by size
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @NotThreadSafe
 public class MultiMessageSetSend extends MultiSend<Send> {

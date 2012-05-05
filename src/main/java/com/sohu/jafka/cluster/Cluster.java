@@ -25,7 +25,7 @@ import java.util.Map;
  * The set of active brokers in the cluster
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class Cluster {
 

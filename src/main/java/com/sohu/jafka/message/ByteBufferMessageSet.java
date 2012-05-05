@@ -40,7 +40,7 @@ import com.sohu.jafka.utils.IteratorTemplate;
  * serialization format. Producers will use this method.
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class ByteBufferMessageSet extends MessageSet{
 

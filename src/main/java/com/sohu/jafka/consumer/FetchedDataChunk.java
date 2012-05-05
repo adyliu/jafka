@@ -21,7 +21,7 @@ import com.sohu.jafka.message.ByteBufferMessageSet;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-13
+ * @since 1.0
  */
 public class FetchedDataChunk {
 

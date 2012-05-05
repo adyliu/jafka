@@ -29,7 +29,7 @@ import com.sohu.jafka.producer.serializer.Decoder;
  * Main interface for consumer
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public interface ConsumerConnector extends Closeable{
 

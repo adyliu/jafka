@@ -21,7 +21,7 @@ import java.util.Properties;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-10
+ * @since 1.0
  */
 public interface AsyncProducerConfigShared {
 

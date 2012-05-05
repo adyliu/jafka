@@ -40,7 +40,7 @@ import com.sohu.jafka.utils.zookeeper.ZkUtils;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
 

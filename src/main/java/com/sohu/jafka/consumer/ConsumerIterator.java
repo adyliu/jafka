@@ -34,7 +34,7 @@ import com.sohu.jafka.utils.IteratorTemplate;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class ConsumerIterator<T> extends IteratorTemplate<T> {
 

@@ -25,7 +25,7 @@ import java.nio.channels.GatheringByteChannel;
  * Message set helper functions
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public abstract class MessageSet implements Iterable<MessageAndOffset> {
 

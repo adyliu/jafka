@@ -20,7 +20,7 @@ package com.sohu.jafka.common.annotations;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-10
+ * @since 1.0
  */
 public @interface ServerSide {
 

@@ -21,7 +21,7 @@ package com.sohu.jafka.message;
 /**
  * Indicates that a message failed its checksum and is corrupt
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 public class InvalidMessageException extends RuntimeException {
 

@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
  * an useful tools to close some streams or file descriptions
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public final class Closer {
 

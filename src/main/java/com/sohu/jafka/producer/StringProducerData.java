@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-19
+ * @since 1.0
  */
 public class StringProducerData extends ProducerData<String, String> {
 

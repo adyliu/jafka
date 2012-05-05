@@ -29,7 +29,7 @@ import joptsimple.OptionSpec;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-23
+ * @since 1.0
  */
 public class GetOffsetShell {
 

@@ -19,7 +19,7 @@ package com.sohu.jafka.mx;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-9
+ * @since 1.0
  */
 public interface LogStatsMBean {
 

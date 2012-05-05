@@ -42,7 +42,7 @@ import com.sohu.jafka.utils.Utils;
  * </p>
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-5
+ * @since 1.0
  */
 @ClientSide
 @ServerSide

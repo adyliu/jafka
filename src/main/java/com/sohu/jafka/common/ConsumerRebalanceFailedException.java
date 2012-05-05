@@ -22,7 +22,7 @@ package com.sohu.jafka.common;
  * exist.
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public class ConsumerRebalanceFailedException extends RuntimeException {
 
