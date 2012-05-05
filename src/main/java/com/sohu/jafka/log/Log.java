@@ -48,18 +48,20 @@ import com.sohu.jafka.utils.Time;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * a log is a message sets with more than one files.
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class Log  implements Closeable{
+public class Log implements Closeable {
 
     private final Logger logger = Logger.getLogger(Log.class);
 
     private static final String FileSuffix = ".jafka";
 
-    final File dir;
+    public final File dir;
 
-    private final long maxSize;
+    private final RollingStrategy rollingStategy;
 
     final int flushInterval;
 
@@ -78,10 +80,10 @@ public class Log  implements Closeable{
 
     private final SegmentList segments;
 
-    public Log(File dir, long maxSize, int flushInterval, boolean needRecovery) throws IOException {
+    public Log(File dir, RollingStrategy rollingStategy, int flushInterval, boolean needRecovery) throws IOException {
         super();
         this.dir = dir;
-        this.maxSize = maxSize;
+       this.rollingStategy = rollingStategy;
         this.flushInterval = flushInterval;
         this.needRecovery = needRecovery;
         this.name = dir.getName();
@@ -128,14 +130,14 @@ public class Log  implements Closeable{
         LogSegment last = accum.remove(accum.size() - 1);
         last.getMessageSet().close();
         logger.info("Loading the last segment " + last.getFile().getAbsolutePath() + " in mutable mode, recovery " + needRecovery);
-        LogSegment mutable = new LogSegment(last.getFile(), new FileMessageSet(last.getFile(), true, new AtomicBoolean(needRecovery)), last.start());
+        LogSegment mutable = new LogSegment(last.getFile(), new FileMessageSet(last.getFile(), true, new AtomicBoolean(
+                needRecovery)), last.start());
         accum.add(mutable);
-        return new SegmentList(accum);
+        return new SegmentList(name,accum);
     }
 
     /**
-     * Check that the ranges and sizes add up, otherwise we have lost some
-     * data somewhere
+     * Check that the ranges and sizes add up, otherwise we have lost some data somewhere
      */
     private void validateSegments(List<LogSegment> segments) {
         synchronized (lock) {
@@ -143,8 +145,8 @@ public class Log  implements Closeable{
                 LogSegment curr = segments.get(i);
                 LogSegment next = segments.get(i + 1);
                 if (curr.start() + curr.size() != next.start()) {
-                    throw new IllegalStateException("The following segments don't validate: " + curr.getFile().getAbsolutePath() + ", "
-                            + next.getFile().getAbsolutePath());
+                    throw new IllegalStateException("The following segments don't validate: " + curr.getFile()
+                            .getAbsolutePath() + ", " + next.getFile().getAbsolutePath());
                 }
             }
         }
@@ -203,8 +205,8 @@ public class Log  implements Closeable{
         // truncate the message set's buffer upto validbytes, before appending it to the on-disk log
         ByteBuffer validByteBuffer = messages.getBuffer().duplicate();
         long messageSetValidBytes = messages.getValidBytes();
-        if (messageSetValidBytes > Integer.MAX_VALUE || messageSetValidBytes < 0) throw new InvalidMessageSizeException("Illegal length of message set "
-                + messageSetValidBytes + " Message set cannot be appended to log. Possible causes are corrupted produce requests");
+        if (messageSetValidBytes > Integer.MAX_VALUE || messageSetValidBytes < 0) throw new InvalidMessageSizeException(
+                "Illegal length of message set " + messageSetValidBytes + " Message set cannot be appended to log. Possible causes are corrupted produce requests");
 
         validByteBuffer.limit((int) messageSetValidBytes);
         ByteBufferMessageSet validMessages = new ByteBufferMessageSet(validByteBuffer);
@@ -215,7 +217,7 @@ public class Log  implements Closeable{
                 LogSegment lastSegment = segments.getLastView();
                 long written = lastSegment.getMessageSet().append(validMessages);
                 if (logger.isDebugEnabled()) {
-                    logger.debug(lastSegment.getName()+" save " + numberOfMessages + " messages, bytes "+written);
+                    logger.debug(lastSegment.getName() + " save " + numberOfMessages + " messages, bytes " + written);
                 }
                 maybeFlush(numberOfMessages);
                 maybeRoll(lastSegment);
@@ -230,11 +232,12 @@ public class Log  implements Closeable{
     }
 
     /**
-     * @param lastSegment
-     * @throws IOException
+     * check the log whether needing rolling
+     * @param lastSegment the last file segment
+     * @throws IOException any file operation exception
      */
     private void maybeRoll(LogSegment lastSegment) throws IOException {
-        if (lastSegment.getMessageSet().getSizeInBytes() > maxSize) {
+        if (rollingStategy.check(lastSegment)) {
             roll();
         }
     }
@@ -244,8 +247,11 @@ public class Log  implements Closeable{
             long newOffset = nextAppendOffset();
             File newFile = new File(dir, nameFromOffset(newOffset));
             if (newFile.exists()) {
-                logger.warn("newly rolled logsegment " + newFile.getName() + " already exists, deleting it frist");
-                newFile.delete();
+                logger.warn("newly rolled logsegment " + newFile.getName() + " already exists, deleting it first");
+                if(!newFile.delete()) {
+                    logger.error("delete exist file(who will be created for rolling over) failed: "+newFile);
+                    throw new RuntimeException("delete exist file(who will be created for rolling over) failed: "+newFile);
+                }
             }
             logger.debug("Rolling log '" + name + "' to " + newFile.getName());
             segments.append(new LogSegment(newFile, new FileMessageSet(newFile, true), newOffset));
@@ -281,7 +287,8 @@ public class Log  implements Closeable{
         if (unflushed.get() == 0) return;
 
         synchronized (lock) {
-            logger.debug("Flushing log '" + name + "' last flushed: " + getLastFlushedTime() + " current time: " + System.currentTimeMillis());
+            logger.debug("Flushing log '" + name + "' last flushed: " + getLastFlushedTime() + " current time: " + System
+                    .currentTimeMillis());
             segments.getLastView().getMessageSet().flush();
             unflushed.set(0);
             lastflushedTime.set(System.currentTimeMillis());
@@ -290,10 +297,9 @@ public class Log  implements Closeable{
 
     ///////////////////////////////////////////////////////////////////////
     /**
-     * Find a given range object in a list of ranges by a value in that
-     * range. Does a binary search over the ranges but instead of checking
-     * for equality looks within the range. Takes the array size as an
-     * option in case the array grows while searching happens
+     * Find a given range object in a list of ranges by a value in that range. Does a binary
+     * search over the ranges but instead of checking for equality looks within the range.
+     * Takes the array size as an option in case the array grows while searching happens
      * 
      * TODO: This should move into SegmentList.scala
      */
@@ -330,9 +336,8 @@ public class Log  implements Closeable{
     }
 
     /**
-     * Make log segment file name from offset bytes. All this does is pad
-     * out the offset number with zeros so that ls sorts the files
-     * numerically
+     * Make log segment file name from offset bytes. All this does is pad out the offset number
+     * with zeros so that ls sorts the files numerically
      */
     public static String nameFromOffset(long offset) {
         NumberFormat nf = NumberFormat.getInstance();
@@ -410,7 +415,8 @@ public class Log  implements Closeable{
                     ls.start(), ls.getFile().lastModified()));
         }
         if (lastSegmentNotEmpty) {
-            offsetTimes.add(new KV<Long, Long>(lastLogSegent.start() + lastLogSegent.getMessageSet().highWaterMark(), Time.SystemTime.milliseconds()));
+            offsetTimes.add(new KV<Long, Long>(lastLogSegent.start() + lastLogSegent.getMessageSet().highWaterMark(),
+                    Time.SystemTime.milliseconds()));
         }
         int startIndex = -1;
         final long requestTime = offsetRequest.getTime();

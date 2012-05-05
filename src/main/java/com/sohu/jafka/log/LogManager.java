@@ -49,9 +49,9 @@ import com.sohu.jafka.utils.Utils;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
-public class LogManager implements PartitionChooser,Closeable {
+public class LogManager implements PartitionChooser, Closeable {
 
     final Config config;
 
@@ -71,8 +71,6 @@ public class LogManager implements PartitionChooser,Closeable {
     final int numPartitions;
 
     final File logDir;
-
-    final long maxSize;
 
     final int flushInterval;
 
@@ -103,12 +101,14 @@ public class LogManager implements PartitionChooser,Closeable {
 
     private final Map<String, Integer> topicPartitionsMap;
 
+    private RollingStrategy rollingStategy;
+
     public LogManager(Config config, //
             Scheduler scheduler, //
             Time time, //
             long logCleanupIntervalMs, //
             long logCleanupDefaultAgeMs, //
-            boolean needRecovery) throws IOException {
+            boolean needRecovery) {
         super();
         this.config = config;
         this.scheduler = scheduler;
@@ -119,7 +119,6 @@ public class LogManager implements PartitionChooser,Closeable {
         //
         this.logDir = Utils.getCanonicalFile(new File(config.getLogDir()));
         this.numPartitions = config.getNumPartitions();
-        this.maxSize = config.getLogFileSize();
         this.flushInterval = config.getFlushInterval();
         this.topicPartitionsMap = config.getTopicPartitionsMap();
         this.startupLatch = config.getEnableZookeeper() ? new CountDownLatch(1) : null;
@@ -127,6 +126,19 @@ public class LogManager implements PartitionChooser,Closeable {
         this.logRetentionSize = config.getLogRetentionSize();
         this.logRetentionMSMap = getLogRetentionMSMap(config.getLogRetentionHoursMap());
         //
+    }
+
+    /**
+     * @param rollingStategy the rollingStategy to set
+     */
+    public void setRollingStategy(RollingStrategy rollingStategy) {
+        this.rollingStategy = rollingStategy;
+    }
+
+    public void load() throws IOException {
+        if (this.rollingStategy == null) {
+            this.rollingStategy = new FixedSizeRollingStategy(config.getLogFileSize());
+        }
         if (!logDir.exists()) {
             logger.info("No log directory found, creating '" + logDir.getAbsolutePath() + "'");
             logDir.mkdirs();
@@ -141,7 +153,7 @@ public class LogManager implements PartitionChooser,Closeable {
                     logger.warn("Skipping unexplainable file '" + dir.getAbsolutePath() + "'--should it be there?");
                 } else {
                     logger.info("Loading log from " + dir.getAbsolutePath());
-                    Log log = new Log(dir, maxSize, flushInterval, needRecovery);
+                    Log log = new Log(dir, this.rollingStategy, flushInterval, needRecovery);
                     KV<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
                     logs.putIfNotExists(topicPartion.k, new Pool<Integer, Log>());
                     Pool<Integer, Log> parts = logs.get(topicPartion.k);
@@ -186,8 +198,6 @@ public class LogManager implements PartitionChooser,Closeable {
                 }
             }, true).start();
         }
-        //
-
     }
 
     private Map<String, Long> getLogRetentionMSMap(Map<String, Integer> logRetentionHourMap) {
@@ -227,16 +237,16 @@ public class LogManager implements PartitionChooser,Closeable {
             Log log = iter.next();
             total += cleanupExpiredSegments(log) + cleanupSegmentsToMaintainSize(log);
         }
-        if(total >0) {
+        if (total > 0) {
             logger.warn("Log cleanup completed. " + total + " files deleted in " + (time.milliseconds() - startMs) / 1000 + " seconds");
-        }else {
+        } else {
             logger.trace("Log cleanup completed. " + total + " files deleted in " + (time.milliseconds() - startMs) / 1000 + " seconds");
         }
     }
 
     /**
-     * Runs through the log removing segments until the size of the log is
-     * at least logRetentionSize bytes in size
+     * Runs through the log removing segments until the size of the log is at least
+     * logRetentionSize bytes in size
      * 
      * @throws IOException
      */
@@ -274,8 +284,7 @@ public class LogManager implements PartitionChooser,Closeable {
     }
 
     /**
-     * Attemps to delete all provided segments from a log and returns how
-     * many it was able to
+     * Attemps to delete all provided segments from a log and returns how many it was able to
      */
     private int deleteSegments(Log log, List<LogSegment> segments) {
         int total = 0;
@@ -293,7 +302,8 @@ public class LogManager implements PartitionChooser,Closeable {
                     total += 1;
                 }
             } finally {
-                logger.warn(String.format("DELETE_LOG[%s] %s => %s", log.name, segment.getFile().getAbsolutePath(), deleted));
+                logger.warn(String.format("DELETE_LOG[%s] %s => %s", log.name, segment.getFile().getAbsolutePath(),
+                        deleted));
             }
         }
         return total;
@@ -331,7 +341,8 @@ public class LogManager implements PartitionChooser,Closeable {
                 }
                 final String flushLogFormat = "[%s] flush interval %d, last flushed %d, need flush? %s";
                 final boolean needFlush = timeSinceLastFlush >= logFlushInterval.intValue();
-                logger.trace(String.format(flushLogFormat, log.getTopicName(), logFlushInterval, log.getLastFlushedTime(), needFlush));
+                logger.trace(String.format(flushLogFormat, log.getTopicName(), logFlushInterval,
+                        log.getLastFlushedTime(), needFlush));
                 if (needFlush) {
                     log.flush();
                 }
@@ -453,7 +464,7 @@ public class LogManager implements PartitionChooser,Closeable {
         synchronized (logCreationLock) {
             File d = new File(logDir, topic + "-" + partition);
             d.mkdirs();
-            return new Log(d, maxSize, flushInterval, false);
+            return new Log(d, this.rollingStategy, flushInterval, false);
         }
     }
 

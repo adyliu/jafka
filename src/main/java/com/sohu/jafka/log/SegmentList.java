@@ -18,35 +18,40 @@
 package com.sohu.jafka.log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * the log segments(all readable messages and the last writeable file)
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 2012-4-6
+ * @since 1.0
  */
 public class SegmentList {
 
-    final AtomicReference<List<LogSegment>> contents;
+    private final AtomicReference<List<LogSegment>> contents;
+
+    private final String name;
 
     /**
-     * @param accum
+     * create the messages segments
+     * 
+     * @param name the message topic name
+     * @param segments exist segments
      */
-
-    public SegmentList(List<LogSegment> accum) {
-        contents = new AtomicReference<List<LogSegment>>(accum);
+    public SegmentList(final String name, List<LogSegment> segments) {
+        this.name = name;
+        contents = new AtomicReference<List<LogSegment>>(segments);
     }
 
     /**
-     * Append the given items to the end of the list
+     * Append the given item to the end of the list
      */
-    public void append(LogSegment... ts) {
+    public void append(LogSegment segment) {
         while (true) {
             List<LogSegment> curr = contents.get();
-            List<LogSegment> updated = new ArrayList<LogSegment>(curr.size() + ts.length);
-            updated.addAll(curr);
-            updated.addAll(Arrays.asList(ts));
+            List<LogSegment> updated = new ArrayList<LogSegment>(curr);
+            updated.add(segment);
             if (contents.compareAndSet(curr, updated)) {
                 return;
             }
@@ -55,6 +60,9 @@ public class SegmentList {
 
     /**
      * Delete the first n items from the list
+     * 
+     * @param newStart the logsegment who's index smaller than newStart will be deleted.
+     * @return the deleted segment
      */
     public List<LogSegment> trunc(int newStart) {
         if (newStart < 0) {
@@ -63,22 +71,35 @@ public class SegmentList {
         while (true) {
             List<LogSegment> curr = contents.get();
             int newLength = Math.max(curr.size() - newStart, 0);
-            List<LogSegment> updatedList = new ArrayList<LogSegment>(curr.subList(Math.min(newStart, curr.size() - 1), curr.size()));
+            List<LogSegment> updatedList = new ArrayList<LogSegment>(curr.subList(Math.min(newStart, curr.size() - 1),
+                    curr.size()));
             if (contents.compareAndSet(curr, updatedList)) {
                 return curr.subList(0, curr.size() - newLength);
             }
         }
     }
 
+    /**
+     * get the last segment at the moment
+     * 
+     * @return the last segment
+     */
     public LogSegment getLastView() {
         List<LogSegment> views = getView();
         return views.get(views.size() - 1);
     }
 
+    /**
+     * get all segments at the moment
+     * 
+     * @return all segments
+     */
     public List<LogSegment> getView() {
         return contents.get();
     }
 
-    public static final int MaxAttempts = 20;
-
+    @Override
+    public String toString() {
+        return "[" + name + "] " + getView();
+    }
 }
