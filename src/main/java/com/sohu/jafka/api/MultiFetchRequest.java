@@ -38,7 +38,7 @@ public class MultiFetchRequest implements Request {
     }
 
     public RequestKeys getRequestKey() {
-        return RequestKeys.MultiFetch;
+        return RequestKeys.MULTIFETCH;
     }
 
     /**
@@ -57,7 +57,7 @@ public class MultiFetchRequest implements Request {
     }
 
     public void writeTo(ByteBuffer buffer) {
-        if (fetches.size() > Short.MAX_VALUE) {
+        if (fetches.size() > Short.MAX_VALUE) {//max 32767
             throw new IllegalArgumentException("Number of requests in MultiFetchRequest exceeds " + Short.MAX_VALUE + ".");
         }
         buffer.putShort((short) fetches.size());

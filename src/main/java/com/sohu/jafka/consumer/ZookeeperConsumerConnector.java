@@ -568,10 +568,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             // If first time starting a consumer, set the initial offset based on the config
             long offset = 0L;
             if (offsetString == null) {
-                if (OffsetRequest.SmallestTimeString.equals(config.getAutoOffsetReset())) {
-                    earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.EarliestTime);
-                } else if (OffsetRequest.LargestTimeString.equals(config.getAutoOffsetReset())) {
-                    earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.LatestTime);
+                if (OffsetRequest.SMALLES_TTIME_STRING.equals(config.getAutoOffsetReset())) {
+                    earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.EARLIES_TTIME);
+                } else if (OffsetRequest.LARGEST_TIME_STRING.equals(config.getAutoOffsetReset())) {
+                    earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.LATES_TTIME);
                 } else {
                     throw new InvalidConfigException("Wrong value in autoOffsetReset in ConsumerConfig");
                 }

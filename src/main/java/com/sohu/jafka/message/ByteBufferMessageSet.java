@@ -44,12 +44,11 @@ import com.sohu.jafka.utils.IteratorTemplate;
  */
 public class ByteBufferMessageSet extends MessageSet{
 
-    final ByteBuffer buffer;
-    final long initialOffset;
-    final ErrorMapping errorCode;
+    private final ByteBuffer buffer;
+    private final long initialOffset;
+    private final ErrorMapping errorCode;
     //
-    long validByteCount  = -1L;
-    long shallowValidByteCount = -1L;
+    private long shallowValidByteCount = -1L;
     //
     private long validBytes;
     public ByteBufferMessageSet(ByteBuffer buffer) {
@@ -68,8 +67,12 @@ public class ByteBufferMessageSet extends MessageSet{
     public ByteBufferMessageSet(Message...messages) {
         this(CompressionCodec.NoCompressionCodec,messages);
     }
-    /**
-     * @return the validBytes
+    /** get valid bytes of buffer
+     * <p>
+     * The size of buffer is equal or larger than the size of valid messages.
+     * The last message maybe is not integrate.
+     * </p>
+     * @return the validBytes 
      */
     public long getValidBytes() {
         return validBytes;
@@ -197,7 +200,8 @@ public class ByteBufferMessageSet extends MessageSet{
         return buffer.limit();
     }
     /**
-     * @param maxMessageSize
+     * check max size of each message
+     * @param maxMessageSize the max size for each message
      */
     public void verifyMessageSize(int maxMessageSize) {
        Iterator<MessageAndOffset> shallowIter =  internalIterator(true);

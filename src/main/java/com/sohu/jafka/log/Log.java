@@ -403,7 +403,7 @@ public class Log implements Closeable {
         }
     }
 
-    //TODO: need to modify
+   //FIXME: why more than one offset???
     public List<Long> getOffsetsBefore(OffsetRequest offsetRequest) {
         List<LogSegment> logSegments = segments.getView();
         final LogSegment lastLogSegent = segments.getLastView();
@@ -418,10 +418,10 @@ public class Log implements Closeable {
                     System.currentTimeMillis()));
         }
         int startIndex = -1;
-        final long requestTime = offsetRequest.getTime();
-        if (requestTime == OffsetRequest.LatestTime) {
+        final long requestTime = offsetRequest.time;
+        if (requestTime == OffsetRequest.LATES_TTIME) {
             startIndex = offsetTimes.size() - 1;
-        } else if (requestTime == OffsetRequest.EarliestTime) {
+        } else if (requestTime == OffsetRequest.EARLIES_TTIME) {
             startIndex = 0;
         } else {
             boolean isFound = false;
@@ -432,7 +432,7 @@ public class Log implements Closeable {
                 }
             }
         }
-        final int retSize = Math.min(offsetRequest.getMaxNumOffsets(), startIndex + 1);
+        final int retSize = Math.min(offsetRequest.maxNumOffsets, startIndex + 1);
         final List<Long> ret = new ArrayList<Long>(retSize);
         for (int j = 0; j < retSize; j++) {
             ret.add(offsetTimes.get(startIndex).k);

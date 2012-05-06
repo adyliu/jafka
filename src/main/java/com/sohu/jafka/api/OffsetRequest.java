@@ -26,6 +26,12 @@ import com.sohu.jafka.network.Request;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * offset request
+ * <p>
+ * Jafka will returns all offsets earlier than given time with max number limit. The fist
+ * offset of result is the biggest and the the last is the smallest.
+ * </p>
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -33,23 +39,44 @@ import com.sohu.jafka.utils.Utils;
 @ServerSide
 public class OffsetRequest implements Request {
 
-    public static final String SmallestTimeString = "smallest";
+    public static final String SMALLES_TTIME_STRING = "smallest";
 
-    public static final String LargestTimeString = "largest";
-
-    public static final long LatestTime = -1L;
-
-    public static final long EarliestTime = -2L;
+    public static final String LARGEST_TIME_STRING = "largest";
+    /**
+     * reading the latest offset
+     */
+    public static final long LATES_TTIME = -1L;
+    /**
+     * reading the earilest offset
+     */
+    public static final long EARLIES_TTIME = -2L;
 
     ///////////////////////////////////////////////////////////////////////
-    private String topic;
+    /**
+     * message topic
+     */
+    public String topic;
+    /**
+     * topic partition,default value is 0
+     */
+    public int partition;
+    /**
+     * the earliest time of messages(unix milliseconds time)
+     */
+    public long time;
+    /**
+     * number of offsets
+     */
+    public int maxNumOffsets;
 
-    private int partition;
-
-    private long time;
-
-    private int maxNumOffsets;
-
+    /**
+     * create a offset request
+     * 
+     * @param topic topic name
+     * @param partition partition id
+     * @param time the log file created time
+     * @param maxNumOffsets the number of offsets
+     */
     public OffsetRequest(String topic, int partition, long time, int maxNumOffsets) {
         this.topic = topic;
         this.partition = partition;
@@ -58,35 +85,7 @@ public class OffsetRequest implements Request {
     }
 
     public RequestKeys getRequestKey() {
-        return RequestKeys.Offsets;
-    }
-
-    /**
-     * @return the maxNumOffsets
-     */
-    public int getMaxNumOffsets() {
-        return maxNumOffsets;
-    }
-
-    /**
-     * @return the time
-     */
-    public long getTime() {
-        return time;
-    }
-
-    /**
-     * @return the topic
-     */
-    public String getTopic() {
-        return topic;
-    }
-
-    /**
-     * @return the partition
-     */
-    public int getPartition() {
-        return partition;
+        return RequestKeys.OFFSETS;
     }
 
     public void writeTo(ByteBuffer buffer) {

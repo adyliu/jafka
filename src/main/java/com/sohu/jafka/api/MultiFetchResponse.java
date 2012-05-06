@@ -17,10 +17,8 @@
 
 package com.sohu.jafka.api;
 
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,13 +27,26 @@ import com.sohu.jafka.message.ByteBufferMessageSet;
 
 /**
  * a response with mulit-data
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public class MultiFetchResponse implements Iterable<ByteBufferMessageSet> {
 
-    private final Collection<ByteBufferMessageSet> messageSets;
+    private final List<ByteBufferMessageSet> messageSets;
 
+    /**
+     * create a multi-response
+     * <p>
+     * buffer format: <b> size+errorCode(short)+payload+size+errorCode(short)+payload+... </b>
+     * <br/>
+     * size = 2(short)+length(payload)
+     * </p>
+     * 
+     * @param buffer the whole data buffer
+     * @param numSets response count
+     * @param offsets message offset for each response
+     */
     public MultiFetchResponse(ByteBuffer buffer, int numSets, List<Long> offsets) {
         super();
         this.messageSets = new ArrayList<ByteBufferMessageSet>();
@@ -45,6 +56,7 @@ public class MultiFetchResponse implements Iterable<ByteBufferMessageSet> {
             ByteBuffer copy = buffer.slice();
             int payloadSize = size - 2;
             copy.limit(payloadSize);
+            //move position for next reading
             buffer.position(buffer.position() + payloadSize);
             messageSets.add(new ByteBufferMessageSet(copy, offsets.get(i), ErrorMapping.valueOf(errorCode)));
         }
@@ -54,4 +66,7 @@ public class MultiFetchResponse implements Iterable<ByteBufferMessageSet> {
         return messageSets.iterator();
     }
 
+    public int size() {
+        return messageSets.size();
+    }
 }

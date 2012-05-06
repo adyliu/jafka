@@ -31,7 +31,7 @@ public class SocketServer {
 
     private final Logger logger = Logger.getLogger(Server.class);
 
-    private final HandlerMappingFactory handlerFactory;
+    private final RequestHandlerFactory handlerFactory;
 
     private final int maxRequestSize;
 
@@ -45,7 +45,7 @@ public class SocketServer {
     public SocketServer(int port, //
             int numProcessorThreads,//
             int monitoringPeriodSecs, //
-            HandlerMappingFactory handlerFactory, //
+            RequestHandlerFactory handlerFactory, //
             int sendBufferSize,//
             int receiveBufferSize, //
             int maxRequestSize) {

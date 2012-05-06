@@ -83,7 +83,7 @@ public class ConsumerConfig extends ZKConfig {
         this.maxQueuedChunks = get("queuedchunks.max", 10);
         this.maxRebalanceRetries = get("rebalance.retries.max", 4);
         this.rebalanceBackoffMs = get("rebalance.backoff.ms", getZkSyncTimeMs());
-        this.autoOffsetReset = get("autooffset.reset", OffsetRequest.SmallestTimeString);
+        this.autoOffsetReset = get("autooffset.reset", OffsetRequest.SMALLES_TTIME_STRING);
         this.consumerTimeoutMs = get("consumer.timeout.ms", -1);
         this.mirrorTopicsWhitelist = get("mirror.topics.whitelist", "");
         this.mirrorTopicsBlackList = get("mirror.topics.blacklist", "");

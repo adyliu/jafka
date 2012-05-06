@@ -54,12 +54,12 @@ public class SocketServerStats implements SocketServerStatsMBean, IMBeanName {
 
     public void recordRequest(RequestKeys requestTypeId, long durationNs) {
         switch (requestTypeId) {
-            case Produce:
-            case MultiProduce:
+            case PRODUCE:
+            case MULTIPRODUCE:
                 produceTimeStats.recordRequestMetric(durationNs);
                 break;
-            case Fetch:
-            case MultiFetch:
+            case FETCH:
+            case MULTIFETCH:
                 fetchTimeStats.recordRequestMetric(durationNs);
             default:
                 break;

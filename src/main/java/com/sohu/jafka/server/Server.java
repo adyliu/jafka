@@ -32,6 +32,7 @@ import com.sohu.jafka.utils.Utils;
 
 /**
  * The main server container
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -84,7 +85,7 @@ public class Server {
             socketServer = new SocketServer(config.getPort(),//
                     config.getNumThreads(),//
                     config.getMonitoringPeriodSecs(),//
-                    handlers.handlerFor(),//
+                    handlers,//
                     config.getSocketSendBuffer(),//
                     config.getSocketReceiveBuffer(),//
                     config.getMaxSocketRequestSize());
@@ -92,9 +93,8 @@ public class Server {
             socketServer.startup();
             Mx4jLoader.maybeLoad();
             /**
-             * Registers this broker in ZK. After this, consumers can
-             * connect to broker. So this should happen after socket server
-             * start.
+             * Registers this broker in ZK. After this, consumers can connect to broker. So
+             * this should happen after socket server start.
              */
             logManager.startup();
             logger.info("Server started.");

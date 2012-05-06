@@ -15,16 +15,26 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.network;
+package com.sohu.jafka.network.handlers;
 
-import com.sohu.jafka.api.RequestKeys;
+import org.apache.log4j.Logger;
 
+import com.sohu.jafka.log.LogManager;
+import com.sohu.jafka.network.RequestHandler;
 
 /**
+ * the base request handler
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public interface HandlerMappingFactory {
+public abstract class AbstractHandler implements RequestHandler {
 
-    HandlerMapping mapping(RequestKeys id,Receive request);
+    protected final Logger logger = Logger.getLogger(getClass());
+
+    protected final LogManager logManager;
+
+    public AbstractHandler(LogManager logManager) {
+        this.logManager = logManager;
+    }
 }

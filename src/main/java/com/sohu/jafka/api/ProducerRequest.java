@@ -50,6 +50,12 @@ public class ProducerRequest implements Request {
 
     public static final int RandomPartition = -1;
 
+    /**
+     * read a producer request from buffer
+     * 
+     * @param buffer data buffer
+     * @return parsed producer request
+     */
     public static ProducerRequest readFrom(ByteBuffer buffer) {
         String topic = Utils.readShortString(buffer);
         int partition = buffer.getInt();
@@ -60,10 +66,19 @@ public class ProducerRequest implements Request {
         return new ProducerRequest(topic, partition, new ByteBufferMessageSet(messageSetBuffer));
     }
 
-    final ByteBufferMessageSet messages;
+    /**
+     * request messages
+     */
+    public final ByteBufferMessageSet messages;
 
+    /**
+     * topic partition
+     */
     public final int partition;
 
+    /**
+     * topic name
+     */
     public final String topic;
 
     public ProducerRequest(String topic, int partition, ByteBufferMessageSet messages) {
@@ -72,33 +87,12 @@ public class ProducerRequest implements Request {
         this.messages = messages;
     }
 
-    /**
-     * @return the messages
-     */
-    public ByteBufferMessageSet getMessages() {
-        return messages;
-    }
-
-    /**
-     * @return the partition
-     */
-    public int getPartition() {
-        return partition;
-    }
-
     public RequestKeys getRequestKey() {
-        return RequestKeys.Produce;
+        return RequestKeys.PRODUCE;
     }
 
     public int getSizeInBytes() {
         return (int) (Utils.caculateShortString(topic) + 4 + 4 + messages.getSizeInBytes());
-    }
-
-    /**
-     * @return the topic
-     */
-    public String getTopic() {
-        return topic;
     }
 
     public int getTranslatedPartition(PartitionChooser chooser) {
@@ -120,8 +114,9 @@ public class ProducerRequest implements Request {
     public void writeTo(ByteBuffer buffer) {
         Utils.writeShortString(buffer, topic);
         buffer.putInt(partition);
-        buffer.putInt(messages.serialized().limit());
-        buffer.put(messages.serialized());
-        messages.serialized().rewind();
+        final ByteBuffer sourceBuffer = messages.serialized();
+        buffer.putInt(sourceBuffer.limit());
+        buffer.put(sourceBuffer);
+        sourceBuffer.rewind();
     }
 }

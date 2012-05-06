@@ -158,10 +158,10 @@ public class FetcherRunnable extends Thread {
     private long resetConsumerOffsets(String topic, Partition partition) throws IOException {
         long offset = -1;
         String autoOffsetReset = config.getAutoOffsetReset();
-        if (OffsetRequest.SmallestTimeString.equals(autoOffsetReset)) {
-            offset = OffsetRequest.EarliestTime;
-        } else if (OffsetRequest.LargestTimeString.equals(autoOffsetReset)) {
-            offset = OffsetRequest.LatestTime;
+        if (OffsetRequest.SMALLES_TTIME_STRING.equals(autoOffsetReset)) {
+            offset = OffsetRequest.EARLIES_TTIME;
+        } else if (OffsetRequest.LARGEST_TIME_STRING.equals(autoOffsetReset)) {
+            offset = OffsetRequest.LATES_TTIME;
         }
         //
         final ZkGroupTopicDirs topicDirs = new ZkGroupTopicDirs(config.getGroupId(), topic);

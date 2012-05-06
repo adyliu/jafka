@@ -73,7 +73,7 @@ public class FetchRequest implements Request {
     }
 
     public RequestKeys getRequestKey() {
-        return RequestKeys.Fetch;
+        return RequestKeys.FETCH;
     }
 
     public int getSizeInBytes() {

@@ -148,6 +148,11 @@ public class FileMessageSet extends MessageSet {
         };
     }
 
+    /**
+     * the max offset(next message id).<br/>
+     * The <code>{@link #getSizeInBytes()}</code> maybe is larger than {@link #highWaterMark()}
+     * while some messages were cached in memory(not flush to disk).
+     */
     public long getSizeInBytes() {
         return setSize.get();
     }
@@ -274,7 +279,10 @@ public class FileMessageSet extends MessageSet {
     }
 
     /**
-     * @return
+     * The max offset(next message id) persisted in the log file.<br/>
+     * Messages with smaller offsets have persisted in file.
+     * 
+     * @return max offset
      */
     public long highWaterMark() {
         return setHighWaterMark.get();

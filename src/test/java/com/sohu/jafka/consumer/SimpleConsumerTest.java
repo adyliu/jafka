@@ -131,7 +131,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
      */
     @Test
     public void testGetOffsetsBefore() throws IOException {
-        long[] offsets = consumer.getOffsetsBefore("demo", 0, OffsetRequest.LatestTime, 1);
+        long[] offsets = consumer.getOffsetsBefore("demo", 0, OffsetRequest.LATES_TTIME, 1);
         // System.out.println(Arrays.toString(offsets));
         assertTrue(offsets.length > 0);
         assertTrue(offsets[0] >= 0);

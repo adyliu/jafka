@@ -18,12 +18,23 @@
 package com.sohu.jafka.network;
 
 import com.sohu.jafka.api.RequestKeys;
+import com.sohu.jafka.common.annotations.ServerSide;
 
 /**
+ * handle request from client
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public interface HandlerMapping {
+@ServerSide
+public interface RequestHandler {
 
+    /**
+     * handling the request
+     * 
+     * @param requestType request type
+     * @param request request body
+     * @return handling response
+     */
     Send handler(RequestKeys requestType, Receive request);
 }

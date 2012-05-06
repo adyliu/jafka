@@ -37,7 +37,7 @@ public class MultiProducerRequest implements Request {
     }
 
     public RequestKeys getRequestKey() {
-        return RequestKeys.MultiProduce;
+        return RequestKeys.MULTIPRODUCE;
     }
 
     public void writeTo(ByteBuffer buffer) {

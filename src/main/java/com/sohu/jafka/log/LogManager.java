@@ -482,7 +482,7 @@ public class LogManager implements PartitionChooser, Closeable {
      * @return
      */
     public List<Long> getOffsets(OffsetRequest offsetRequest) {
-        Log log = getLog(offsetRequest.getTopic(), offsetRequest.getPartition());
+        Log log = getLog(offsetRequest.topic, offsetRequest.partition);
         if (log != null) {
             return log.getOffsetsBefore(offsetRequest);
         }

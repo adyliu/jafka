@@ -15,34 +15,24 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.api;
+package com.sohu.jafka.network;
 
-import com.sohu.jafka.common.annotations.ClientSide;
-import com.sohu.jafka.common.annotations.ServerSide;
+import com.sohu.jafka.api.RequestKeys;
 
 /**
- * Request Type
+ * factory for creating request handler
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-@ClientSide
-@ServerSide
-public enum RequestKeys {
-    PRODUCE, //0
-    FETCH, //1
-    MULTIFETCH, //2
-    MULTIPRODUCE, //3
-    OFFSETS;//4
+public interface RequestHandlerFactory {
 
-    //
-    public int value = ordinal();
-
-    //
-    final static int size = values().length;
-
-    public static RequestKeys valueOf(int ordinal) {
-        if (ordinal < 0 || ordinal >= size) return null;
-        return values()[ordinal];
-    }
+    /**
+     * mapping RequestHandler for request
+     * 
+     * @param id request type
+     * @param request request body
+     * @return handler for the request
+     */
+    RequestHandler mapping(RequestKeys id, Receive request);
 }

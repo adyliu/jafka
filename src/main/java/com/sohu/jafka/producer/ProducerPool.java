@@ -197,7 +197,7 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
             }
             if (e.getValue().size() == 1) {
                 ProducerRequest request = e.getValue().get(0);
-                producer.send(request.getTopic(), request.getPartition(), request.getMessages());
+                producer.send(request.topic, request.partition, request.messages);
             } else {
                 producer.multiSend(e.getValue());
             }

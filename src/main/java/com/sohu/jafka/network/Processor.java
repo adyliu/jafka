@@ -35,26 +35,26 @@ import com.sohu.jafka.api.RequestKeys;
 import com.sohu.jafka.mx.SocketServerStats;
 
 /**
- * Thread that processes all requests from a single connection. There are N
- * of these running in parallel each of which has its own selectors
+ * Thread that processes all requests from a single connection. There are N of these running in
+ * parallel each of which has its own selectors
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public class Processor extends AbstractServerThread {
 
-    final ConcurrentLinkedQueue<SocketChannel> newConnections = new ConcurrentLinkedQueue<SocketChannel>();
+    private final ConcurrentLinkedQueue<SocketChannel> newConnections = new ConcurrentLinkedQueue<SocketChannel>();
 
-    final Logger requestLogger = Logger.getLogger("jafka.request.logger");
+    private final Logger requestLogger = Logger.getLogger("jafka.request.logger");
 
-    HandlerMappingFactory handlerMappingFactory;
+    private RequestHandlerFactory requesthandlerFactory;
 
-    SocketServerStats stats;
+    private SocketServerStats stats;
 
-    int maxRequestSize;
+    private int maxRequestSize;
 
-    public Processor(HandlerMappingFactory handlerMappingFactory,  SocketServerStats stats, int maxRequestSize) {
-        this.handlerMappingFactory = handlerMappingFactory;
+    public Processor(RequestHandlerFactory requesthandlerFactory, SocketServerStats stats, int maxRequestSize) {
+        this.requesthandlerFactory = requesthandlerFactory;
         this.stats = stats;
         this.maxRequestSize = maxRequestSize;
     }
@@ -66,40 +66,40 @@ public class Processor extends AbstractServerThread {
                 // setup any new connections that have been queued up
                 configureNewConnections();
 
-                int ready;
-
                 final Selector selector = getSelector();
-                ready = selector.select(500);
-                if (ready > 0) {
-                    Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
-                    while (iter.hasNext() && isRunning()) {
-                        SelectionKey key = null;
-                        try {
-                            key = iter.next();
-                            iter.remove();
-                            if (key.isReadable()) {
-                                read(key);
-                            } else if (key.isWritable()) {
-                                write(key);
-                            } else if (!key.isValid()) {
-                                close(key);
-                            } else {
-                                throw new IllegalStateException("Unrecognized key state for processor thread.");
-                            }
-                        } catch (EOFException eofe) {
-                            Socket socket = channelFor(key).socket();
-                            logger.info(format("Closing socket connection to %s:%d.", socket.getInetAddress(),socket.getPort()));
+                int ready = selector.select(500);
+                if (ready <= 0) continue;
+                Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
+                while (iter.hasNext() && isRunning()) {
+                    SelectionKey key = null;
+                    try {
+                        key = iter.next();
+                        iter.remove();
+                        if (key.isReadable()) {
+                            read(key);
+                        } else if (key.isWritable()) {
+                            write(key);
+                        } else if (!key.isValid()) {
                             close(key);
-                        } catch (InvalidRequestException ire) {
-                            Socket socket = channelFor(key).socket();
-                            logger.info(format("Closing socket connection to %s:%d due to invalid request: %s", socket.getInetAddress(),socket.getPort(),
-                                    ire.getMessage()));
-                            close(key);
-                        } catch (Throwable t) {
-                            Socket socket = channelFor(key).socket();
-                            logger.error(format("Closing socket for %s:%d becaulse of error" ,socket.getInetAddress(),socket.getPort()), t);
-                            close(key);
+                        } else {
+                            throw new IllegalStateException("Unrecognized key state for processor thread.");
                         }
+                    } catch (EOFException eofe) {
+                        Socket socket = channelFor(key).socket();
+                        logger.info(format("Closing socket connection to %s:%d.", socket.getInetAddress(),
+                                socket.getPort()));
+                        close(key);
+                    } catch (InvalidRequestException ire) {
+                        Socket socket = channelFor(key).socket();
+                        logger.info(format("Closing socket connection to %s:%d due to invalid request: %s",
+                                socket.getInetAddress(), socket.getPort(), ire.getMessage()));
+                        close(key);
+                    } catch (Throwable t) {
+                        Socket socket = channelFor(key).socket();
+                        logger.error(
+                                format("Closing socket for %s:%d becaulse of error", socket.getInetAddress(),
+                                        socket.getPort()), t);
+                        close(key);
                     }
                 }
             } catch (IOException e) {
@@ -122,7 +122,8 @@ public class Processor extends AbstractServerThread {
      */
     private void close(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
-        if (logger.isDebugEnabled()) logger.debug("Closing connection from " + channel.socket().getRemoteSocketAddress());
+        if (logger.isDebugEnabled()) logger.debug("Closing connection from " + channel.socket()
+                .getRemoteSocketAddress());
         try {
             channel.socket().close();
         } catch (IOException e) {
@@ -202,13 +203,13 @@ public class Processor extends AbstractServerThread {
             String logFormat = "Handling %s request from %s";
             requestLogger.trace(format(logFormat, requestType, channelFor(key).socket().getRemoteSocketAddress()));
         }
-        HandlerMapping handlerMapping = handlerMappingFactory.mapping(requestType, request);
+        RequestHandler handlerMapping = requesthandlerFactory.mapping(requestType, request);
         if (handlerMapping == null) {
             throw new InvalidRequestException("No handler found for request");
         }
         long start = System.nanoTime();
         Send maybeSend = handlerMapping.handler(requestType, request);
-        stats.recordRequest(requestType,  System.nanoTime() - start);
+        stats.recordRequest(requestType, System.nanoTime() - start);
         return maybeSend;
     }
 

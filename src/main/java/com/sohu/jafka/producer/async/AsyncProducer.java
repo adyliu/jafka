@@ -100,7 +100,7 @@ public class AsyncProducer<T>  implements Closeable{
                  config.getQueueTime(), //
                  config.getBatchSize());
          this.sendThread.setDaemon(false);
-         //TODO:
+         //TODO: register mbean here??
          AsyncProducerQueueSizeStats<T> stats = new AsyncProducerQueueSizeStats<T>(queue);
          stats.setMbeanName(ProducerQueueSizeMBeanName+"-"+asyncProducerID);
          Utils.registerMBean(stats);

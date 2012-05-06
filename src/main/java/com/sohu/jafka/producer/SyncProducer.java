@@ -194,7 +194,7 @@ public class SyncProducer implements Closeable {
 
     public void multiSend(List<ProducerRequest> produces) {
         for (ProducerRequest request : produces) {
-            request.getMessages().verifyMessageSize(config.maxMessageSize);
+            request.messages.verifyMessageSize(config.maxMessageSize);
         }
         send(new BoundedByteBufferSend(new MultiProducerRequest(produces)));
     }
