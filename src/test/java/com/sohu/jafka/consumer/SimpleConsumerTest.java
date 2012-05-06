@@ -63,7 +63,9 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             Properties props = new Properties();
             //force flush message to disk
             //we will fetch nothing while messages have note been flushed to disk
-            props.put("log.flush.interval", "1");
+            props.put("log.flush.interval", "100");
+            props.put("log.file.size", "5120");//10k for rolling
+            props.put("num.partitions", "3");//default divided three partitions
             jafka = createJafka(props);
             Properties producerConfig = new Properties();
             producerConfig.setProperty("broker.list", "0:localhost:9092");
@@ -71,12 +73,14 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
             StringProducerData data = new StringProducerData("demo");
             StringProducerData data2 = new StringProducerData("demo2");
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 100; i++) {
                 data.add("message#" + i);
                 data2.add("message#demo2#" + i);
             }
-            producer.send(data);
-            producer.send(data2);
+            for(int i=0;i<10;i++) {
+                producer.send(data);
+                producer.send(data2);
+            }
             producer.close();
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));//waiting for log created
         }
@@ -131,10 +135,18 @@ public class SimpleConsumerTest extends BaseJafkaServer {
      */
     @Test
     public void testGetOffsetsBefore() throws IOException {
-        long[] offsets = consumer.getOffsetsBefore("demo", 0, OffsetRequest.LATES_TTIME, 1);
-        // System.out.println(Arrays.toString(offsets));
-        assertTrue(offsets.length > 0);
-        assertTrue(offsets[0] >= 0);
+        int size = 0;
+        long maxoffset = -1;
+        for(int i=0;i<3;i++) {
+            long[] offsets = consumer.getOffsetsBefore("demo", i, OffsetRequest.LATES_TTIME, 100);
+            size += offsets.length;
+            if(offsets.length >0 && offsets[0]>maxoffset) {
+                maxoffset = offsets[0];
+            }
+        }
+        System.out.println("demo largest offset: "+maxoffset);
+        assertTrue(size > 0);
+        assertTrue(maxoffset > 0);
     }
 
     /**

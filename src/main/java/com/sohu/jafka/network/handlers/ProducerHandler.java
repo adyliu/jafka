@@ -61,7 +61,7 @@ public class ProducerHandler extends AbstractHandler {
             if (logger.isDebugEnabled()) {
                 logger.debug(messageSize + " bytes written to logs " + log);
                 for (MessageAndOffset m : request.messages) {
-                    logger.debug("wrote message " + m.offset + " to disk");
+                    logger.trace("wrote message " + m.offset + " to disk");
                 }
             }
             BrokerTopicStat.getInstance(request.topic).recordBytesIn(messageSize);
