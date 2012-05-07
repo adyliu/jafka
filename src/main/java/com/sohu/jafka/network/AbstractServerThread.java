@@ -18,6 +18,7 @@
 package com.sohu.jafka.network;
 
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.Selector;
 import java.util.concurrent.CountDownLatch;
@@ -31,7 +32,7 @@ import com.sohu.jafka.utils.Closer;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public abstract class AbstractServerThread implements Runnable {
+public abstract class AbstractServerThread implements Runnable,Closeable {
 
     private Selector selector;
     protected final CountDownLatch startupLatch = new CountDownLatch(1);
@@ -57,10 +58,14 @@ public abstract class AbstractServerThread implements Runnable {
         Closer.closeQuietly(selector,logger);
     }
     
-    public void shutdown() throws InterruptedException {
+    public void close() {
         alive.set(false);
         selector.wakeup();
-        shutdownLatch.await();
+        try {
+            shutdownLatch.await();
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage(),e);
+        }
     }
     
     protected void startupComplete() {

@@ -19,7 +19,7 @@ package com.sohu.jafka.network.handlers;
 
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.api.RequestKeys;
-import com.sohu.jafka.log.Log;
+import com.sohu.jafka.log.ILog;
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.message.MessageAndOffset;
 import com.sohu.jafka.mx.BrokerTopicStat;
@@ -55,7 +55,7 @@ public class ProducerHandler extends AbstractHandler {
     protected void handleProducerRequest(ProducerRequest request, String requestHandlerName) {
         int partition = request.getTranslatedPartition(logManager);
         try {
-            final Log log = logManager.getOrCreateLog(request.topic, partition);
+            final ILog log = logManager.getOrCreateLog(request.topic, partition);
             log.append(request.messages);
             long messageSize = request.messages.getSizeInBytes();
             if (logger.isDebugEnabled()) {

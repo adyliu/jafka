@@ -36,6 +36,7 @@ public class Jafka implements Closeable {
 
     private volatile Thread shutdownHook;
 
+    //for test privacy
     private ServerStartable serverStartable;
 
     public void start(String mainFile, String consumerFile, String producerFile) {
@@ -46,8 +47,7 @@ public class Jafka implements Closeable {
 
     public void start(Properties mainProperties, Properties consumerProperties, Properties producerProperties) {
         final ServerConfig config = new ServerConfig(mainProperties);
-        final ConsumerConfig consumerConfig = consumerProperties == null ? null
-                : new ConsumerConfig(consumerProperties);
+        final ConsumerConfig consumerConfig = consumerProperties == null ? null : new ConsumerConfig(consumerProperties);
         final ProducerConfig producerConfig = consumerConfig == null ? null : new ProducerConfig(producerProperties);
         start(config, consumerConfig, producerConfig);
     }
@@ -63,7 +63,7 @@ public class Jafka implements Closeable {
 
             @Override
             public void run() {
-                serverStartable.shutdown();
+                serverStartable.close();
                 serverStartable.awaitShutdown();
             }
         };
@@ -87,11 +87,19 @@ public class Jafka implements Closeable {
         }
     }
 
+    /**
+     * flush all messages to disk(this method is used for test)
+     */
+    void flush() {
+        if(serverStartable != null) {
+            serverStartable.flush();
+        }
+    }
+
     public static void main(String[] args) {
         int argsSize = args.length;
         if (argsSize != 1 && argsSize != 3) {
-            System.out
-                    .println("USAGE: java [options] Jafka server.properties [consumer.properties producer.properties]");
+            System.out.println("USAGE: java [options] Jafka server.properties [consumer.properties producer.properties]");
             System.exit(1);
         }
         //

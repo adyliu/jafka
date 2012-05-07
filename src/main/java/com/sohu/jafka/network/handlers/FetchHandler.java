@@ -20,7 +20,7 @@ package com.sohu.jafka.network.handlers;
 import com.sohu.jafka.api.FetchRequest;
 import com.sohu.jafka.api.RequestKeys;
 import com.sohu.jafka.common.ErrorMapping;
-import com.sohu.jafka.log.Log;
+import com.sohu.jafka.log.ILog;
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.message.MessageSet;
 import com.sohu.jafka.mx.BrokerTopicStat;
@@ -51,7 +51,7 @@ public class FetchHandler extends AbstractHandler {
         final String topic = fetchRequest.topic;
         MessageSetSend response = null;
         try {
-            Log log = logManager.getLog(topic, fetchRequest.partition);
+            ILog log = logManager.getLog(topic, fetchRequest.partition);
             if (logger.isDebugEnabled()) {
                 logger.debug("Fetching log segment for request=" + fetchRequest + ", log=" + log);
             }

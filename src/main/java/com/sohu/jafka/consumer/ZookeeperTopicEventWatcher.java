@@ -109,7 +109,7 @@ public class ZookeeperTopicEventWatcher implements Closeable {
                     eventHandler.handleTopicEvent(latestTopics);
                 } catch (ConsumerRebalanceFailedException e) {
                     logger.fatal("can't rebalance in embedded consumer); proceed to shutdown", e);
-                    serverStartable.shutdown();
+                    serverStartable.close();
                 } catch (Exception e) {
                     logger.error("error in handling child changes in embedded consumer", e);
                 }

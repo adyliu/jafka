@@ -17,6 +17,8 @@
 
 package com.sohu.jafka.server;
 
+import java.io.Closeable;
+
 import org.apache.log4j.Logger;
 
 import com.sohu.jafka.consumer.ConsumerConfig;
@@ -28,7 +30,7 @@ import com.sohu.jafka.producer.ProducerConfig;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class ServerStartable {
+public class ServerStartable implements Closeable{
 
     
     private final Logger logger = Logger.getLogger(ServerStartable.class);
@@ -36,13 +38,14 @@ public class ServerStartable {
     final ConsumerConfig consumerConfig;
     final ProducerConfig producerConfig;
     //
-    private Server server;
+    private final Server server;
     private EmbeddedConsumer embeddedConsumer;
     public ServerStartable(ServerConfig config, ConsumerConfig consumerConfig, ProducerConfig producerConfig) {
         super();
         this.config = config;
         this.consumerConfig = consumerConfig;
         this.producerConfig = producerConfig;
+        this.server = new Server(config);
         init();
     }
     public ServerStartable(ServerConfig config) {
@@ -50,12 +53,14 @@ public class ServerStartable {
     }
     
     private void init() {
-        server = new Server(config);
         if(consumerConfig!=null) {
             embeddedConsumer = new EmbeddedConsumer(consumerConfig,producerConfig,this);
         }
     }
-    
+    public void flush() {
+        logger.info("force flush all messages to disk");
+        this.server.getLogManager().flushAllLogs(true);
+    }
     public void startup() {
         try {
             server.startup();
@@ -64,10 +69,10 @@ public class ServerStartable {
             }
         } catch (Exception e) {
            logger.fatal("Fatal error during ServerStable startup. Prepare to shutdown",e);
-           shutdown();
+           close();
         }
     }
-    public void shutdown() {
+    public void close() {
         try {
             if(embeddedConsumer!=null) {
                 embeddedConsumer.shutdown();

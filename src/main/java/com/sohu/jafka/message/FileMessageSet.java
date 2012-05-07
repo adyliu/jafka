@@ -165,7 +165,7 @@ public class FileMessageSet extends MessageSet {
     /**
      * read message from file
      * 
-     * @param readOffset data offset
+     * @param readOffset offset in this channel(file);not the message offset
      * @param size max data size
      * @return messages sharding data with file log
      * @throws IOException reading file failed

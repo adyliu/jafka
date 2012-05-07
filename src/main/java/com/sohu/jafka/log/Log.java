@@ -17,14 +17,15 @@
 
 package com.sohu.jafka.log;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +53,7 @@ import com.sohu.jafka.utils.Utils;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class Log implements Closeable {
+public class Log implements ILog {
 
     private final Logger logger = Logger.getLogger(Log.class);
 
@@ -78,10 +79,16 @@ public class Log implements Closeable {
     private final LogStats logStats = new LogStats(this);
 
     private final SegmentList segments;
+    public final int partition;
 
-    public Log(File dir, RollingStrategy rollingStategy, int flushInterval, boolean needRecovery) throws IOException {
+    public Log(File dir, //
+            int partition,//
+            RollingStrategy rollingStategy,//
+            int flushInterval, //
+            boolean needRecovery) throws IOException {
         super();
         this.dir = dir;
+        this.partition = partition;
        this.rollingStategy = rollingStategy;
         this.flushInterval = flushInterval;
         this.needRecovery = needRecovery;
@@ -103,7 +110,7 @@ public class Log implements Closeable {
                 return f.isFile() && f.getName().endsWith(FileSuffix);
             }
         });
-        logger.info("loadSegments files: " + ls.length);
+        logger.info("loadSegments files from ["+dir.getAbsolutePath()+"]: " + ls.length);
         int n = 0;
         for (File f : ls) {
             n++;
@@ -216,7 +223,7 @@ public class Log implements Closeable {
                 LogSegment lastSegment = segments.getLastView();
                 long written = lastSegment.getMessageSet().append(validMessages);
                 if (logger.isDebugEnabled()) {
-                    logger.debug(lastSegment.getName() + " save " + numberOfMessages + " messages, bytes " + written);
+                    logger.debug(String.format("[%s,%s] save %d messages, bytes %d",name,lastSegment.getName(),numberOfMessages,written));
                 }
                 maybeFlush(numberOfMessages);
                 maybeRoll(lastSegment);
@@ -403,7 +410,6 @@ public class Log implements Closeable {
         }
     }
 
-   //FIXME: why more than one offset???
     public List<Long> getOffsetsBefore(OffsetRequest offsetRequest) {
         List<LogSegment> logSegments = segments.getView();
         final LogSegment lastLogSegent = segments.getLastView();
@@ -441,12 +447,9 @@ public class Log implements Closeable {
         return ret;
     }
 
-    /**
-     * @param offsetRequest
-     * @return
-     */
-    public static List<Long> getEmptyOffsets(OffsetRequest offsetRequest) {
-        return new ArrayList<Long>(0);
+    @Override
+    public String toString() {
+        return "Log [dir=" + dir + ", lastflushedTime=" +//
+    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(lastflushedTime.get())) + "]";
     }
-
 }

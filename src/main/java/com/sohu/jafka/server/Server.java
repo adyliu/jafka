@@ -74,7 +74,7 @@ public class Server {
                 needRecovery = false;
                 cleanShutDownFile.delete();
             }
-            LogManager logManager = new LogManager(config,//
+            this.logManager = new LogManager(config,//
                     scheduler,//
                     1000L * 60 * config.getLogCleanupIntervalMinutes(),//
                     1000L * 60 * 60 * config.getLogRetentionHours(),//
@@ -93,8 +93,9 @@ public class Server {
             socketServer.startup();
             Mx4jLoader.maybeLoad();
             /**
-             * Registers this broker in ZK. After this, consumers can connect to broker. So
-             * this should happen after socket server start.
+             * Registers this broker in ZK. After this, consumers can
+             * connect to broker. So this should happen after socket server
+             * start.
              */
             logManager.startup();
             logger.info("Server started.");
@@ -111,10 +112,12 @@ public class Server {
             try {
                 scheduler.shutdown();
                 if (socketServer != null) {
-                    socketServer.shutdown();
+                    socketServer.close();
                     Utils.unregisterMBean(socketServer.getStats());
                 }
-                if (logManager != null) logManager.close();
+                if (logManager != null) {
+                    logManager.close();
+                }
 
                 File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
                 cleanShutDownFile.createNewFile();
@@ -122,7 +125,7 @@ public class Server {
                 logger.fatal(ex.getMessage(), ex);
             }
             shutdownLatch.countDown();
-            logger.info("shut down completed");
+            logger.info("shutdown completed");
         }
     }
 

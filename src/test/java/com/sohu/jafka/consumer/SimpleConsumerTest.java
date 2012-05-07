@@ -17,13 +17,15 @@
 
 package com.sohu.jafka.consumer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
 import org.junit.After;
@@ -41,7 +43,6 @@ import com.sohu.jafka.producer.Producer;
 import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.StringProducerData;
 import com.sohu.jafka.producer.serializer.StringEncoder;
-import com.sohu.jafka.utils.Utils;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -52,10 +53,11 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     Jafka jafka;
 
     SimpleConsumer consumer;
-    final static AtomicInteger count = new AtomicInteger();
+
     public SimpleConsumerTest() {
-        System.out.println("build instance "+count.incrementAndGet());
     }
+
+    final int partitions = 3;
 
     @Before
     public void init() {
@@ -63,26 +65,31 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             Properties props = new Properties();
             //force flush message to disk
             //we will fetch nothing while messages have note been flushed to disk
-            props.put("log.flush.interval", "100");
+            props.put("log.flush.interval", "1");
+            props.put("log.default.flush.scheduler.interval.ms", "100");//flush to disk every 100ms
             props.put("log.file.size", "5120");//10k for rolling
-            props.put("num.partitions", "3");//default divided three partitions
+            props.put("num.partitions", "" + partitions);//default divided three partitions
             jafka = createJafka(props);
             Properties producerConfig = new Properties();
             producerConfig.setProperty("broker.list", "0:localhost:9092");
             producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
             Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
-            StringProducerData data = new StringProducerData("demo");
-            StringProducerData data2 = new StringProducerData("demo2");
-            for (int i = 0; i < 100; i++) {
-                data.add("message#" + i);
-                data2.add("message#demo2#" + i);
-            }
-            for(int i=0;i<10;i++) {
+            int index = 0;
+            for (int i = 0; i < 10; i++) {
+                StringProducerData data = new StringProducerData("demo");
+                StringProducerData data2 = new StringProducerData("test");
+                int batch = 100;
+                while (batch-- > 0) {
+                    data.add("message#" + index++);
+                    data2.add("message#test#" + index++);
+                }
                 producer.send(data);
                 producer.send(data2);
             }
             producer.close();
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));//waiting for log created
+            flush(jafka);
+            System.out.println("send " + index + " messages");
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         }
         if (consumer == null) {
             consumer = new SimpleConsumer("localhost", 9092, 10 * 1000, 1024 * 1024);
@@ -100,7 +107,8 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     }
 
     /**
-     * Test method for {@link com.sohu.jafka.consumer.SimpleConsumer#close()}.
+     * Test method for
+     * {@link com.sohu.jafka.consumer.SimpleConsumer#close()}.
      */
     @Test
     public void testClose() throws IOException {
@@ -112,20 +120,27 @@ public class SimpleConsumerTest extends BaseJafkaServer {
 
     /**
      * Test method for
-     * {@link com.sohu.jafka.consumer.SimpleConsumer#fetch(com.sohu.jafka.api.FetchRequest)}.
+     * {@link com.sohu.jafka.consumer.SimpleConsumer#fetch(com.sohu.jafka.api.FetchRequest)}
+     * .
      * 
      * @throws IOException
      */
     @Test
     public void testFetch() throws IOException {
-        FetchRequest request = new FetchRequest("demo", 0, 0, 100 * 1000);
-        ByteBufferMessageSet messages = consumer.fetch(request);
-        long offset = 0;
-        for (MessageAndOffset msg : messages) {
-            System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
-            offset = msg.offset;
+        long offset = -1;
+        int cnt = 0;
+        for (int i = 0; i < partitions; i++) {
+            FetchRequest request = new FetchRequest("demo", i, 0, 1000 * 1000);
+            ByteBufferMessageSet messages = consumer.fetch(request);
+            for (MessageAndOffset msg : messages) {
+                //System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
+                offset = Math.max(offset, msg.offset);
+                cnt++;
+            }
         }
+        System.out.println("receive message count: " + cnt);
         assertTrue(offset > 0);
+        assertTrue(cnt > 0);
     }
 
     /**
@@ -137,36 +152,64 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     public void testGetOffsetsBefore() throws IOException {
         int size = 0;
         long maxoffset = -1;
-        for(int i=0;i<3;i++) {
+        for (int i = 0; i < 3; i++) {
             long[] offsets = consumer.getOffsetsBefore("demo", i, OffsetRequest.LATES_TTIME, 100);
             size += offsets.length;
-            if(offsets.length >0 && offsets[0]>maxoffset) {
+            if (offsets.length > 0 && offsets[0] > maxoffset) {
                 maxoffset = offsets[0];
             }
         }
-        System.out.println("demo largest offset: "+maxoffset);
+        System.out.println("demo largest offset: " + maxoffset);
         assertTrue(size > 0);
         assertTrue(maxoffset > 0);
     }
 
     /**
      * Test method for
-     * {@link com.sohu.jafka.consumer.SimpleConsumer#multifetch(java.util.List)}.
+     * {@link com.sohu.jafka.consumer.SimpleConsumer#multifetch(java.util.List)}
+     * .
      */
     @Test
     public void testMultifetch() throws IOException {
-        FetchRequest request1 = new FetchRequest("demo", 0, 0, 100 * 1000);
-        FetchRequest request2 = new FetchRequest("demo2", 0, 0, 100 * 1000);
-        MultiFetchResponse responses = consumer.multifetch(Arrays.asList(request1, request2));
-        for (ByteBufferMessageSet messages : responses) {
-            long offset = 0;
-            for (MessageAndOffset msg : messages) {
-                System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
-                offset = msg.offset;
-            }
-            assertTrue(offset > 0);
-        }
 
+        long bigestOffset = -1;
+        int cnt = 0;
+        for (int i = 0; i < partitions; i++) {
+
+            long demoOffset = 0;
+            long testOffset = 0;
+            boolean over = false;
+            while (!over) {
+                FetchRequest request1 = new FetchRequest("demo", i, demoOffset, 1000 * 1000);
+                FetchRequest request2 = new FetchRequest("test", i, testOffset, 1000 * 1000);
+                MultiFetchResponse responses = consumer.multifetch(Arrays.asList(request1, request2));
+                assertEquals(2, responses.size());
+                Iterator<ByteBufferMessageSet> iter = responses.iterator();
+                assertTrue(iter.hasNext());
+                ByteBufferMessageSet demoMessages = iter.next();
+                assertTrue(iter.hasNext());
+                ByteBufferMessageSet testMessages = iter.next();
+                assertFalse(iter.hasNext());
+                over = true;
+                for (MessageAndOffset msg : demoMessages) {
+                    //System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
+                    bigestOffset = Math.max(bigestOffset, msg.offset);
+                    cnt++;
+                    demoOffset = msg.offset;
+                    over = false;
+                }
+                for (MessageAndOffset msg : testMessages) {
+                    //System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
+                    bigestOffset = Math.max(bigestOffset, msg.offset);
+                    cnt++;
+                    testOffset = msg.offset;
+                    over = false;
+                }
+            }
+        }
+        System.out.println("multifetch receive message count: " + cnt);
+        assertTrue(bigestOffset > 0);
+        assertTrue(cnt > 0);
     }
 
 }

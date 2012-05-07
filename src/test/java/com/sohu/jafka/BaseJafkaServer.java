@@ -25,6 +25,9 @@ import java.util.Properties;
  */
 public abstract class BaseJafkaServer {
 
+    static {
+        System.setProperty("jafka_mx4jenable", "true");
+    }
     public Jafka createJafka() {
         Properties mainProperties = new Properties();
         return createJafka(mainProperties);
@@ -39,6 +42,10 @@ public abstract class BaseJafkaServer {
         return jafka;
     }
 
+    public void flush(Jafka jafka) {
+        jafka.flush();
+    }
+    
     public void close(Jafka jafka) {
         if (jafka != null) {
             jafka.close();

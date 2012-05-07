@@ -34,11 +34,14 @@ public class DataLogCleaner {
     }
 
     public static void cleanDataLogDir(File dir) {
-        for (File f : dir.listFiles()) {
-            if (f.isFile()) {
-                f.delete();
-            } else {
-                cleanDataLogDir(f);
+        File[] subs = dir.listFiles();
+        if (subs != null) {
+            for (File f : dir.listFiles()) {
+                if (f.isFile()) {
+                    f.delete();
+                } else {
+                    cleanDataLogDir(f);
+                }
             }
         }
         dir.delete();

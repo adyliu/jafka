@@ -17,6 +17,8 @@
 
 package com.sohu.jafka.network;
 
+import java.io.Closeable;
+
 import org.apache.log4j.Logger;
 
 import com.sohu.jafka.mx.SocketServerStats;
@@ -27,7 +29,7 @@ import com.sohu.jafka.utils.Utils;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class SocketServer {
+public class SocketServer implements Closeable{
 
     private final Logger logger = Logger.getLogger(Server.class);
 
@@ -60,10 +62,10 @@ public class SocketServer {
     /**
      * Shutdown the socket server
      */
-    public void shutdown() throws InterruptedException {
-        acceptor.shutdown();
+    public void close() {
+        acceptor.close();
         for (Processor processor : processors) {
-            processor.shutdown();
+            processor.close();
         }
     }
 

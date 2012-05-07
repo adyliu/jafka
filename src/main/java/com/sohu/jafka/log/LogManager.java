@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 
@@ -55,7 +54,6 @@ public class LogManager implements PartitionChooser, Closeable {
     final ServerConfig config;
 
     private final Scheduler scheduler;
-
 
     final long logCleanupIntervalMs;
 
@@ -83,10 +81,11 @@ public class LogManager implements PartitionChooser, Closeable {
 
     private final Scheduler logFlusherScheduler = new Scheduler(1, "jafka-logflusher-", false);
 
+    private final static String CLOSED_TOPIC = "";
     //
     private final LinkedBlockingQueue<String> topicRegisterTasks = new LinkedBlockingQueue<String>();
 
-    private final AtomicBoolean stopTopicRegisterTasks = new AtomicBoolean(false);
+    private volatile boolean stopTopicRegisterTasks = false;
 
     final Map<String, Integer> logFlushIntervalMap;
 
@@ -95,7 +94,7 @@ public class LogManager implements PartitionChooser, Closeable {
     final int logRetentionSize;
 
     /////////////////////////////////////////////////////////////////////////
-    private ServerRegister zookeeper;
+    private ServerRegister serverRegister;
 
     private final Map<String, Integer> topicPartitionsMap;
 
@@ -109,7 +108,7 @@ public class LogManager implements PartitionChooser, Closeable {
         super();
         this.config = config;
         this.scheduler = scheduler;
-//        this.time = time;
+        //        this.time = time;
         this.logCleanupIntervalMs = logCleanupIntervalMs;
         this.logCleanupDefaultAgeMs = logCleanupDefaultAgeMs;
         this.needRecovery = needRecovery;
@@ -134,7 +133,7 @@ public class LogManager implements PartitionChooser, Closeable {
 
     public void load() throws IOException {
         if (this.rollingStategy == null) {
-            this.rollingStategy = new FixedSizeRollingStategy(config.getLogFileSize());
+            this.rollingStategy = new FixedSizeRollingStrategy(config.getLogFileSize());
         }
         if (!logDir.exists()) {
             logger.info("No log directory found, creating '" + logDir.getAbsolutePath() + "'");
@@ -150,8 +149,9 @@ public class LogManager implements PartitionChooser, Closeable {
                     logger.warn("Skipping unexplainable file '" + dir.getAbsolutePath() + "'--should it be there?");
                 } else {
                     logger.info("Loading log from " + dir.getAbsolutePath());
-                    Log log = new Log(dir, this.rollingStategy, flushInterval, needRecovery);
-                    KV<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
+                    final KV<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
+                    Log log = new Log(dir,topicPartion.v, this.rollingStategy, flushInterval, needRecovery);
+                    
                     logs.putIfNotExists(topicPartion.k, new Pool<Integer, Log>());
                     Pool<Integer, Log> parts = logs.get(topicPartion.k);
                     parts.put(topicPartion.v, log);
@@ -176,25 +176,32 @@ public class LogManager implements PartitionChooser, Closeable {
         }
         //
         if (config.getEnableZookeeper()) {
-            final ServerRegister zk = new ServerRegister(config, this);
-            this.zookeeper = zk;
-            zk.startup();
-            Utils.newThread("jafka.logmanager", new Runnable() {
-
-                public void run() {
-                    while (!stopTopicRegisterTasks.get()) {
-                        try {
-                            String topic = topicRegisterTasks.take();
-                            if (topic.length() == 0) continue;
-                            zk.registerTopicInZk(topic);
-                        } catch (Exception e) {
-                            logger.error(e.getMessage(), e);
-                        }
-                    }
-                    logger.info("stop registing topic");
-                }
-            }, true).start();
+            this.serverRegister = new ServerRegister(config, this);
+            serverRegister.startup();
+            TopicRegisterTask task = new TopicRegisterTask();
+            task.setName("jafka.topicregister");
+            task.setDaemon(true);
+            task.start();
         }
+    }
+    private void registeredTaskLooply() {
+        while (!stopTopicRegisterTasks) {
+            try {
+                String topic = topicRegisterTasks.take();
+                if (topic == CLOSED_TOPIC) continue;
+                serverRegister.registerTopicInZk(topic);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        logger.info("stop topic register task");
+    }
+    
+    class TopicRegisterTask extends Thread{
+        @Override
+            public void run() {
+                registeredTaskLooply();
+            }
     }
 
     private Map<String, Long> getLogRetentionMSMap(Map<String, Integer> logRetentionHourMap) {
@@ -212,11 +219,11 @@ public class LogManager implements PartitionChooser, Closeable {
             Closer.closeQuietly(iter.next(), logger);
         }
         if (config.getEnableZookeeper()) {
-            stopTopicRegisterTasks.set(true);
-            //wake up
-            //TODO: to be changed
-            topicRegisterTasks.add("");
-            zookeeper.close();
+            stopTopicRegisterTasks = true;
+            //wake up again and again
+            topicRegisterTasks.add(CLOSED_TOPIC);
+            topicRegisterTasks.add(CLOSED_TOPIC);
+            Closer.closeQuietly(serverRegister);
         }
     }
 
@@ -242,8 +249,8 @@ public class LogManager implements PartitionChooser, Closeable {
     }
 
     /**
-     * Runs through the log removing segments until the size of the log is at least
-     * logRetentionSize bytes in size
+     * Runs through the log removing segments until the size of the log is
+     * at least logRetentionSize bytes in size
      * 
      * @throws IOException
      */
@@ -281,7 +288,8 @@ public class LogManager implements PartitionChooser, Closeable {
     }
 
     /**
-     * Attemps to delete all provided segments from a log and returns how many it was able to
+     * Attemps to delete all provided segments from a log and returns how
+     * many it was able to
      */
     private int deleteSegments(Log log, List<LogSegment> segments) {
         int total = 0;
@@ -299,8 +307,7 @@ public class LogManager implements PartitionChooser, Closeable {
                     total += 1;
                 }
             } finally {
-                logger.warn(String.format("DELETE_LOG[%s] %s => %s", log.name, segment.getFile().getAbsolutePath(),
-                        deleted));
+                logger.warn(String.format("DELETE_LOG[%s] %s => %s", log.name, segment.getFile().getAbsolutePath(), deleted));
             }
         }
         return total;
@@ -311,9 +318,9 @@ public class LogManager implements PartitionChooser, Closeable {
      */
     public void startup() {
         if (config.getEnableZookeeper()) {
-            zookeeper.registerBrokerInZk();
+            serverRegister.registerBrokerInZk();
             for (String topic : getAllTopics()) {
-                zookeeper.registerTopicInZk(topic);
+                serverRegister.registerTopicInZk(topic);
             }
             startupLatch.countDown();
         }
@@ -321,25 +328,32 @@ public class LogManager implements PartitionChooser, Closeable {
         logFlusherScheduler.scheduleWithRate(new Runnable() {
 
             public void run() {
-                flushAllLogs();
+                flushAllLogs(false);
             }
         }, config.getFlushSchedulerThreadRate(), config.getFlushSchedulerThreadRate());
     }
 
-    private void flushAllLogs() {
+    /**
+     * flush all messages to disk
+     * 
+     * @param force flush anyway(ignore flush interval)
+     */
+    public void flushAllLogs(final boolean force) {
         Iterator<Log> iter = getLogIterator();
         while (iter.hasNext()) {
             Log log = iter.next();
             try {
-                long timeSinceLastFlush = System.currentTimeMillis() - log.getLastFlushedTime();
-                Integer logFlushInterval = logFlushIntervalMap.get(log.getTopicName());
-                if (logFlushInterval == null) {
-                    logFlushInterval = config.getDefaultFlushIntervalMs();
+                boolean needFlush = force;
+                if (!needFlush) {
+                    long timeSinceLastFlush = System.currentTimeMillis() - log.getLastFlushedTime();
+                    Integer logFlushInterval = logFlushIntervalMap.get(log.getTopicName());
+                    if (logFlushInterval == null) {
+                        logFlushInterval = config.getDefaultFlushIntervalMs();
+                    }
+                    final String flushLogFormat = "[%s] flush interval %d, last flushed %d, need flush? %s";
+                    needFlush = timeSinceLastFlush >= logFlushInterval.intValue();
+                    logger.trace(String.format(flushLogFormat, log.getTopicName(), logFlushInterval, log.getLastFlushedTime(), needFlush));
                 }
-                final String flushLogFormat = "[%s] flush interval %d, last flushed %d, need flush? %s";
-                final boolean needFlush = timeSinceLastFlush >= logFlushInterval.intValue();
-                logger.trace(String.format(flushLogFormat, log.getTopicName(), logFlushInterval,
-                        log.getLastFlushedTime(), needFlush));
                 if (needFlush) {
                     log.flush();
                 }
@@ -415,13 +429,13 @@ public class LogManager implements PartitionChooser, Closeable {
      * @param partition
      * @return
      */
-    public Log getLog(String topic, int partition) {
+    public ILog getLog(String topic, int partition) {
         Pool<Integer, Log> p = getLogPool(topic, partition);
         return p == null ? null : p.get(partition);
     }
 
     /**
-     * Create the log if it does not exist, if it exists just return it
+     * Create the log if it does not exist or return back exist log
      * 
      * @param topic
      * @param partition
@@ -429,7 +443,7 @@ public class LogManager implements PartitionChooser, Closeable {
      * @throws InterruptedException
      * @throws IOException
      */
-    public Log getOrCreateLog(String topic, int partition) throws InterruptedException, IOException {
+    public ILog getOrCreateLog(String topic, int partition) throws IOException {
         boolean hasNewTopic = false;
         Pool<Integer, Log> parts = getLogPool(topic, partition);
         if (parts == null) {
@@ -461,7 +475,7 @@ public class LogManager implements PartitionChooser, Closeable {
         synchronized (logCreationLock) {
             File d = new File(logDir, topic + "-" + partition);
             d.mkdirs();
-            return new Log(d, this.rollingStategy, flushInterval, false);
+            return new Log(d,partition, this.rollingStategy, flushInterval, false);
         }
     }
 
@@ -482,15 +496,15 @@ public class LogManager implements PartitionChooser, Closeable {
      * @return
      */
     public List<Long> getOffsets(OffsetRequest offsetRequest) {
-        Log log = getLog(offsetRequest.topic, offsetRequest.partition);
+        ILog log = getLog(offsetRequest.topic, offsetRequest.partition);
         if (log != null) {
             return log.getOffsetsBefore(offsetRequest);
         }
-        return Log.getEmptyOffsets(offsetRequest);
+        return ILog.EMPTY_OFFSETS;
     }
 
-    private void registerNewTopicInZK(String topic) throws InterruptedException {
-        topicRegisterTasks.put(topic);
+    private void registerNewTopicInZK(String topic) {
+        topicRegisterTasks.add(topic);
     }
 
     /**

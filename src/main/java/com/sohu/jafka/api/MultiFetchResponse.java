@@ -69,4 +69,8 @@ public class MultiFetchResponse implements Iterable<ByteBufferMessageSet> {
     public int size() {
         return messageSets.size();
     }
+    
+    public boolean isEmpty() {
+        return size() == 0;
+    }
 }
