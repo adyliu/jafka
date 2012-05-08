@@ -65,9 +65,9 @@ public class KV<K, V> {
         return String.format("KV [k=%s, v=%s]", k, v);
     }
 
-    public static class StringKV extends KV<String, String> {
+    public static class StringTuple extends KV<String, String> {
 
-        public StringKV(String k, String v) {
+        public StringTuple(String k, String v) {
             super(k, v);
         }
 

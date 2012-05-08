@@ -53,7 +53,7 @@ import com.sohu.jafka.common.ConsumerRebalanceFailedException;
 import com.sohu.jafka.common.InvalidConfigException;
 import com.sohu.jafka.producer.serializer.Decoder;
 import com.sohu.jafka.utils.Closer;
-import com.sohu.jafka.utils.KV;
+import com.sohu.jafka.utils.KV.StringTuple;
 import com.sohu.jafka.utils.Pool;
 import com.sohu.jafka.utils.Scheduler;
 import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
@@ -153,7 +153,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
     private Pool<String, Pool<Partition, PartitionTopicInfo>> topicRegistry;
 
     //
-    private final Pool<KV<String, String>, BlockingQueue<FetchedDataChunk>> queues;
+    private final Pool<StringTuple, BlockingQueue<FetchedDataChunk>> queues;
 
     private final Scheduler scheduler = new Scheduler(1, "consumer-autocommit-", false);
 
@@ -170,7 +170,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         this.enableFetcher = enableFetcher;
         //
         this.topicRegistry = new Pool<String, Pool<Partition, PartitionTopicInfo>>();
-        this.queues = new Pool<KV<String, String>, BlockingQueue<FetchedDataChunk>>();
+        this.queues = new Pool<StringTuple, BlockingQueue<FetchedDataChunk>>();
         //
         connectZk();
         createFetcher();
@@ -223,7 +223,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             final List<MessageStream<T>> streamList = new ArrayList<MessageStream<T>>();
             for (String threadId : threadIdSet) {
                 LinkedBlockingQueue<FetchedDataChunk> stream = new LinkedBlockingQueue<FetchedDataChunk>(config.getMaxQueuedChunks());
-                queues.put(new KV<String, String>(topic, threadId), stream);
+                queues.put(new StringTuple(topic, threadId), stream);
                 streamList.add(new MessageStream<T>(topic, stream, config.getConsumerTimeoutMs(), decoder));
             }
             ret.put(topic, streamList);
@@ -450,7 +450,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             closeFetchers(cluster, messagesStreams, myTopicThreadIdsMap);
             releasePartitionOwnership(topicRegistry);
             //
-            Map<KV<String, String>, String> partitionOwnershipDecision = new HashMap<KV<String, String>, String>();
+            Map<StringTuple, String> partitionOwnershipDecision = new HashMap<StringTuple, String>();
             Pool<String, Pool<Partition, PartitionTopicInfo>> currentTopicRegistry = new Pool<String, Pool<Partition, PartitionTopicInfo>>();
             for (Map.Entry<String, Set<String>> e : myTopicThreadIdsMap.entrySet()) {
                 final String topic = e.getKey();
@@ -485,7 +485,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                             logger.info(consumerThreadId + " attempting to claim partition " + partition);
                             addPartitionTopicInfo(currentTopicRegistry, topicDirs, partition, topic, consumerThreadId);
                             // record the partition ownership decision
-                            partitionOwnershipDecision.put(new KV<String, String>(topic, partition), consumerThreadId);
+                            partitionOwnershipDecision.put(new StringTuple(topic, partition), consumerThreadId);
                         }
                     }
                 }
@@ -524,10 +524,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             }
         }
 
-        private boolean reflectPartitionOwnershipDecision(Map<KV<String, String>, String> partitionOwnershipDecision) {
-            final List<KV<String, String>> successfullyOwnerdPartitions = new ArrayList<KV<String, String>>();
+        private boolean reflectPartitionOwnershipDecision(Map<StringTuple, String> partitionOwnershipDecision) {
+            final List<StringTuple> successfullyOwnerdPartitions = new ArrayList<StringTuple>();
             int hasPartitionOwnershipFailed = 0;
-            for (Map.Entry<KV<String, String>, String> e : partitionOwnershipDecision.entrySet()) {
+            for (Map.Entry<StringTuple, String> e : partitionOwnershipDecision.entrySet()) {
                 final String topic = e.getKey().k;
                 final String partition = e.getKey().v;
                 final String consumerThreadId = e.getValue();
@@ -535,7 +535,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 final String partitionOwnerPath = topicDirs.consumerOwnerDir + "/" + partition;
                 try {
                     ZkUtils.createEphemeralPathExpectConflict(zkClient, partitionOwnerPath, consumerThreadId);
-                    successfullyOwnerdPartitions.add(new KV<String, String>(topic, partition));
+                    successfullyOwnerdPartitions.add(new StringTuple(topic, partition));
                 } catch (ZkNodeExistsException e2) {
                     logger.info("waiting for the partition ownership to be deleted: " + partition);
                     hasPartitionOwnershipFailed++;
@@ -543,7 +543,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             }
             //
             if (hasPartitionOwnershipFailed > 0) {
-                for (KV<String, String> topicAndPartition : successfullyOwnerdPartitions) {
+                for (StringTuple topicAndPartition : successfullyOwnerdPartitions) {
                     deletePartitionOwnershipFromZK(topicAndPartition.k, topicAndPartition.v);
                 }
                 return false;
@@ -569,9 +569,9 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             long offset = 0L;
             if (offsetString == null) {
                 if (OffsetRequest.SMALLES_TTIME_STRING.equals(config.getAutoOffsetReset())) {
-                    earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.EARLIES_TTIME);
+                    offset = earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.EARLIES_TTIME);
                 } else if (OffsetRequest.LARGEST_TIME_STRING.equals(config.getAutoOffsetReset())) {
-                    earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.LATES_TTIME);
+                    offset = earliestOrLatestOffset(topic, partition.brokerId, partition.partId, OffsetRequest.LATES_TTIME);
                 } else {
                     throw new InvalidConfigException("Wrong value in autoOffsetReset in ConsumerConfig");
                 }
@@ -579,7 +579,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             } else {
                 offset = Long.parseLong(offsetString);
             }
-            BlockingQueue<FetchedDataChunk> queue = queues.get(new KV<String, String>(topic, consumerThreadId));
+            BlockingQueue<FetchedDataChunk> queue = queues.get(new StringTuple(topic, consumerThreadId));
             AtomicLong consumedOffset = new AtomicLong(offset);
             AtomicLong fetchedOffset = new AtomicLong(offset);
             PartitionTopicInfo partTopicInfo = new PartitionTopicInfo(topic,//
@@ -606,7 +606,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 //using default value???
                 simpleConsumer = new SimpleConsumer(broker.host, broker.port, config.getSocketTimeoutMs(), config.getSocketBufferSize());
                 long[] offsets = simpleConsumer.getOffsetsBefore(topic, partitionId, earliestOrLatest, 1);
-                producedOffset = offsets[0];
+                //FIXME: what's this!!!
+                if(offsets.length>0) {
+                    producedOffset = offsets[0];
+                }
             } catch (Exception e) {
                 logger.error("error in earliestOrLatestOffset() ", e);
             } finally {
@@ -646,7 +649,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         private void closeFetchers(Cluster cluster, Map<String, List<MessageStream<T>>> messagesStreams2, Map<String, Set<String>> myTopicThreadIdsMap) {
             // topicRegistry.values()
             List<BlockingQueue<FetchedDataChunk>> queuesToBeCleared = new ArrayList<BlockingQueue<FetchedDataChunk>>();
-            for (Map.Entry<KV<String, String>, BlockingQueue<FetchedDataChunk>> e : queues.entrySet()) {
+            for (Map.Entry<StringTuple, BlockingQueue<FetchedDataChunk>> e : queues.entrySet()) {
                 if (myTopicThreadIdsMap.containsKey(e.getKey().k)) {
                     queuesToBeCleared.add(e.getValue());
                 }
