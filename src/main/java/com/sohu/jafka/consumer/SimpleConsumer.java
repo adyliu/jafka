@@ -43,6 +43,7 @@ import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.KV;
 
 /**
+ * Simple message consumer 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -65,6 +66,9 @@ public class SimpleConsumer implements Closeable {
 
     private final Object lock = new Object();
 
+    public SimpleConsumer(String host,int port) {
+        this(host, port, 30*1000, 64 * 1024);
+    }
     public SimpleConsumer(String host, int port, int soTimeout, int bufferSize) {
         super();
         this.host = host;

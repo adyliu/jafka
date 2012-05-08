@@ -17,7 +17,6 @@
 
 package demo.client;
 
-
 import java.io.IOException;
 
 import com.sohu.jafka.api.FetchRequest;
@@ -36,20 +35,13 @@ public class SimpleConsumerDemo {
      */
     public static void main(String[] args) throws IOException {
 
-        SimpleConsumer consumer = new SimpleConsumer("127.0.0.1", 9092, 10000, 1024000);
+        SimpleConsumer consumer = new SimpleConsumer("127.0.0.1", 9092);
         //
         long offset = 0;
-        int cnt = 0;
         while (true) {
-            //
-            FetchRequest request = new FetchRequest("test", 0, offset, 100000);
+            FetchRequest request = new FetchRequest("test", 0, offset);
             for (MessageAndOffset msg : consumer.fetch(request)) {
-                cnt++;
-                System.out.println(String.format("[%5d] %10d consumed: %s", //
-                        cnt,//
-                        msg.offset,//
-                        Utils.toString(msg.message.payload(), "UTF-8")));
-                //
+                System.out.println(Utils.toString(msg.message.payload(), "UTF-8"));
                 offset = msg.offset;
             }
         }

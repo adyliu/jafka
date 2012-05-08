@@ -54,6 +54,9 @@ public class FetchRequest implements Request {
      */
     public final int maxSize;
 
+    public FetchRequest(String topic, int partition, long offset) {
+        this(topic, partition, offset, 64 * 1024);//64KB
+    }
     /**
      * create a fetch request
      * 
