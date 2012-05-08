@@ -140,7 +140,15 @@ public class SimpleConsumer implements Closeable {
         response.readCompletely(channel);
         return new KV<Receive, ErrorMapping>(response, ErrorMapping.valueOf(response.buffer().getShort()));
     }
-    
+    /**
+     * get before offsets of message
+     * @param topic message topic
+     * @param partition topic partition
+     * @param time the log file created time
+     * @param maxNumOffsets  the number of offsets
+     * @return offsets while file created before the time or empty offsets
+     * @throws IOException
+     */
     public long[] getOffsetsBefore(String topic,int partition,long time,int maxNumOffsets) throws IOException{
         synchronized (lock) {
             KV<Receive, ErrorMapping> response = null;
