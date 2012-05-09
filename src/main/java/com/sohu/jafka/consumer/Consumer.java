@@ -34,7 +34,7 @@ public class Consumer {
      *  groupid: the consumer group name
      *  zk.connect: the zookeeper connection string
      * </pre>
-     * @return
+     * @return a zookeeper consumer connector
      */
     public static ConsumerConnector create(ConsumerConfig config) {
         ConsumerConnector consumerConnector = new ZookeeperConsumerConnector(config);

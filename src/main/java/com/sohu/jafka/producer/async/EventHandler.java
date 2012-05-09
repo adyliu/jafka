@@ -31,7 +31,6 @@ import com.sohu.jafka.producer.serializer.Encoder;
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
- * @see producer/async/EventHandler.scala
  */
 public interface EventHandler<T> extends Closeable{
 

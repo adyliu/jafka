@@ -8,5 +8,6 @@ build-dist.sh
 /jafka-1.0*
 /data
 /docs
+/doc
 __pycache__
 *.pyc

@@ -57,9 +57,10 @@ public class ZkUtils {
     }
 
     /**
-     * @param zkClient
-     * @param brokertopicspath2
-     * @return
+     * get children nodes name
+     * @param zkClient zkClient
+     * @param path full path
+     * @return children nodes name or null while path not exist
      */
     public static List<String> getChildrenParentMayNotExist(ZkClient zkClient, String path) {
         try {

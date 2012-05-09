@@ -45,9 +45,6 @@ public class SocketServerStats implements SocketServerStatsMBean, IMBeanName {
         fetchBytesStats = new SnapshotStats(monitorDurationNs);
     }
 
-    /**
-     * @param read
-     */
     public void recordBytesRead(int bytes) {
         produceBytesStats.recordRequestMetric(bytes);
     }

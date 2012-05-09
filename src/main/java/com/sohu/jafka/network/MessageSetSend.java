@@ -55,9 +55,6 @@ public class MessageSetSend extends AbstractSend {
         header.rewind();
     }
 
-    /**
-     * @param read
-     */
     public MessageSetSend(MessageSet messages) {
         this(messages, ErrorMapping.NoError);
     }

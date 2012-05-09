@@ -103,11 +103,6 @@ public class PartitionTopicInfo {
         return topic + ":" + partition + ": fetched offset = " + fetchedOffset.get() + ": consumed offset = " + consumedOffset.get();
     }
 
-    /**
-     * @param e
-     * @param fetchedOffset2
-     * @throws InterruptedException
-     */
     public void enqueueError(Exception e, long fetchOffset) throws InterruptedException {
         ByteBufferMessageSet messages = new ByteBufferMessageSet(ErrorMapping.EMPTY_BUFFER, 0, ErrorMapping.valueOf(e));
         chunkQueue.put(new FetchedDataChunk(messages, this, fetchOffset));

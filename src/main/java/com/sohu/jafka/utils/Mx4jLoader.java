@@ -33,9 +33,11 @@ import org.apache.log4j.Logger;
  * -Dmx4jaddress=127.0.0.1 This feature must be enabled with
  * -Dmx4jenable=true
  * 
+ * <p>
+ * see https://github.com/apache/cassandra/blob/trunk/src/java/org/apache/cassandra/utils/Mx4jTool.java
+ * </p>
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
- * @see org.apache.cassandra.utils.Mx4jTool
  */
 public class Mx4jLoader {
 

@@ -111,9 +111,7 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
     /**
      * add a new producer, either synchronous or asynchronous, connecting
      * to the specified broker 
-     * @param bid the id of the broker
-     * @param host the hostname of the broker
-     * @param port the port of the broker
+     * @param broker broker to producer
      */
     public void addProducer(Broker broker) {
         Properties props = new Properties();

@@ -96,7 +96,7 @@ public class Utils {
      * @param props
      * @param name
      * @param defaultValue
-     * @return
+     * @return value in the props or defaultValue while name not exist
      */
     public static String getString(Properties props, String name, String defaultValue) {
         return props.containsKey(name) ? props.getProperty(name) : defaultValue;
@@ -177,9 +177,10 @@ public class Utils {
     }
 
     /**
-     * @param channel
-     * @param sizeBuffer
-     * @return
+     * read data from channel to buffer
+     * @param channel readable channel
+     * @param buffer bytebuffer
+     * @return read size
      * @throws IOException
      */
     public static int read(ReadableByteChannel channel, ByteBuffer buffer) throws IOException {
@@ -193,7 +194,7 @@ public class Utils {
      * short
      * 
      * @param buffer The buffer to write to
-     * @param string The string to write
+     * @param s The string to write
      */
     public static void writeShortString(ByteBuffer buffer, String s) {
         if (s == null) {
@@ -235,7 +236,7 @@ public class Utils {
      * Read an unsigned integer from the current position in the buffer,
      * incrementing the position by 4 bytes
      * 
-     * @param The buffer to read from
+     * @param buffer The buffer to read from
      * @return The integer read, as a long to avoid signedness
      */
     public static long getUnsignedInt(ByteBuffer buffer) {
@@ -246,7 +247,7 @@ public class Utils {
      * Read an unsigned integer from the given position without modifying
      * the buffers position
      * 
-     * @param The buffer to read from
+     * @param buffer The buffer to read from
      * @param index the index from which to read the integer
      * @return The integer read, as a long to avoid signedness
      */
@@ -292,8 +293,8 @@ public class Utils {
      * specificed size and offset
      * 
      * @param bytes The bytes to checksum
-     * @param the offset at which to begin checksumming
-     * @param the number of bytes to checksum
+     * @param offset the offset at which to begin checksumming
+     * @param size the number of bytes to checksum
      * @return The CRC32
      */
     public static long crc32(byte[] bytes, int offset, int size) {
@@ -320,7 +321,6 @@ public class Utils {
      * read bytes with a short sign prefix(mark the size of bytes)
      * 
      * @param buffer data buffer
-     * @param string the result
      * @return string result(encoding with UTF-8)
      * @see #writeShortString(ByteBuffer, String)
      */
@@ -402,9 +402,10 @@ public class Utils {
     }
 
     /**
-     * @param file
-     * @param mutable
-     * @return
+     * open a readable or writeable FileChannel
+     * @param file file object
+     * @param mutable writeable
+     * @return open the FileChannel
      */
     public static FileChannel openChannel(File file, boolean mutable) throws IOException {
         if (mutable) {
@@ -427,8 +428,9 @@ public class Utils {
     }
 
     /**
-     * @param className
-     * @return
+     * create an instance from the className
+     * @param className full class name
+     * @return an object or null if className is null
      */
     @SuppressWarnings("unchecked")
     public static <E> E getObject(String className) {

@@ -177,9 +177,11 @@ public class Log implements ILog {
     }
 
     /**
-     * @param offset
-     * @param maxSize
-     * @return
+     * read messages beginning from offset
+     * @param offset next message offset
+     * @param length the max package size
+     * @return a MessageSet object with length data or empty
+     * @see MessageSet#Empty
      * @throws IOException
      */
     public MessageSet read(long offset, int length) throws IOException {

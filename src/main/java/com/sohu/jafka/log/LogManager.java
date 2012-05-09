@@ -82,6 +82,7 @@ public class LogManager implements PartitionChooser, Closeable {
     private final Scheduler logFlusherScheduler = new Scheduler(1, "jafka-logflusher-", false);
 
     private final static String CLOSED_TOPIC = "";
+
     //
     private final LinkedBlockingQueue<String> topicRegisterTasks = new LinkedBlockingQueue<String>();
 
@@ -150,8 +151,8 @@ public class LogManager implements PartitionChooser, Closeable {
                 } else {
                     logger.info("Loading log from " + dir.getAbsolutePath());
                     final KV<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
-                    Log log = new Log(dir,topicPartion.v, this.rollingStategy, flushInterval, needRecovery);
-                    
+                    Log log = new Log(dir, topicPartion.v, this.rollingStategy, flushInterval, needRecovery);
+
                     logs.putIfNotExists(topicPartion.k, new Pool<Integer, Log>());
                     Pool<Integer, Log> parts = logs.get(topicPartion.k);
                     parts.put(topicPartion.v, log);
@@ -184,6 +185,7 @@ public class LogManager implements PartitionChooser, Closeable {
             task.start();
         }
     }
+
     private void registeredTaskLooply() {
         while (!stopTopicRegisterTasks) {
             try {
@@ -196,12 +198,13 @@ public class LogManager implements PartitionChooser, Closeable {
         }
         logger.info("stop topic register task");
     }
-    
-    class TopicRegisterTask extends Thread{
+
+    class TopicRegisterTask extends Thread {
+
         @Override
-            public void run() {
-                registeredTaskLooply();
-            }
+        public void run() {
+            registeredTaskLooply();
+        }
     }
 
     private Map<String, Long> getLogRetentionMSMap(Map<String, Integer> logRetentionHourMap) {
@@ -425,9 +428,9 @@ public class LogManager implements PartitionChooser, Closeable {
     /**
      * Get the log if exists or return null
      * 
-     * @param topic
-     * @param partition
-     * @return
+     * @param topic topic name
+     * @param partition partition index
+     * @return a log for the topic or null if not exist
      */
     public ILog getLog(String topic, int partition) {
         Pool<Integer, Log> p = getLogPool(topic, partition);
@@ -439,7 +442,7 @@ public class LogManager implements PartitionChooser, Closeable {
      * 
      * @param topic
      * @param partition
-     * @return
+     * @return read or create a log
      * @throws InterruptedException
      * @throws IOException
      */
@@ -475,7 +478,7 @@ public class LogManager implements PartitionChooser, Closeable {
         synchronized (logCreationLock) {
             File d = new File(logDir, topic + "-" + partition);
             d.mkdirs();
-            return new Log(d,partition, this.rollingStategy, flushInterval, false);
+            return new Log(d, partition, this.rollingStategy, flushInterval, false);
         }
     }
 
@@ -492,8 +495,10 @@ public class LogManager implements PartitionChooser, Closeable {
     }
 
     /**
+     * read offsets before given time
+     * 
      * @param offsetRequest
-     * @return
+     * @return offsets before given time
      */
     public List<Long> getOffsets(OffsetRequest offsetRequest) {
         ILog log = getLog(offsetRequest.topic, offsetRequest.partition);

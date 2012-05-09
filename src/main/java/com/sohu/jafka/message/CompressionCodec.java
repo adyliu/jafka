@@ -22,16 +22,30 @@ import com.sohu.jafka.common.UnKnownCodecException;
 /**
  * message compression method
  * 
- * @author adyliu (imxylz@gmail.com)
  * @since 1.0
+ * @author adyliu (imxylz@gmail.com)
  */
 public enum CompressionCodec {
+    /**
+     * Not compression
+     */
     NoCompressionCodec(0), //
+    /**
+     * GZIP compression
+     */
     GZIPCompressionCodec(1), //
+    /**
+     * Snappy compression (NOT USED)
+     */
     SnappyCompressionCodec(2), //
-    //
+    /**
+     * DEFAULT compression(equals GZIPCompressionCode)
+     */
     DefaultCompressionCodec(1);
 
+    /**
+     * the codec value
+     */
     public final int codec;
 
     CompressionCodec(int codec) {
