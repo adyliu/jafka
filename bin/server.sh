@@ -26,4 +26,4 @@ export JAFKA_HOME
 
 
 . ${BIN_HOME}/env.sh
-java com.sohu.jafka.Jafka $*
+java $JVM_ARGS com.sohu.jafka.Jafka $*
