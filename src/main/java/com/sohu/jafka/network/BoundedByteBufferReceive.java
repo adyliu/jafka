@@ -23,12 +23,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
+import com.sohu.jafka.common.annotations.ServerSide;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * Receive data from socket
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
+@ServerSide
 public class BoundedByteBufferReceive extends AbstractTransmission implements Receive {
 
     final ByteBuffer sizeBuffer = ByteBuffer.allocate(4);
@@ -41,9 +45,6 @@ public class BoundedByteBufferReceive extends AbstractTransmission implements Re
         this(Integer.MAX_VALUE);
     }
 
-    /**
-     * @param maxRequestSize
-     */
     public BoundedByteBufferReceive(int maxRequestSize) {
         this.maxRequestSize = maxRequestSize;
     }
@@ -61,8 +62,10 @@ public class BoundedByteBufferReceive extends AbstractTransmission implements Re
             if (size <= 0) {
                 throw new InvalidRequestException(format("%d is not a valid request size.", size));
             }
-            if (size > maxRequestSize) throw new InvalidRequestException(format(
-                    "Request of length %d is not valid, it is larger than the maximum size of %d bytes.", size, maxRequestSize));
+            if (size > maxRequestSize) {
+                final String msg = "Request of length %d is not valid, it is larger than the maximum size of %d bytes.";
+                throw new InvalidRequestException(format(msg, size, maxRequestSize));
+            }
             contentBuffer = byteBufferAllocate(size);
         }
         //
@@ -100,5 +103,13 @@ public class BoundedByteBufferReceive extends AbstractTransmission implements Re
             throw t;
         }
         return buffer;
+    }
+
+    @Override
+    public String toString() {
+        String msg = "Receive [maxRequestSize=%d, expectSize=%d, readSize=%d, done=%s]";
+        return format(msg, maxRequestSize, contentBuffer == null ? -1 : contentBuffer.limit(), //
+                contentBuffer == null ? -1 : contentBuffer.position(), //
+                complete());
     }
 }

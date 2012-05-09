@@ -11,3 +11,4 @@ build-dist.sh
 /doc
 __pycache__
 *.pyc
+*.swp

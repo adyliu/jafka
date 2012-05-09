@@ -224,8 +224,8 @@ public class Log implements ILog {
             try {
                 LogSegment lastSegment = segments.getLastView();
                 long written = lastSegment.getMessageSet().append(validMessages);
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("[%s,%s] save %d messages, bytes %d",name,lastSegment.getName(),numberOfMessages,written));
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("[%s,%s] save %d messages, bytes %d",name,lastSegment.getName(),numberOfMessages,written));
                 }
                 maybeFlush(numberOfMessages);
                 maybeRoll(lastSegment);
@@ -261,7 +261,7 @@ public class Log implements ILog {
                     throw new RuntimeException("delete exist file(who will be created for rolling over) failed: "+newFile);
                 }
             }
-            logger.debug("Rolling log '" + name + "' to " + newFile.getName());
+            logger.info("Rolling log '" + name + "' to " + newFile.getName());
             segments.append(new LogSegment(newFile, new FileMessageSet(newFile, true), newOffset));
         }
     }

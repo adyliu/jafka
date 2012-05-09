@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
  */
 public class AbstractTransmission implements Transmission {
 
-    protected boolean over = false;
+    private boolean done = false;
 
     final protected Logger logger = Logger.getLogger(getClass());
 
@@ -42,10 +42,10 @@ public class AbstractTransmission implements Transmission {
     }
 
     public boolean complete() {
-        return over;
+        return done;
     }
 
     public void setCompleted() {
-        this.over = true;
+        this.done = true;
     }
 }

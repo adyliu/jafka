@@ -82,13 +82,7 @@ public class Server {
             logManager.load();
 
             RequestHandlers handlers = new RequestHandlers(logManager);
-            socketServer = new SocketServer(config.getPort(),//
-                    config.getNumThreads(),//
-                    config.getMonitoringPeriodSecs(),//
-                    handlers,//
-                    config.getSocketSendBuffer(),//
-                    config.getSocketReceiveBuffer(),//
-                    config.getMaxSocketRequestSize());
+            socketServer = new SocketServer(handlers, config);
             Utils.registerMBean(socketServer.getStats());
             socketServer.startup();
             Mx4jLoader.maybeLoad();

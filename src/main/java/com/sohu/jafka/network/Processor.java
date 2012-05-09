@@ -27,23 +27,25 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.RequestKeys;
 import com.sohu.jafka.mx.SocketServerStats;
+import com.sohu.jafka.utils.Closer;
 
 /**
- * Thread that processes all requests from a single connection. There are N of these running in
- * parallel each of which has its own selectors
+ * Thread that processes all requests from a single connection. There are N
+ * of these running in parallel each of which has its own selectors
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public class Processor extends AbstractServerThread {
 
-    private final ConcurrentLinkedQueue<SocketChannel> newConnections = new ConcurrentLinkedQueue<SocketChannel>();
+    private final BlockingQueue<SocketChannel> newConnections;
 
     private final Logger requestLogger = Logger.getLogger("jafka.request.logger");
 
@@ -53,10 +55,21 @@ public class Processor extends AbstractServerThread {
 
     private int maxRequestSize;
 
-    public Processor(RequestHandlerFactory requesthandlerFactory, SocketServerStats stats, int maxRequestSize) {
+    /**
+     * creaet a new thread processor
+     * 
+     * @param requesthandlerFactory request handler factory
+     * @param stats jmx state statics
+     * @param maxRequestSize max request package size
+     * @param maxCacheConnections max cache connections for self-protected
+     */
+    public Processor(RequestHandlerFactory requesthandlerFactory, //
+            SocketServerStats stats, int maxRequestSize,//
+            int maxCacheConnections) {
         this.requesthandlerFactory = requesthandlerFactory;
         this.stats = stats;
         this.maxRequestSize = maxRequestSize;
+        this.newConnections = new ArrayBlockingQueue<SocketChannel>(maxCacheConnections);
     }
 
     public void run() {
@@ -86,19 +99,21 @@ public class Processor extends AbstractServerThread {
                         }
                     } catch (EOFException eofe) {
                         Socket socket = channelFor(key).socket();
-                        logger.info(format("Closing socket connection to %s:%d.", socket.getInetAddress(),
-                                socket.getPort()));
+                        logger.info(format("connection closed by %s:%d.", socket.getInetAddress(), socket.getPort()));
                         close(key);
                     } catch (InvalidRequestException ire) {
                         Socket socket = channelFor(key).socket();
-                        logger.info(format("Closing socket connection to %s:%d due to invalid request: %s",
-                                socket.getInetAddress(), socket.getPort(), ire.getMessage()));
+                        logger.info(format("Closing socket connection to %s:%d due to invalid request: %s", socket.getInetAddress(), socket.getPort(),
+                                ire.getMessage()));
                         close(key);
                     } catch (Throwable t) {
                         Socket socket = channelFor(key).socket();
-                        logger.error(
-                                format("Closing socket for %s:%d becaulse of error", socket.getInetAddress(),
-                                        socket.getPort()), t);
+                        final String msg = "Closing socket for %s:%d becaulse of error";
+                        if (logger.isDebugEnabled()) {
+                            logger.error(format(msg, socket.getInetAddress(), socket.getPort()), t);
+                        } else {
+                            logger.error(format(msg, socket.getInetAddress(), socket.getPort()));
+                        }
                         close(key);
                     }
                 }
@@ -117,33 +132,17 @@ public class Processor extends AbstractServerThread {
         return (SocketChannel) key.channel();
     }
 
-    /**
-     * @param key
-     */
     private void close(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
-        if (logger.isDebugEnabled()) logger.debug("Closing connection from " + channel.socket()
-                .getRemoteSocketAddress());
-        try {
-            channel.socket().close();
-        } catch (IOException e) {
-            logger.info(e.getMessage(), e);
-        } finally {
-            try {
-                channel.close();
-            } catch (IOException e2) {
-                logger.info(e2.getMessage(), e2);
-            }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Closing connection from " + channel.socket().getRemoteSocketAddress());
         }
-
+        Closer.closeQuietly(channel.socket());
+        Closer.closeQuietly(channel);
         key.attach(null);
         key.cancel();
     }
 
-    /**
-     * @param key
-     * @throws IOException
-     */
     private void write(SelectionKey key) throws IOException {
         Send response = (Send) key.attachment();
         SocketChannel socketChannel = channelFor(key);
@@ -158,10 +157,6 @@ public class Processor extends AbstractServerThread {
         }
     }
 
-    /**
-     * @param key
-     * @throws IOException
-     */
     private void read(SelectionKey key) throws IOException {
         SocketChannel socketChannel = channelFor(key);
         Receive request = null;
@@ -187,6 +182,9 @@ public class Processor extends AbstractServerThread {
             // more reading to be done
             key.interestOps(SelectionKey.OP_READ);
             getSelector().wakeup();
+            if (logger.isTraceEnabled()) {
+                logger.trace("reading request not been done. " + request);
+            }
         }
     }
 

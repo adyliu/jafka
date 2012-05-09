@@ -17,14 +17,23 @@
 
 package com.sohu.jafka.network;
 
-
 /**
+ * transmission interface
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public interface Transmission {
-
+    /**
+     * expect task has not been finished othewise throwing an exception
+     */
     void expectIncomplete();
+    /**
+     * expect task has been finished othewise throwing an exception
+     */
     void expectComplete();
+    /**
+     * check task whether it has been finished
+     * @return true while finished or false
+     */
     boolean complete();
 }
