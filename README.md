@@ -1,4 +1,4 @@
-#A fast Message-Queue base on zookeeper.
+#A fast distributed messaging system (MQ)
 
 Jafka mq is a distributed publish-subscribe messaging system cloning from [Apache Kafka](http://incubator.apache.org/kafka/).
 
