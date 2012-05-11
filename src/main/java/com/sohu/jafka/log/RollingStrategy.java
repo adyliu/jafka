@@ -1,5 +1,7 @@
 package com.sohu.jafka.log;
 
+import java.io.Closeable;
+
 
 /**
  * log rolling strategy
@@ -7,7 +9,7 @@ package com.sohu.jafka.log;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public interface RollingStrategy {
+public interface RollingStrategy extends Closeable{
 
     /**
      * the the last LogSegment whether needing rolling over

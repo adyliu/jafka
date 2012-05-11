@@ -1,5 +1,9 @@
 package com.sohu.jafka.log;
 
+import static java.lang.String.format;
+
+import java.io.IOException;
+
 /**
  * This strategy will be rolling file while it reaches the max file size.
  * 
@@ -19,4 +23,12 @@ public class FixedSizeRollingStrategy implements RollingStrategy {
         return lastSegment.getMessageSet().getSizeInBytes() > maxFileSize;
     }
 
+    @Override
+    public String toString() {
+        return format("FixedSizeRollingStrategy [maxFileSize=%d bytes(%dMB)", maxFileSize, maxFileSize / (1024 * 1024));
+    }
+
+    @Override
+    public void close() throws IOException {
+    }
 }
