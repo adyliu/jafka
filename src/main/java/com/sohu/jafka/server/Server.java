@@ -79,6 +79,7 @@ public class Server {
                     1000L * 60 * config.getLogCleanupIntervalMinutes(),//
                     1000L * 60 * 60 * config.getLogRetentionHours(),//
                     needRecovery);
+            this.logManager.setRollingStategy(config.getRollingStrategy());
             logManager.load();
 
             RequestHandlers handlers = new RequestHandlers(logManager);

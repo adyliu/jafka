@@ -125,9 +125,6 @@ public class LogManager implements PartitionChooser, Closeable {
         //
     }
 
-    /**
-     * @param rollingStategy the rollingStategy to set
-     */
     public void setRollingStategy(RollingStrategy rollingStategy) {
         this.rollingStategy = rollingStategy;
     }

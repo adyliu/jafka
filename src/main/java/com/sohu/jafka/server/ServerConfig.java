@@ -22,7 +22,10 @@ import static com.sohu.jafka.utils.Utils.*;
 import java.util.Map;
 import java.util.Properties;
 
+import com.sohu.jafka.log.FixedSizeRollingStrategy;
+import com.sohu.jafka.log.RollingStrategy;
 import com.sohu.jafka.message.Message;
+import com.sohu.jafka.utils.Utils;
 import com.sohu.jafka.utils.ZKConfig;
 
 /**
@@ -178,5 +181,15 @@ public class ServerConfig extends ZKConfig {
      */
     public Map<String, Integer> getTopicPartitionsMap() {
         return getTopicPartitions(getString(props, "topic.partition.count.map", ""));
+    }
+
+    /**
+     * get the rolling strategy (default value is
+     * {@link FixedSizeRollingStrategy})
+     * 
+     * @return RollingStrategy Object
+     */
+    public RollingStrategy getRollingStrategy() {
+        return Utils.getObject(getString(props, "log.rolling.strategy", null));
     }
 }

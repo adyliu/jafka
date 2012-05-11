@@ -28,10 +28,11 @@ import com.sohu.jafka.utils.Utils;
 
 /**
  * Rolling file every day
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.1
  */
+//FIXME: NOT WORK AT STARTUP
 public class DailyRollingStrategy implements RollingStrategy, Runnable {
 
     private boolean firstCheck = true;
@@ -90,9 +91,14 @@ public class DailyRollingStrategy implements RollingStrategy, Runnable {
             Calendar today = today();
             today.add(Calendar.DAY_OF_MONTH, 1);
             try {
-                waitCondition.awaitUntil(new Date(today.getTimeInMillis()));
-                if (System.currentTimeMillis() - lastRollingTime >= ONE_DAY) {
-                    needRolling.compareAndSet(false, true);
+                lock.lock();
+                try {
+                    waitCondition.awaitUntil(new Date(today.getTimeInMillis()));
+                    if (System.currentTimeMillis() - lastRollingTime >= ONE_DAY) {
+                        needRolling.compareAndSet(false, true);
+                    }
+                } finally {
+                    lock.unlock();
                 }
             } catch (InterruptedException e) {
                 break;
