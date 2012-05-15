@@ -30,20 +30,24 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
 
+import com.sohu.jafka.api.OffsetRequest;
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.cluster.Broker;
 import com.sohu.jafka.cluster.Partition;
+import com.sohu.jafka.common.ErrorMapping;
 import com.sohu.jafka.common.InvalidConfigException;
 import com.sohu.jafka.common.UnavailableProducerException;
 import com.sohu.jafka.common.annotations.ClientSide;
 import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.message.Message;
+import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.producer.async.AsyncProducer;
 import com.sohu.jafka.producer.async.AsyncProducerConfig;
 import com.sohu.jafka.producer.async.CallbackHandler;
 import com.sohu.jafka.producer.async.DefaultEventHandler;
 import com.sohu.jafka.producer.async.EventHandler;
 import com.sohu.jafka.producer.serializer.Encoder;
+import com.sohu.jafka.utils.KV;
 import com.sohu.jafka.utils.Utils;
 
 /**
@@ -142,9 +146,32 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
      * producer to publish the data to the specified broker partition
      * @param poolData the producer pool request object
      */
-    @SuppressWarnings("unchecked")
-    public void send(ProducerPoolData<V> poolData) {
-        send(Arrays.asList(poolData));
+    public long[]  send(ProducerPoolData<V> ppd) {
+        if(sync) {
+            Message[] messages = new Message[ppd.data.size()];
+            int index = 0;
+            for (V v : ppd.data) {
+                messages[index] = serializer.toMessage(v);
+                index++;
+            }
+            ByteBufferMessageSet bbms = new ByteBufferMessageSet(config.getCompressionCodec(), messages);
+            ProducerRequest request = new ProducerRequest(ppd.topic, ppd.partition.partId, bbms);
+            SyncProducer producer = syncProducers.get(ppd.partition.brokerId);
+            if(producer == null) {
+                throw new UnavailableProducerException("Producer pool has not been initialized correctly. " +
+                        "Sync Producer for broker " + ppd.partition.brokerId + " does not exist in the pool");
+            }
+            KV<Receive, ErrorMapping> response = producer.send(request.topic, request.partition, request.messages);
+            long[] offsets = OffsetRequest.deserializeOffsetArray(response.k.buffer());
+            //
+            return offsets;
+        }else {
+            AsyncProducer<V> asyncProducer = asyncProducers.get(ppd.partition.brokerId);
+            for (V v : ppd.data) {
+                asyncProducer.send(ppd.topic, v, ppd.partition.partId);
+            }
+            return new long[0];
+        }
     }
     
     public void send(List<ProducerPoolData<V>> poolData) {
@@ -155,9 +182,7 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
         }
     }
 
-    /**
-     * @param poolData
-     */
+    
     private void asyncSend(List<ProducerPoolData<V>> poolData) {
         for (ProducerPoolData<V> ppd : poolData) {
             AsyncProducer<V> asyncProducer = asyncProducers.get(ppd.partition.brokerId);
@@ -195,7 +220,9 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
             }
             if (e.getValue().size() == 1) {
                 ProducerRequest request = e.getValue().get(0);
-                producer.send(request.topic, request.partition, request.messages);
+                KV<Receive, ErrorMapping> response = producer.send(request.topic, request.partition, request.messages);
+                long[] offsets = OffsetRequest.deserializeOffsetArray(response.k.buffer());
+                System.out.println(Arrays.toString(offsets));
             } else {
                 producer.multiSend(e.getValue());
             }

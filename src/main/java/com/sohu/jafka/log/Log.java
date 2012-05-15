@@ -79,6 +79,7 @@ public class Log implements ILog {
     private final LogStats logStats = new LogStats(this);
 
     private final SegmentList segments;
+
     public final int partition;
 
     public Log(File dir, //
@@ -89,7 +90,7 @@ public class Log implements ILog {
         super();
         this.dir = dir;
         this.partition = partition;
-       this.rollingStategy = rollingStategy;
+        this.rollingStategy = rollingStategy;
         this.flushInterval = flushInterval;
         this.needRecovery = needRecovery;
         this.name = dir.getName();
@@ -110,7 +111,7 @@ public class Log implements ILog {
                 return f.isFile() && f.getName().endsWith(FileSuffix);
             }
         });
-        logger.info("loadSegments files from ["+dir.getAbsolutePath()+"]: " + ls.length);
+        logger.info("loadSegments files from [" + dir.getAbsolutePath() + "]: " + ls.length);
         int n = 0;
         for (File f : ls) {
             n++;
@@ -139,7 +140,7 @@ public class Log implements ILog {
         LogSegment mutable = new LogSegment(last.getFile(), new FileMessageSet(last.getFile(), true, new AtomicBoolean(
                 needRecovery)), last.start());
         accum.add(mutable);
-        return new SegmentList(name,accum);
+        return new SegmentList(name, accum);
     }
 
     /**
@@ -178,6 +179,7 @@ public class Log implements ILog {
 
     /**
      * read messages beginning from offset
+     * 
      * @param offset next message offset
      * @param length the max package size
      * @return a MessageSet object with length data or empty
@@ -196,14 +198,23 @@ public class Log implements ILog {
         return found.getMessageSet().read(offset - found.start(), length);
     }
 
-    public void append(ByteBufferMessageSet messages) {
+    public List<Long> append(ByteBufferMessageSet messages) {
         //validate the messages
         int numberOfMessages = 0;
+        final List<Long> offsets = new ArrayList<Long>();
+        long lastOffset = -1;
         for (MessageAndOffset messageAndOffset : messages) {
             if (!messageAndOffset.message.isValid()) {
                 throw new InvalidMessageException();
             }
             numberOfMessages += 1;
+            if(lastOffset == -1) {
+                lastOffset = messages.getInitialOffset();
+                offsets.add(lastOffset);
+            }else {
+                offsets.add(lastOffset - messages.getInitialOffset());
+            }
+           lastOffset = messageAndOffset.offset;
         }
         //
         BrokerTopicStat.getBrokerTopicStat(getTopicName()).recordMessagesIn(numberOfMessages);
@@ -223,12 +234,18 @@ public class Log implements ILog {
         synchronized (lock) {
             try {
                 LogSegment lastSegment = segments.getLastView();
-                long written = lastSegment.getMessageSet().append(validMessages);
+                long[] writtenAndOffset = lastSegment.getMessageSet().append(validMessages);
+                final long initialOffset = writtenAndOffset[1];
+                for (int i = 0; i < offsets.size(); i++) {
+                    offsets.set(i, initialOffset + offsets.get(i));
+                }
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("[%s,%s] save %d messages, bytes %d",name,lastSegment.getName(),numberOfMessages,written));
+                    logger.trace(String.format("[%s,%s] save %d messages, bytes %d", name, lastSegment.getName(),
+                            numberOfMessages, writtenAndOffset[0]));
                 }
                 maybeFlush(numberOfMessages);
                 maybeRoll(lastSegment);
+
             } catch (IOException e) {
                 logger.fatal("Halting due to unrecoverable I/O error while handling producer request", e);
                 Runtime.getRuntime().halt(1);
@@ -236,11 +253,12 @@ public class Log implements ILog {
                 throw re;
             }
         }
-
+        return offsets;
     }
 
     /**
      * check the log whether needing rolling
+     * 
      * @param lastSegment the last file segment
      * @throws IOException any file operation exception
      */
@@ -256,9 +274,10 @@ public class Log implements ILog {
             File newFile = new File(dir, nameFromOffset(newOffset));
             if (newFile.exists()) {
                 logger.warn("newly rolled logsegment " + newFile.getName() + " already exists, deleting it first");
-                if(!newFile.delete()) {
-                    logger.error("delete exist file(who will be created for rolling over) failed: "+newFile);
-                    throw new RuntimeException("delete exist file(who will be created for rolling over) failed: "+newFile);
+                if (!newFile.delete()) {
+                    logger.error("delete exist file(who will be created for rolling over) failed: " + newFile);
+                    throw new RuntimeException(
+                            "delete exist file(who will be created for rolling over) failed: " + newFile);
                 }
             }
             logger.info("Rolling log '" + name + "' to " + newFile.getName());
@@ -451,7 +470,7 @@ public class Log implements ILog {
 
     @Override
     public String toString() {
-        return "Log [dir=" + dir + ", lastflushedTime=" +//
-    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(lastflushedTime.get())) + "]";
+        return "Log [dir=" + dir + ", lastflushedTime=" + //
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(lastflushedTime.get())) + "]";
     }
 }

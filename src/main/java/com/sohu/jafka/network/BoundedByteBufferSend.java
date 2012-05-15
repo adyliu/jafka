@@ -48,9 +48,7 @@ public class BoundedByteBufferSend extends AbstractSend {
         buffer.rewind();
     }
     
-    /**
-     * @return the buffer
-     */
+   
     public ByteBuffer getBuffer() {
         return buffer;
     }

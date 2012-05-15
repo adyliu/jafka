@@ -35,4 +35,8 @@ public class MessageAndOffset {
         this.offset = offset;
     }
 
+    @Override
+    public String toString() {
+        return String.format("MessageAndOffset [offset=%s, message=%s]", offset, message);
+    }
 }

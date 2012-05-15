@@ -42,7 +42,7 @@ public class MultiProduceHandler extends ProducerHandler {
             logger.debug("Multiproducer request " + request);
         }
         for (ProducerRequest produce : request.produces) {
-            handleProducerRequest(produce, "MultiProducerRequest");
+            handleProducerRequest(produce);
         }
         return null;
     }

@@ -31,11 +31,17 @@ import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.MultiProducerRequest;
 import com.sohu.jafka.api.ProducerRequest;
+import com.sohu.jafka.api.RequestKeys;
+import com.sohu.jafka.common.ErrorMapping;
 import com.sohu.jafka.common.annotations.ThreadSafe;
 import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.mx.SyncProducerStats;
+import com.sohu.jafka.network.BoundedByteBufferReceive;
 import com.sohu.jafka.network.BoundedByteBufferSend;
+import com.sohu.jafka.network.Receive;
+import com.sohu.jafka.network.Request;
 import com.sohu.jafka.utils.Closer;
+import com.sohu.jafka.utils.KV;
 
 /**
  * file{producer/SyncProducer.scala}
@@ -76,27 +82,22 @@ public class SyncProducer implements Closeable {
         this.host = config.getHost();
         this.port = config.getPort();
         //
-        lastConnectionTime = System.currentTimeMillis()
-                - (long) (randomGenerator.nextDouble() * config.reconnectInterval);
+        lastConnectionTime = System.currentTimeMillis() - (long) (randomGenerator.nextDouble() * config.reconnectInterval);
     }
 
-    public void send(String topic, ByteBufferMessageSet message) {
-        send(topic, ProducerRequest.RandomPartition, message);
+    public KV<Receive, ErrorMapping> send(String topic, ByteBufferMessageSet message) {
+        return send(topic, ProducerRequest.RandomPartition, message);
     }
 
-    /**
-     * send a message
-     * 
-     * @param topic
-     * @param partition
-     * @param messages
-     */
-    public void send(String topic, int partition, ByteBufferMessageSet messages) {
+    public KV<Receive, ErrorMapping> send(String topic, int partition, ByteBufferMessageSet messages) {
         messages.verifyMessageSize(config.maxMessageSize);
-        send(new BoundedByteBufferSend(new ProducerRequest(topic, partition, messages)));
+        return send(new ProducerRequest(topic, partition, messages));
     }
 
-    private void send(BoundedByteBufferSend send) {
+    private KV<Receive, ErrorMapping> send(Request request) {
+        boolean singleRequest = request.getRequestKey() == RequestKeys.PRODUCE;
+        BoundedByteBufferSend send = new BoundedByteBufferSend(request);
+        BoundedByteBufferReceive response = new BoundedByteBufferReceive();
         synchronized (lock) {
             verifySendBuffer(send.getBuffer().slice());
             long startTime = System.nanoTime();
@@ -104,6 +105,9 @@ public class SyncProducer implements Closeable {
             int written = -1;
             try {
                 written = send.writeCompletely(channel);
+                if(singleRequest) {//produce with offset result
+                    response.readCompletely(channel);
+                }
             } catch (IOException e) {
                 // no way to tell if write succeeded. Disconnect and re-throw exception to let client handle retry
                 disconnect();
@@ -124,6 +128,10 @@ public class SyncProducer implements Closeable {
             final long endTime = System.nanoTime();
             SyncProducerStats.recordProduceRequest(endTime - startTime);
         }
+        if(!singleRequest) {
+            return (KV<Receive, ErrorMapping>)null;
+        }
+        return new KV<Receive, ErrorMapping>(response, ErrorMapping.valueOf(response.buffer().getShort()));
     }
 
     private void getOrMakeConnection() {
@@ -134,7 +142,7 @@ public class SyncProducer implements Closeable {
 
     private SocketChannel connect() {
         long connectBackoffMs = 1;
-        long beginTimeMs =  System.currentTimeMillis();
+        long beginTimeMs = System.currentTimeMillis();
         while (channel == null && !shutdown) {
             try {
                 channel = SocketChannel.open();
@@ -146,14 +154,16 @@ public class SyncProducer implements Closeable {
                 logger.info("Connected to " + config.getHost() + ":" + config.getPort() + " for producing");
             } catch (IOException e) {
                 disconnect();
-                long endTimeMs =  System.currentTimeMillis();
+                long endTimeMs = System.currentTimeMillis();
                 if ((endTimeMs - beginTimeMs + connectBackoffMs) > config.connectTimeoutMs) {
-                    logger.error("Producer connection to " + config.getHost() + ":" + config.getPort()
-                            + " timing out after " + config.connectTimeoutMs + " ms", e);
+                    logger.error(
+                            "Producer connection to " + config.getHost() + ":" + config.getPort() + " timing out after " + config.connectTimeoutMs + " ms",
+                            e);
                     throw new RuntimeException(e.getMessage(), e);
                 }
-                logger.error("Connection attempt to " + config.getHost() + ":" + config.getPort()
-                        + " failed, next attempt in " + connectBackoffMs + " ms", e);
+                logger.error(
+                        "Connection attempt to " + config.getHost() + ":" + config.getPort() + " failed, next attempt in " + connectBackoffMs + " ms",
+                        e);
                 try {
                     Thread.sleep(connectBackoffMs);
                 } catch (InterruptedException e1) {
@@ -185,9 +195,6 @@ public class SyncProducer implements Closeable {
         }
     }
 
-    /**
-     * @param slice
-     */
     private void verifySendBuffer(ByteBuffer slice) {
         //TODO: check the source
     }
@@ -196,7 +203,7 @@ public class SyncProducer implements Closeable {
         for (ProducerRequest request : produces) {
             request.messages.verifyMessageSize(config.maxMessageSize);
         }
-        send(new BoundedByteBufferSend(new MultiProducerRequest(produces)));
+        send(new MultiProducerRequest(produces));
     }
 
 }

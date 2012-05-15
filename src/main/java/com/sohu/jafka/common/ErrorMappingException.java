@@ -18,21 +18,29 @@
 package com.sohu.jafka.common;
 
 /**
- * Indicates a producer pool initialization problem
- * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.1
  */
-public class UnavaliableProducerException extends RuntimeException {
+public class ErrorMappingException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public UnavaliableProducerException() {
-        super();
+    public ErrorMappingException() {
     }
 
-    public UnavaliableProducerException(String message) {
+    public ErrorMappingException(String message) {
         super(message);
     }
 
+    public ErrorMappingException(Throwable cause) {
+        super(cause);
+    }
+
+    public ErrorMappingException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ErrorMapping getErrorMapping() {
+        return ErrorMapping.UnkonwCode;
+    }
 }

@@ -23,7 +23,7 @@ package com.sohu.jafka.common;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class InvalidPartitionException extends RuntimeException {
+public class InvalidPartitionException extends ErrorMappingException {
 
     private static final long serialVersionUID = 1L;
 
@@ -35,4 +35,8 @@ public class InvalidPartitionException extends RuntimeException {
         super(message);
     }
 
+    @Override
+    public ErrorMapping getErrorMapping() {
+        return ErrorMapping.WrongPartitionCode;
+    }
 }
