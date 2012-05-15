@@ -17,11 +17,6 @@
 
 package com.sohu.jafka.utils;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -55,21 +50,23 @@ public class Mx4jLoader {
                 return false;
             }
             logger.debug("Will try to load mx4j now, if it's in the classpath");
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            ObjectName processorName = new ObjectName("Server:name=XSLTProcessor");
+            //MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+            //ObjectName processorName = new ObjectName("Server:name=XSLTProcessor");
 
             Class<?> httpAdaptorClass = Class.forName("mx4j.tools.adaptor.http.HttpAdaptor");
             Object httpAdaptor = httpAdaptorClass.newInstance();
             httpAdaptorClass.getMethod("setHost", String.class).invoke(httpAdaptor, getAddress());
             httpAdaptorClass.getMethod("setPort", Integer.TYPE).invoke(httpAdaptor, getPort());
 
-            ObjectName httpName = new ObjectName("system:name=http");
-            mbs.registerMBean(httpAdaptor, httpName);
+            //ObjectName httpName = new ObjectName("system:name=http");
+            //mbs.registerMBean(httpAdaptor, httpName);
+            Utils.registerMBean(httpAdaptor, "system:name=http");
 
             Class<?> xsltProcessorClass = Class.forName("mx4j.tools.adaptor.http.XSLTProcessor");
             Object xsltProcessor = xsltProcessorClass.newInstance();
             httpAdaptorClass.getMethod("setProcessor", Class.forName("mx4j.tools.adaptor.http.ProcessorMBean")).invoke(httpAdaptor, xsltProcessor);
-            mbs.registerMBean(xsltProcessor, processorName);
+            //mbs.registerMBean(xsltProcessor, processorName);
+            Utils.registerMBean(xsltProcessor, "Server:name=XSLTProcessor");
             httpAdaptorClass.getMethod("start").invoke(httpAdaptor);
             logger.info("mx4j successfuly loaded");
             return true;

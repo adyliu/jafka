@@ -17,6 +17,7 @@
 
 package com.sohu.jafka.server;
 
+import java.io.Closeable;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +37,7 @@ import com.sohu.jafka.utils.Utils;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class Server {
+public class Server implements Closeable{
 
     final String CLEAN_SHUTDOWN_FILE = ".jafka_cleanshutdown";
 
@@ -96,11 +97,11 @@ public class Server {
             logger.info("Server started.");
         } catch (Exception ex) {
             logger.fatal("Fatal error during startup.", ex);
-            shutdown();
+            close();
         }
     }
 
-    void shutdown() {
+    public void close() {
         boolean canShutdown = isShuttingDown.compareAndSet(false, true);
         if (canShutdown) {
             logger.info("Shutting down...");

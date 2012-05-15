@@ -77,7 +77,7 @@ public class ServerStartable implements Closeable{
             if(embeddedConsumer!=null) {
                 embeddedConsumer.shutdown();
             }
-            server.shutdown();
+            server.close();
         } catch (Exception e) {
             logger.fatal("Fatal error during ServerStable shutdown. Prepare to halt", e);
             Runtime.getRuntime().halt(1);

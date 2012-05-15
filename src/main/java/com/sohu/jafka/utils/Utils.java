@@ -360,7 +360,7 @@ public class Utils {
      * @param name The name to register this mbean with
      * @returns true if the registration succeeded
      */
-    private static boolean registerMBean(Object mbean, String name) {
+    static boolean registerMBean(Object mbean, String name) {
         try {
             MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
             synchronized (mbs) {
