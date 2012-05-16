@@ -46,6 +46,8 @@ public class PartitionTopicInfo {
 
     private final AtomicLong fetchedOffset;
 
+    private final AtomicLong consumedOffsetChanged = new AtomicLong(0);
+
     final Partition partition;
 
     public PartitionTopicInfo(String topic, //
@@ -63,22 +65,25 @@ public class PartitionTopicInfo {
         this.fetchedOffset = fetchedOffset;
     }
 
-    /**
-     * @return the consumedOffset
-     */
     public long getConsumedOffset() {
         return consumedOffset.get();
     }
 
-    /**
-     * @return the fetchedOffset
-     */
+    public AtomicLong getConsumedOffsetChanged() {
+        return consumedOffsetChanged;
+    }
+
+    public boolean resetComsumedOffsetChanged(long lastChanged) {
+        return consumedOffsetChanged.compareAndSet(lastChanged, 0);
+    }
+
     public long getFetchedOffset() {
         return fetchedOffset.get();
     }
 
     public void resetConsumeOffset(long newConsumeOffset) {
         consumedOffset.set(newConsumeOffset);
+        consumedOffsetChanged.incrementAndGet();
     }
 
     public void resetFetchOffset(long newFetchOffset) {

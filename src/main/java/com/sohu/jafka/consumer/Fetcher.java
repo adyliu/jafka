@@ -87,7 +87,7 @@ public class Fetcher {
         //
         final List<FetcherRunnable> fetcherThreads = new ArrayList<FetcherRunnable>();
         for(Map.Entry<Integer, List<PartitionTopicInfo>> e:m.entrySet()) {
-            FetcherRunnable fetcherThread = new FetcherRunnable("FetchRunnable-", //
+            FetcherRunnable fetcherThread = new FetcherRunnable("FetchRunnable-"+e.getKey(), //
                     zkClient, //
                     config, //
                     cluster.getBroker(e.getKey().intValue()), //

@@ -270,6 +270,11 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             ZkGroupTopicDirs topicDirs = new ZkGroupTopicDirs(config.getGroupId(), e.getKey());
             //
             for (PartitionTopicInfo info : e.getValue().values()) {
+                final long lastChanged = info.getConsumedOffsetChanged().get();
+                if (lastChanged == 0) {
+                    logger.debug("consume offset not changed");
+                    continue;
+                }
                 final long newOffset = info.getConsumedOffset();
                 final String path = topicDirs.consumerOffsetDir + "/" + info.partition.getName();
                 try {
@@ -277,7 +282,8 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 } catch (Throwable t) {
                     logger.warn("exception during commitOffsets, path=" + path + ",offset=" + newOffset, t);
                 } finally {
-                    if(logger.isDebugEnabled()) {
+                    info.resetComsumedOffsetChanged(lastChanged);
+                    if (logger.isDebugEnabled()) {
                         logger.debug("Committed [" + path + "] for topic " + info);
                     }
                 }
@@ -607,7 +613,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 simpleConsumer = new SimpleConsumer(broker.host, broker.port, config.getSocketTimeoutMs(), config.getSocketBufferSize());
                 long[] offsets = simpleConsumer.getOffsetsBefore(topic, partitionId, earliestOrLatest, 1);
                 //FIXME: what's this!!!
-                if(offsets.length>0) {
+                if (offsets.length > 0) {
                     producedOffset = offsets[0];
                 }
             } catch (Exception e) {

@@ -49,6 +49,7 @@ public class ConsumerConfig extends ZKConfig {
     private int fetchSize;
 
     private long fetchBackoffMs;
+    private long maxFetchBackoffMs;
 
     private boolean autoCommit;
 
@@ -78,8 +79,9 @@ public class ConsumerConfig extends ZKConfig {
         this.socketBufferSize = get("socket.buffersize", 64 * 1024);//64KB
         this.fetchSize = get("fetch.size", 1024 * 1024);//1MB
         this.fetchBackoffMs = get("fetcher.backoff.ms", 1000);
+        this.maxFetchBackoffMs = get("fetcher.backoff.ms.max",(int)fetchBackoffMs*10);
         this.autoCommit = Utils.getBoolean(props, "autocommit.enable", true);
-        this.autoCommitIntervalMs = get("autocommit.interval.ms", 10 * 1000);//10 seconds
+        this.autoCommitIntervalMs = get("autocommit.interval.ms", 1000);//1 seconds
         this.maxQueuedChunks = get("queuedchunks.max", 10);
         this.maxRebalanceRetries = get("rebalance.retries.max", 4);
         this.rebalanceBackoffMs = get("rebalance.backoff.ms", getZkSyncTimeMs());
@@ -199,4 +201,8 @@ public class ConsumerConfig extends ZKConfig {
         return mirrorConsumerNumThreads;
     }
 
+    
+    public long getMaxFetchBackoffMs() {
+        return maxFetchBackoffMs;
+    }
 }

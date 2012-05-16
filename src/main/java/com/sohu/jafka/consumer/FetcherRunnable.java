@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
@@ -60,13 +61,14 @@ public class FetcherRunnable extends Thread {
     private final List<PartitionTopicInfo> partitionTopicInfos;
 
     private final Logger logger = Logger.getLogger(FetcherRunnable.class);
+    private final static AtomicInteger threadIndex = new AtomicInteger(0);
 
     public FetcherRunnable(String name,//
             ZkClient zkClient,//
             ConsumerConfig config,//
             Broker broker,//
             List<PartitionTopicInfo> partitionTopicInfos) {
-        super(name);
+        super(name+"-"+threadIndex.getAndIncrement());
         this.zkClient = zkClient;
         this.config = config;
         this.broker = broker;
@@ -87,10 +89,19 @@ public class FetcherRunnable extends Thread {
         }
         //
         try {
+            final long maxFetchBackoffMs = config.getMaxFetchBackoffMs();
+            long fetchBackoffMs = config.getFetchBackoffMs();
             while (!stopped) {
                 if (fetchOnce() == 0) {//read empty bytes
-                    //logger.debug("backing off " + config.getFetchBackoffMs() + " ms");
-                    Thread.sleep(config.getFetchBackoffMs());
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("backing off " + fetchBackoffMs + " ms");
+                    }
+                    Thread.sleep(fetchBackoffMs);
+                    if(fetchBackoffMs<maxFetchBackoffMs) {
+                        fetchBackoffMs += fetchBackoffMs / 10;
+                    }
+                }else {
+                    fetchBackoffMs = config.getFetchBackoffMs();
                 }
             }
         } catch (Exception e) {
