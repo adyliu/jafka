@@ -97,7 +97,11 @@ public class ZkUtils {
             zkClient.createPersistent(parentDir, true);
         }
     }
-    
+    /**
+     * read all brokers in the zookeeper
+     * @param zkClient zookeeper client
+     * @return all brokers
+     */
     public static Cluster getCluster(ZkClient zkClient) {
         Cluster cluster = new Cluster();
         List<String> nodes = getChildrenParentMayNotExist(zkClient, BrokerIdsPath);
@@ -113,7 +117,12 @@ public class ZkUtils {
         String topicCountJson = ZkUtils.readData(zkClient, dirs.consumerRegistryDir + "/" + consumerId);
         return TopicCount.parse(consumerId, topicCountJson);
     }
-    
+    /**
+     * 
+     * @param zkClient
+     * @param topics
+     * @return topic->(brokerid-0,brokerid-1...brokerid2-0,brokerid2-1...)
+     */
     public static Map<String, List<String>> getPartitionsForTopics(ZkClient zkClient,Collection<String> topics){
         Map<String, List<String>> ret = new HashMap<String, List<String>>();
         for(String topic:topics) {
@@ -132,6 +141,12 @@ public class ZkUtils {
         return ret;
     }
     
+    /**
+     * 
+     * @param zkClient
+     * @param group
+     * @return topic->(consumerIdStringA-0,consumerIdStringA-1...consumerIdStringB-0,consumerIdStringB-1)
+     */
     public static Map<String, List<String>> getConsumersPerTopic(ZkClient zkClient,String group){
         ZkGroupDirs dirs = new ZkGroupDirs(group);
        List<String> consumers =   getChildrenParentMayNotExist(zkClient, dirs.consumerRegistryDir);

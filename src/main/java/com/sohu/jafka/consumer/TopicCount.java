@@ -41,14 +41,17 @@ public class TopicCount {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * @param consumerIdString
-     * @param topicCountMap
+     * @param consumerIdString groupid-consumerid
+     * @param topicCountMap map: topic->threadCount
      */
     public TopicCount(String consumerIdString, Map<String, Integer> topicCountMap) {
         this.consumerIdString = consumerIdString;
         this.topicCountMap = topicCountMap;
     }
-
+    /**
+     * 
+     * @return topic->(consumerIdString-0,consumerIdString-1..)
+     */
     public Map<String, Set<String>> getConsumerThreadIdsPerTopic() {
         Map<String, Set<String>> consumerThreadIdsPerTopicMap = new HashMap<String, Set<String>>();
         for (Map.Entry<String, Integer> e : topicCountMap.entrySet()) {
@@ -85,7 +88,10 @@ public class TopicCount {
         } else if (!topicCountMap.equals(other.topicCountMap)) return false;
         return true;
     }
-
+    /**
+     * topic->count map
+     * @return json map
+     */
     public String toJsonString() {
         try {
             return mapper.writeValueAsString(topicCountMap);

@@ -24,12 +24,16 @@ package com.sohu.jafka.utils.zookeeper;
  */
 public class ZkGroupDirs {
 
+    /** group name */
     public final String group;
 
+    /** '/consumers' */
     public final String consumerDir;
 
+    /** '/consumers/&lt;group&gt;' */
     public final String consumerGroupDir;
 
+    /** '/consumers/&lt;group&gt;/ids' */
     public final String consumerRegistryDir;
 
     public ZkGroupDirs(String group) {

@@ -215,6 +215,9 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         if (consumerUuid == null) {
             consumerUuid = generateConsumerId();
         }
+        logger.info(format("create message stream by consumerid [%s] with groupid [%s]",config.getGroupId(),consumerUuid));
+        //
+        //consumerIdString => groupid_consumerid
         final String consumerIdString = config.getGroupId() + "_" + consumerUuid;
         final TopicCount topicCount = new TopicCount(consumerIdString, topicCountMap);
         for (Map.Entry<String, Set<String>> e : topicCount.getConsumerThreadIdsPerTopic().entrySet()) {
@@ -249,7 +252,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         loadBalancerListener.syncedRebalance();
         return ret;
     }
-
+    /**
+     * generate random consumerid ( hostname-currenttime-uuid.sub(8) )
+     * @return random consumerid
+     */
     private String generateConsumerId() {
         UUID uuid = UUID.randomUUID();
         try {
@@ -728,10 +734,16 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         }
     }
 
-    /**
-     * @param zkGroupDirs
-     * @param consumerIdString
-     * @param topicCount
+    /** 
+     * register consumer data in zookeeper
+     * <p>
+     * register path: /consumers/groupid/ids/groupid-consumerid
+     * <br/>
+     * data: {topic:count,topic:count}
+     * </p>
+     * @param zkGroupDirs zookeeper group path
+     * @param consumerIdString groupid-consumerid
+     * @param topicCount topic count
      */
     public void registerConsumerInZK(ZkGroupDirs zkGroupDirs, String consumerIdString, TopicCount topicCount) {
         final String path = zkGroupDirs.consumerRegistryDir + "/" + consumerIdString;
