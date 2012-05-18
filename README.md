@@ -14,3 +14,6 @@ If you are interesting in [scala](http://www.scala-lang.org/), please using the 
 ##Document & Wiki
 
 Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wiki)
+
+----
+[Keywords: jafka, kafka, messaging system, mq, jafka mq, sohu]
