@@ -282,6 +282,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                     continue;
                 }
                 final long newOffset = info.getConsumedOffset();
+                //path: /consumers/<group>/offsets/<topic>/<brokerid-partition>
                 final String path = topicDirs.consumerOffsetDir + "/" + info.partition.getName();
                 try {
                     ZkUtils.updatePersistentPath(zkClient, path, "" + newOffset);
@@ -448,9 +449,12 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         }
 
         private boolean rebalance(Cluster cluster) {
+            // map for current consumer: topic->[groupid-consumer-0,groupid-consumer-1,...,groupid-consumer-N]
             Map<String, Set<String>> myTopicThreadIdsMap = ZkUtils.getTopicCount(zkClient, group, consumerIdString).getConsumerThreadIdsPerTopic();
+            // map for all consumers in this group: topic->[groupid-consumer1-0,...,groupid-consumerX-N]
             Map<String, List<String>> consumersPerTopicMap = ZkUtils.getConsumersPerTopic(zkClient, group);
-            Map<String, List<String>> partitionsPerTopicMap = ZkUtils.getPartitionsForTopics(zkClient, myTopicThreadIdsMap.keySet());
+            // map for all broker-partitions for the topics in this consumerid: topic->[brokerid0-partition0,...,brokeridN-partitionN]
+            Map<String, List<String>> brokerPartitionsPerTopicMap = ZkUtils.getPartitionsForTopics(zkClient, myTopicThreadIdsMap.keySet());
             /**
              * fetchers must be stopped to avoid data duplication, since if
              * the current rebalancing attempt fails, the partitions that
@@ -470,14 +474,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 //
                 ZkGroupTopicDirs topicDirs = new ZkGroupTopicDirs(group, topic);
                 List<String> curConsumers = consumersPerTopicMap.get(topic);
-                List<String> curPartitions = partitionsPerTopicMap.get(topic);
+                List<String> curBrokerPartitions = brokerPartitionsPerTopicMap.get(topic);
 
-                final int nPartsPerConsumer = curPartitions.size() / curConsumers.size();
-                final int nConsumersWithExtraPart = curPartitions.size() % curConsumers.size();
+                final int nPartsPerConsumer = curBrokerPartitions.size() / curConsumers.size();
+                final int nConsumersWithExtraPart = curBrokerPartitions.size() % curConsumers.size();
 
-                logger.info("Consumer " + consumerIdString + " rebalancing the following partitions: " + curPartitions + " for topic " + topic
+                logger.info("Consumer " + consumerIdString + " rebalancing the following partitions: " + curBrokerPartitions + " for topic " + topic
                         + " with consumers: " + curConsumers);
 
+                //consumerThreadId=> groupid-consumerid-index (index from count)
                 for (String consumerThreadId : e.getValue()) {
                     final int myConsumerPosition = curConsumers.indexOf(consumerThreadId);
                     assert (myConsumerPosition >= 0);
@@ -493,11 +498,11 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                         logger.warn("No broker partitions consumed by consumer thread " + consumerThreadId + " for topic " + topic);
                     } else {
                         for (int i = startPart; i < startPart + nParts; i++) {
-                            String partition = curPartitions.get(i);
-                            logger.info(consumerThreadId + " attempting to claim partition " + partition);
-                            addPartitionTopicInfo(currentTopicRegistry, topicDirs, partition, topic, consumerThreadId);
+                            String brokerPartition = curBrokerPartitions.get(i);
+                            logger.info(consumerThreadId + " attempting to claim partition " + brokerPartition);
+                            addPartitionTopicInfo(currentTopicRegistry, topicDirs, brokerPartition, topic, consumerThreadId);
                             // record the partition ownership decision
-                            partitionOwnershipDecision.put(new StringTuple(topic, partition), consumerThreadId);
+                            partitionOwnershipDecision.put(new StringTuple(topic, brokerPartition), consumerThreadId);
                         }
                     }
                 }
@@ -511,7 +516,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
              */
             if (reflectPartitionOwnershipDecision(partitionOwnershipDecision)) {
                 logger.info("Updating the cache");
-                logger.debug("Partitions per topic cache " + partitionsPerTopicMap);
+                logger.debug("Partitions per topic cache " + brokerPartitionsPerTopicMap);
                 logger.debug("Consumers per topic cache " + consumersPerTopicMap);
                 topicRegistry = currentTopicRegistry;
                 updateFetcher(cluster, messagesStreams);
@@ -541,15 +546,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             int hasPartitionOwnershipFailed = 0;
             for (Map.Entry<StringTuple, String> e : partitionOwnershipDecision.entrySet()) {
                 final String topic = e.getKey().k;
-                final String partition = e.getKey().v;
+                final String brokerPartition = e.getKey().v;
                 final String consumerThreadId = e.getValue();
                 final ZkGroupTopicDirs topicDirs = new ZkGroupTopicDirs(group, topic);
-                final String partitionOwnerPath = topicDirs.consumerOwnerDir + "/" + partition;
+                final String partitionOwnerPath = topicDirs.consumerOwnerDir + "/" + brokerPartition;
                 try {
                     ZkUtils.createEphemeralPathExpectConflict(zkClient, partitionOwnerPath, consumerThreadId);
-                    successfullyOwnerdPartitions.add(new StringTuple(topic, partition));
+                    successfullyOwnerdPartitions.add(new StringTuple(topic, brokerPartition));
                 } catch (ZkNodeExistsException e2) {
-                    logger.info("waiting for the partition ownership to be deleted: " + partition);
+                    logger.info("waiting for the partition ownership to be deleted: " + brokerPartition);
                     hasPartitionOwnershipFailed++;
                 }
             }
@@ -566,13 +571,13 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         /**
          * @param currentTopicRegistry
          * @param topicDirs
-         * @param partition
+         * @param brokerPartition broker-partition format
          * @param topic
          * @param consumerThreadId
          */
         private void addPartitionTopicInfo(Pool<String, Pool<Partition, PartitionTopicInfo>> currentTopicRegistry, ZkGroupTopicDirs topicDirs,
-                String partitionString, String topic, String consumerThreadId) {
-            Partition partition = Partition.parse(partitionString);
+                String brokerPartition, String topic, String consumerThreadId) {
+            Partition partition = Partition.parse(brokerPartition);
             Pool<Partition, PartitionTopicInfo> partTopicInfoMap = currentTopicRegistry.get(topic);
 
             final String znode = topicDirs.consumerOffsetDir + "/" + partition.getName();
@@ -595,7 +600,6 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             AtomicLong consumedOffset = new AtomicLong(offset);
             AtomicLong fetchedOffset = new AtomicLong(offset);
             PartitionTopicInfo partTopicInfo = new PartitionTopicInfo(topic,//
-                    partition.brokerId,//
                     partition,//
                     queue,//
                     consumedOffset,//

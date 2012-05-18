@@ -51,7 +51,6 @@ public class PartitionTopicInfo {
     final Partition partition;
 
     public PartitionTopicInfo(String topic, //
-            int brokerId, //
             Partition partition,//
             BlockingQueue<FetchedDataChunk> chunkQueue, //
             AtomicLong consumedOffset, //
@@ -59,7 +58,7 @@ public class PartitionTopicInfo {
         super();
         this.topic = topic;
         this.partition = partition;
-        this.brokerId = brokerId;
+        this.brokerId = partition.brokerId;
         this.chunkQueue = chunkQueue;
         this.consumedOffset = consumedOffset;
         this.fetchedOffset = fetchedOffset;
@@ -105,7 +104,7 @@ public class PartitionTopicInfo {
 
     @Override
     public String toString() {
-        return topic + ":" + partition + ": fetched offset = " + fetchedOffset.get() + ": consumed offset = " + consumedOffset.get();
+        return topic + ":" + partition + ", fetched/consumed offset: " + fetchedOffset.get() + "/" + consumedOffset.get();
     }
 
     public void enqueueError(Exception e, long fetchOffset) throws InterruptedException {

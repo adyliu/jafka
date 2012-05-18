@@ -18,6 +18,8 @@
 package com.sohu.jafka.cluster;
 
 /**
+ * brokerid-partitionid tuple
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -40,7 +42,9 @@ public class Partition implements Comparable<Partition> {
     private final String name;
 
     /**
-     * @return the name
+     * brokerid with partitionid
+     * 
+     * @return brokerid-partitionid
      */
     public String getName() {
         return name;

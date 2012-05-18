@@ -94,6 +94,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
     }
 
     private void registerTopicInZkInternal(String topic) {
+        //path: /brokers/topics/<topic>/<brokerid>
         final String brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + topic + "/" + config.getBrokerId();
         Integer numParts = logManager.getTopicPartitionsMap().get(topic);
         if (numParts == null) {
@@ -105,7 +106,12 @@ public class ServerRegister implements IZkStateListener, Closeable {
     }
 
     /**
-     * 
+     * register broker in the zookeeper
+     * <p>
+     * path: /brokers/ids/<id>
+     * <br/>
+     * data: creator:host:port
+     * </p>
      */
     public void registerBrokerInZk() {
         logger.info("Registering broker " + brokerIdPath);
