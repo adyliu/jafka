@@ -86,6 +86,7 @@ public class SimpleConsumer implements Closeable {
         ch.socket().setReceiveBufferSize(bufferSize);
         ch.socket().setSoTimeout(soTimeout);
         ch.socket().setKeepAlive(true);
+        ch.socket().setTcpNoDelay(true);
         ch.connect(address);
         return ch;
     }
