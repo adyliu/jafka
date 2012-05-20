@@ -123,7 +123,7 @@ public class Processor extends AbstractServerThread {
 
         }
         //
-        logger.info("Closing selector.");
+        logger.info("Closing selector while shutting down");
         closeSelector();
         shutdownComplete();
     }

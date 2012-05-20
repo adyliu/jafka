@@ -104,7 +104,7 @@ public class PartitionTopicInfo {
 
     @Override
     public String toString() {
-        return topic + ":" + partition + ", fetched/consumed offset: " + fetchedOffset.get() + "/" + consumedOffset.get();
+        return topic + "-" + partition + ", fetched/consumed offset: " + fetchedOffset.get() + "/" + consumedOffset.get();
     }
 
     public void enqueueError(Exception e, long fetchOffset) throws InterruptedException {

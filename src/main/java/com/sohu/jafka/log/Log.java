@@ -17,6 +17,8 @@
 
 package com.sohu.jafka.log;
 
+import static java.lang.String.format;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -99,10 +101,7 @@ public class Log implements ILog {
         segments = loadSegments();
     }
 
-    /**
-     * @return
-     * @throws IOException
-     */
+   
     private SegmentList loadSegments() throws IOException {
         List<LogSegment> accum = new ArrayList<LogSegment>();
         File[] ls = dir.listFiles(new FileFilter() {
@@ -190,8 +189,8 @@ public class Log implements ILog {
         List<LogSegment> views = segments.getView();
         LogSegment found = findRange(views, offset, views.size());
         if (found == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("NOT FOUND MessageSet from Log, offset=" + offset + ", length=" + length);
+            if (logger.isTraceEnabled()) {
+                logger.trace(format("NOT FOUND MessageSet from Log[%s], offset=%d, length=%d",name,offset,length));
             }
             return MessageSet.Empty;
         }

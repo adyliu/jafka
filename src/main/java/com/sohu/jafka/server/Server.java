@@ -104,7 +104,7 @@ public class Server implements Closeable{
     public void close() {
         boolean canShutdown = isShuttingDown.compareAndSet(false, true);
         if (canShutdown) {
-            logger.info("Shutting down...");
+            logger.info("Shutting down Jafka server...");
             try {
                 scheduler.shutdown();
                 if (socketServer != null) {
@@ -121,7 +121,7 @@ public class Server implements Closeable{
                 logger.fatal(ex.getMessage(), ex);
             }
             shutdownLatch.countDown();
-            logger.info("shutdown completed");
+            logger.info("shutdown Jafka server completed");
         }
     }
 

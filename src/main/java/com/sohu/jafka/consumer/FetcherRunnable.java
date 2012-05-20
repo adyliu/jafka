@@ -38,7 +38,6 @@ import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.zookeeper.ZkGroupTopicDirs;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
 
-
 /**
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
@@ -61,6 +60,7 @@ public class FetcherRunnable extends Thread {
     private final List<PartitionTopicInfo> partitionTopicInfos;
 
     private final Logger logger = Logger.getLogger(FetcherRunnable.class);
+
     private final static AtomicInteger threadIndex = new AtomicInteger(0);
 
     public FetcherRunnable(String name,//
@@ -68,15 +68,17 @@ public class FetcherRunnable extends Thread {
             ConsumerConfig config,//
             Broker broker,//
             List<PartitionTopicInfo> partitionTopicInfos) {
-        super(name+"-"+threadIndex.getAndIncrement());
+        super(name + "-" + threadIndex.getAndIncrement());
         this.zkClient = zkClient;
         this.config = config;
         this.broker = broker;
         this.partitionTopicInfos = partitionTopicInfos;
-        this.simpleConsumer = new SimpleConsumer(broker.host, broker.port, config.getSocketTimeoutMs(), config.getSocketBufferSize());
+        this.simpleConsumer = new SimpleConsumer(broker.host, broker.port, config.getSocketTimeoutMs(),
+                config.getSocketBufferSize());
     }
 
     public void shutdown() throws InterruptedException {
+        logger.debug("shutdown the fetcher "+getName());
         stopped = true;
         this.interrupt();
         shutdownLatch.await();
@@ -84,23 +86,26 @@ public class FetcherRunnable extends Thread {
 
     @Override
     public void run() {
-        for (PartitionTopicInfo partitionTopicInfo : partitionTopicInfos) {
-            logger.info(getName() + " start fetching topic: " + partitionTopicInfo + ", from " + broker);
+        StringBuilder buf = new StringBuilder("[");
+        for (PartitionTopicInfo pti : partitionTopicInfos) {
+            buf.append(pti.topic).append("-").append(pti.partition.partId).append(',');
         }
+        buf.append(']');
+        logger.info(String.format("%s comsume at %s:%d with %s", getName(), broker.host, broker.port, buf.toString()));
         //
         try {
             final long maxFetchBackoffMs = config.getMaxFetchBackoffMs();
             long fetchBackoffMs = config.getFetchBackoffMs();
             while (!stopped) {
                 if (fetchOnce() == 0) {//read empty bytes
-                    if(logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("backing off " + fetchBackoffMs + " ms");
                     }
                     Thread.sleep(fetchBackoffMs);
-                    if(fetchBackoffMs<maxFetchBackoffMs) {
+                    if (fetchBackoffMs < maxFetchBackoffMs) {
                         fetchBackoffMs += fetchBackoffMs / 10;
                     }
-                }else {
+                } else {
                     fetchBackoffMs = config.getFetchBackoffMs();
                 }
             }
@@ -120,7 +125,8 @@ public class FetcherRunnable extends Thread {
     private long fetchOnce() throws IOException, InterruptedException {
         List<FetchRequest> fetches = new ArrayList<FetchRequest>();
         for (PartitionTopicInfo info : partitionTopicInfos) {
-            fetches.add(new FetchRequest(info.topic, info.partition.partId, info.getFetchedOffset(), config.getFetchSize()));
+            fetches.add(new FetchRequest(info.topic, info.partition.partId, info.getFetchedOffset(), config
+                    .getFetchSize()));
         }
         MultiFetchResponse response = simpleConsumer.multifetch(fetches);
         int index = 0;
@@ -145,7 +151,8 @@ public class FetcherRunnable extends Thread {
         return read;
     }
 
-    private long processMessages(ByteBufferMessageSet messages, PartitionTopicInfo info) throws IOException, InterruptedException {
+    private long processMessages(ByteBufferMessageSet messages, PartitionTopicInfo info) throws IOException,
+            InterruptedException {
         boolean done = false;
         if (messages.getErrorCode() == ErrorMapping.OffsetOutOfRangeCode) {
             logger.warn("offset for " + info + " out of range, now we fix it");
@@ -177,6 +184,7 @@ public class FetcherRunnable extends Thread {
         //
         final ZkGroupTopicDirs topicDirs = new ZkGroupTopicDirs(config.getGroupId(), topic);
         long[] offsets = simpleConsumer.getOffsetsBefore(topic, partition.partId, offset, 1);
+        //TODO: fixed no offsets?
         ZkUtils.updatePersistentPath(zkClient, topicDirs.consumerOffsetDir + "/" + partition.getName(), "" + offsets[0]);
         return offsets[0];
     }

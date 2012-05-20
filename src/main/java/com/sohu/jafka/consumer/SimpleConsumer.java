@@ -101,7 +101,7 @@ public class SimpleConsumer implements Closeable {
     }
 
     private void close(SocketChannel socketChannel) {
-        logger.info("Disconnecting from " + channel.socket().getRemoteSocketAddress());
+        logger.info("Disconnecting consumer from " + channel.socket().getRemoteSocketAddress());
         Closer.closeQuietly(socketChannel);
         Closer.closeQuietly(socketChannel.socket());
     }

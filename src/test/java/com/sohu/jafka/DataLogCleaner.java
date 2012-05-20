@@ -19,21 +19,28 @@ package com.sohu.jafka;
 
 import java.io.File;
 
+import com.sohu.jafka.utils.Utils;
+
 /**
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public class DataLogCleaner {
 
-    public static final String defaultDataLogPath = "./data";
+    public static final String defaultBuildPath = "./build";
 
-    public static final File defaultDataLogDir = new File(defaultDataLogPath);
+    public static final String defaultDataLogPath = defaultBuildPath + "/data";
+
+    public static final File defaultBuildDir = Utils.getCanonicalFile(new File(defaultBuildPath));
+
+    public static final File defaultDataLogDir = Utils.getCanonicalFile(new File(defaultDataLogPath));
 
     public static void cleanDataLogDir() {
-        cleanDataLogDir(defaultDataLogDir);
+        cleanDataLogDir(defaultBuildDir);
     }
 
     public static void cleanDataLogDir(File dir) {
+        if (!dir.exists()) return;
         File[] subs = dir.listFiles();
         if (subs != null) {
             for (File f : dir.listFiles()) {

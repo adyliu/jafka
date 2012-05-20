@@ -193,7 +193,7 @@ public class LogManager implements PartitionChooser, Closeable {
                 logger.error(e.getMessage(), e);
             }
         }
-        logger.info("stop topic register task");
+        logger.debug("stop topic register task");
     }
 
     class TopicRegisterTask extends Thread {

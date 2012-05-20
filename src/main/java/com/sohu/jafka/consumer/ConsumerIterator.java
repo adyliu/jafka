@@ -54,7 +54,8 @@ public class ConsumerIterator<T> extends IteratorTemplate<T> {
 
     private long consumedOffset = -1L;
 
-    public ConsumerIterator(String topic, BlockingQueue<FetchedDataChunk> queue, int consumerTimeoutMs, Decoder<T> decoder) {
+    public ConsumerIterator(String topic, BlockingQueue<FetchedDataChunk> queue, int consumerTimeoutMs,
+            Decoder<T> decoder) {
         super();
         this.topic = topic;
         this.queue = queue;
@@ -101,7 +102,8 @@ public class ConsumerIterator<T> extends IteratorTemplate<T> {
             } else {
                 currentTopicInfo = currentDataChunk.topicInfo;
                 if (currentTopicInfo.getConsumedOffset() != currentDataChunk.fetchOffset) {
-                    logger.error(format("consumed offset: %d doesn't match fetch offset: %d for %s;\n Consumer may lose data", //
+                    logger.error(format(
+                            "consumed offset: %d doesn't match fetch offset: %d for %s;\n Consumer may lose data", //
                             currentTopicInfo.getConsumedOffset(), currentDataChunk.fetchOffset, currentTopicInfo));
                     currentTopicInfo.resetConsumeOffset(currentDataChunk.fetchOffset);
                 }
@@ -115,7 +117,9 @@ public class ConsumerIterator<T> extends IteratorTemplate<T> {
     }
 
     public void clearCurrentChunk() {
-        logger.info("Clearing the current data chunk for this consumer iterator");
-        current.set(null);
+        if (current.get() != null) {
+            logger.info("Clearing the current data chunk for this consumer iterator");
+            current.set(null);
+        }
     }
 }

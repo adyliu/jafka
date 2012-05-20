@@ -17,6 +17,7 @@
 
 package com.sohu.jafka;
 
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -28,16 +29,21 @@ public abstract class BaseJafkaServer {
     static {
         System.setProperty("jafka_mx4jenable", "true");
     }
+
     public Jafka createJafka() {
         Properties mainProperties = new Properties();
         return createJafka(mainProperties);
     }
+
     public Jafka createJafka(Properties mainProperties) {
-        DataLogCleaner.cleanDataLogDir();
         Jafka jafka = new Jafka();
-       
-        mainProperties.setProperty("brokerid", "0");
-        mainProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath);
+        if (!mainProperties.containsKey("brokerid")) {
+            mainProperties.setProperty("brokerid", "0");
+        }
+        if (!mainProperties.containsKey("log.dir")) {
+            mainProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath);
+        }
+        DataLogCleaner.cleanDataLogDir(new File(mainProperties.getProperty("log.dir")));
         jafka.start(mainProperties, null, null);
         return jafka;
     }
@@ -45,7 +51,7 @@ public abstract class BaseJafkaServer {
     public void flush(Jafka jafka) {
         jafka.flush();
     }
-    
+
     public void close(Jafka jafka) {
         if (jafka != null) {
             jafka.close();

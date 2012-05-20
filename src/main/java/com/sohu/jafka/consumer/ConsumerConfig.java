@@ -49,6 +49,7 @@ public class ConsumerConfig extends ZKConfig {
     private int fetchSize;
 
     private long fetchBackoffMs;
+
     private long maxFetchBackoffMs;
 
     private boolean autoCommit;
@@ -71,6 +72,17 @@ public class ConsumerConfig extends ZKConfig {
 
     private int mirrorConsumerNumThreads;
 
+    /**
+     * <p>
+     * The minimal configurations have these names:
+     * <ul>
+     * <li>groupid: the consumer group name</li>
+     * <li>zk.connect: the zookeeper connection string</li>
+     * </ul>
+     * </p>
+     * 
+     * @param props config properties
+     */
     public ConsumerConfig(Properties props) {
         super(props);
         this.groupId = Utils.getString(props, "groupid");
@@ -79,7 +91,7 @@ public class ConsumerConfig extends ZKConfig {
         this.socketBufferSize = get("socket.buffersize", 64 * 1024);//64KB
         this.fetchSize = get("fetch.size", 1024 * 1024);//1MB
         this.fetchBackoffMs = get("fetcher.backoff.ms", 1000);
-        this.maxFetchBackoffMs = get("fetcher.backoff.ms.max",(int)fetchBackoffMs*10);
+        this.maxFetchBackoffMs = get("fetcher.backoff.ms.max", (int) fetchBackoffMs * 10);
         this.autoCommit = Utils.getBoolean(props, "autocommit.enable", true);
         this.autoCommitIntervalMs = get("autocommit.interval.ms", 1000);//1 seconds
         this.maxQueuedChunks = get("queuedchunks.max", 10);
@@ -201,7 +213,6 @@ public class ConsumerConfig extends ZKConfig {
         return mirrorConsumerNumThreads;
     }
 
-    
     public long getMaxFetchBackoffMs() {
         return maxFetchBackoffMs;
     }

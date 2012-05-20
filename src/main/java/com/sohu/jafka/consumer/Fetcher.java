@@ -90,7 +90,7 @@ public class Fetcher {
             FetcherRunnable fetcherThread = new FetcherRunnable("FetchRunnable-"+e.getKey(), //
                     zkClient, //
                     config, //
-                    cluster.getBroker(e.getKey().intValue()), //
+                    cluster.getBroker(e.getKey()), //
                     e.getValue());
             fetcherThreads.add(fetcherThread);
             fetcherThread.start();

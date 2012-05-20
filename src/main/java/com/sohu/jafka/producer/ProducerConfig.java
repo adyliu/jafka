@@ -29,16 +29,20 @@ import com.sohu.jafka.utils.Utils;
 import com.sohu.jafka.utils.ZKConfig;
 
 /**
+ * Configuration for producer
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 @ClientSide
 public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared, AsyncProducerConfigShared {
 
-    final SyncProducerConfigShared synchConfigShared;
+    private final SyncProducerConfigShared synchConfigShared;
 
-    final AsyncProducerConfigShared asyncProducerConfigShared;
-
+    private final AsyncProducerConfigShared asyncProducerConfigShared;
+    /**
+     * create config for producer
+     * @param props config arguments
+     */
     public ProducerConfig(Properties props) {
         super(props);
         synchConfigShared = new SyncProducerConfig(props);
