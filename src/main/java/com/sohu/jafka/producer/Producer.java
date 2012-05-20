@@ -158,22 +158,22 @@ public class Producer<K, V> implements Callback, Closeable {
                 null);
     }
 
-    public long[] send(ProducerData<K, V> data) {
-        if (data == null) return new long[0];
+    public void send(ProducerData<K, V> data) {
+        if (data == null) return;
         if (zkEnabled) {
-            return zkSend(data);
+            zkSend(data);
         } else {
-            return configSend(data);
+            configSend(data);
         }
     }
 
   
-    private long[] configSend(ProducerData<K, V> data) {
-        return producerPool.send(create(data));
+    private void configSend(ProducerData<K, V> data) {
+        producerPool.send(create(data));
     }
 
     
-    private long[] zkSend(ProducerData<K, V> data) {
+    private void zkSend(ProducerData<K, V> data) {
         int numRetries = 0;
         Broker brokerInfoOpt = null;
         Partition brokerIdPartition = null;
@@ -197,7 +197,7 @@ public class Producer<K, V> implements Callback, Closeable {
         ProducerPoolData<V> ppd = producerPool.getProducerPoolData(data.getTopic(),//
                 new Partition(brokerIdPartition.brokerId, brokerIdPartition.partId),//
                 data.getData());
-        return producerPool.send(ppd);
+        producerPool.send(ppd);
     }
 
     private int getPartition(K key, int numPartitions) {

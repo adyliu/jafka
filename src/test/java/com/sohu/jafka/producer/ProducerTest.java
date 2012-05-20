@@ -17,20 +17,13 @@
 
 package com.sohu.jafka.producer;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.Test;
 
 import com.sohu.jafka.BaseJafkaServer;
 import com.sohu.jafka.Jafka;
-import com.sohu.jafka.api.FetchRequest;
-import com.sohu.jafka.consumer.SimpleConsumer;
-import com.sohu.jafka.message.MessageAndOffset;
 import com.sohu.jafka.producer.serializer.StringEncoder;
-import com.sohu.jafka.utils.Utils;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -43,36 +36,14 @@ public class ProducerTest extends BaseJafkaServer {
      * {@link com.sohu.jafka.producer.Producer#send(com.sohu.jafka.producer.ProducerData)}.
      */
     @Test
-    public void testSend() throws IOException {
+    public void testSend() {
         Jafka jafka = createJafka();
         Properties producerConfig = new Properties();
         producerConfig.setProperty("broker.list", "0:localhost:9092");
         producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
         Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
-        String[] messages = { "Hello, jafka", "https://github.com/adyliu/jaka", "Open Source", "Fast Messaging System" };
-
-        StringProducerData producerData = new StringProducerData("demo");
-        for (String message : messages) {
-            producerData.add(message);
-        }
-        final long[] offsets = producer.send(producerData);
+        producer.send(new StringProducerData("demo").add("Hello jafka").add("https://github.com/adyliu/jafka"));
         producer.close();
-        flush(jafka);//force flush data
-        //
-        assertEquals(messages.length,offsets.length);
-        SimpleConsumer consumer = new SimpleConsumer("localhost", 9092);
-        for (int i = 0; i < messages.length; i++) {
-            int index = i;
-            for (MessageAndOffset messageAndOffset : consumer.fetch(new FetchRequest("demo", 0, offsets[i]))) {
-                if (index < offsets.length - 1) {
-                    assertEquals(offsets[index + 1], messageAndOffset.offset);
-                }
-                final String realMessage = Utils.toString(messageAndOffset.message.payload(), "UTF-8");
-                assertEquals(messages[index], realMessage);
-                index++;
-            }
-        }
-        //
         close(jafka);
     }
 

@@ -17,15 +17,12 @@
 
 package com.sohu.jafka.network.handlers;
 
-import java.util.List;
-
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.api.RequestKeys;
 import com.sohu.jafka.log.ILog;
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.message.MessageAndOffset;
 import com.sohu.jafka.mx.BrokerTopicStat;
-import com.sohu.jafka.network.OffsetArraySend;
 import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Send;
 
@@ -47,19 +44,19 @@ public class ProducerHandler extends AbstractHandler {
         if (logger.isDebugEnabled()) {
             logger.debug("Producer request " + request.toString());
         }
-        List<Long> offsets = handleProducerRequest(request);
+        handleProducerRequest(request);
         long et = System.currentTimeMillis();
         if (logger.isDebugEnabled()) {
             logger.debug("produce a message(set) cost " + (et - st) + " ms");
         }
-        return new OffsetArraySend(offsets);
+        return null;
     }
 
-    protected List<Long> handleProducerRequest(ProducerRequest request) {
+    protected void handleProducerRequest(ProducerRequest request) {
         int partition = request.getTranslatedPartition(logManager);
         try {
             final ILog log = logManager.getOrCreateLog(request.topic, partition);
-            List<Long> offsets = log.append(request.messages);
+            log.append(request.messages);
             long messageSize = request.messages.getSizeInBytes();
             if (logger.isDebugEnabled()) {
                 logger.debug(messageSize + " bytes written to logs " + log);
@@ -69,7 +66,6 @@ public class ProducerHandler extends AbstractHandler {
             }
             BrokerTopicStat.getInstance(request.topic).recordBytesIn(messageSize);
             BrokerTopicStat.getBrokerAllTopicStat().recordBytesIn(messageSize);
-            return offsets;
         } catch (RuntimeException e) {
             logger.error("Error processing " + request.getRequestKey() + " on " + request.topic + ":" + partition, e);
             BrokerTopicStat.getInstance(request.topic).recordFailedProduceRequest();

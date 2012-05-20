@@ -53,7 +53,7 @@ public interface ILog extends Closeable {
      * append messages to log
      * 
      * @param messages message set
-     * @return all message offset
+     * @return all message offsets or null if not supported
      */
     List<Long> append(ByteBufferMessageSet messages);
 

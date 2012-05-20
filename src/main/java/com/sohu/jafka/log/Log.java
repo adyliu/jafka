@@ -201,20 +201,11 @@ public class Log implements ILog {
     public List<Long> append(ByteBufferMessageSet messages) {
         //validate the messages
         int numberOfMessages = 0;
-        final List<Long> offsets = new ArrayList<Long>();
-        long lastOffset = -1;
         for (MessageAndOffset messageAndOffset : messages) {
             if (!messageAndOffset.message.isValid()) {
                 throw new InvalidMessageException();
             }
             numberOfMessages += 1;
-            if(lastOffset == -1) {
-                lastOffset = messages.getInitialOffset();
-                offsets.add(lastOffset);
-            }else {
-                offsets.add(lastOffset - messages.getInitialOffset());
-            }
-           lastOffset = messageAndOffset.offset;
         }
         //
         BrokerTopicStat.getBrokerTopicStat(getTopicName()).recordMessagesIn(numberOfMessages);
@@ -235,10 +226,6 @@ public class Log implements ILog {
             try {
                 LogSegment lastSegment = segments.getLastView();
                 long[] writtenAndOffset = lastSegment.getMessageSet().append(validMessages);
-                final long initialOffset = writtenAndOffset[1];
-                for (int i = 0; i < offsets.size(); i++) {
-                    offsets.set(i, initialOffset + offsets.get(i));
-                }
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("[%s,%s] save %d messages, bytes %d", name, lastSegment.getName(),
                             numberOfMessages, writtenAndOffset[0]));
@@ -253,7 +240,7 @@ public class Log implements ILog {
                 throw re;
             }
         }
-        return offsets;
+        return (List<Long>)null;
     }
 
     /**

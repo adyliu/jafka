@@ -31,17 +31,12 @@ import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.MultiProducerRequest;
 import com.sohu.jafka.api.ProducerRequest;
-import com.sohu.jafka.api.RequestKeys;
-import com.sohu.jafka.common.ErrorMapping;
 import com.sohu.jafka.common.annotations.ThreadSafe;
 import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.mx.SyncProducerStats;
-import com.sohu.jafka.network.BoundedByteBufferReceive;
 import com.sohu.jafka.network.BoundedByteBufferSend;
-import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Request;
 import com.sohu.jafka.utils.Closer;
-import com.sohu.jafka.utils.KV;
 
 /**
  * file{producer/SyncProducer.scala}
@@ -85,19 +80,17 @@ public class SyncProducer implements Closeable {
         lastConnectionTime = System.currentTimeMillis() - (long) (randomGenerator.nextDouble() * config.reconnectInterval);
     }
 
-    public KV<Receive, ErrorMapping> send(String topic, ByteBufferMessageSet message) {
-        return send(topic, ProducerRequest.RandomPartition, message);
+    public void send(String topic, ByteBufferMessageSet message) {
+        send(topic, ProducerRequest.RandomPartition, message);
     }
 
-    public KV<Receive, ErrorMapping> send(String topic, int partition, ByteBufferMessageSet messages) {
+    public void send(String topic, int partition, ByteBufferMessageSet messages) {
         messages.verifyMessageSize(config.maxMessageSize);
-        return send(new ProducerRequest(topic, partition, messages));
+        send(new ProducerRequest(topic, partition, messages));
     }
 
-    private KV<Receive, ErrorMapping> send(Request request) {
-        boolean singleRequest = request.getRequestKey() == RequestKeys.PRODUCE;
+    private void send(Request request) {
         BoundedByteBufferSend send = new BoundedByteBufferSend(request);
-        BoundedByteBufferReceive response = new BoundedByteBufferReceive();
         synchronized (lock) {
             verifySendBuffer(send.getBuffer().slice());
             long startTime = System.nanoTime();
@@ -105,9 +98,6 @@ public class SyncProducer implements Closeable {
             int written = -1;
             try {
                 written = send.writeCompletely(channel);
-                if(singleRequest) {//produce with offset result
-                    response.readCompletely(channel);
-                }
             } catch (IOException e) {
                 // no way to tell if write succeeded. Disconnect and re-throw exception to let client handle retry
                 disconnect();
@@ -128,10 +118,6 @@ public class SyncProducer implements Closeable {
             final long endTime = System.nanoTime();
             SyncProducerStats.recordProduceRequest(endTime - startTime);
         }
-        if(!singleRequest) {
-            return (KV<Receive, ErrorMapping>)null;
-        }
-        return new KV<Receive, ErrorMapping>(response, ErrorMapping.valueOf(response.buffer().getShort()));
     }
 
     private void getOrMakeConnection() {
