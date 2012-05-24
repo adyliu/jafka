@@ -53,20 +53,20 @@ public class SyncProducerConfig implements SyncProducerConfigShared {
         //
     }
 
-    
     /**
      * @return the host
      */
     public String getHost() {
         return getString(props, "host");
     }
-    
+
     /**
      * @return the port
      */
     public int getPort() {
         return getInt(props, "port");
     }
+
     public Properties getProperties() {
         return props;
     }
@@ -95,4 +95,7 @@ public class SyncProducerConfig implements SyncProducerConfigShared {
         return maxMessageSize;
     }
 
+    public String getSerializerClass() {
+        return getString(props, "serializer.class", com.sohu.jafka.producer.serializer.DefaultEncoders.class.getName());
+    }
 }

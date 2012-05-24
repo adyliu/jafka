@@ -20,6 +20,8 @@ package com.sohu.jafka.producer;
 import java.util.Properties;
 
 /**
+ * Config for sync producer
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -29,25 +31,20 @@ public interface SyncProducerConfigShared {
 
     int getBufferSize();
 
-    //void setBufferSize(int bufferSize);
-
     int getConnectTimeoutMs();
-
-    //void setConnectTimeoutMs(int connectTimeoutMs);
 
     int getSocketTimeoutMs();
 
-    //void setSocketTimeoutMs(int socketTimeoutMs);
-
     int getReconnectInterval();
-
-    //void setReconnectInterval(int reconnectInterval);
 
     int getReconnectTimeInterval();
 
-    //void setReconnectTimeInterval(int reconnectTimeInterval);
-
     int getMaxMessageSize();
 
-    //void setMaxMessageSize(int maxMessageSize);
+    /**
+     * default serializer
+     * 
+     * @since 1.1
+     */
+    String getSerializerClass();
 }

@@ -54,9 +54,6 @@ public class AsyncProducerConfig extends SyncProducerConfig implements AsyncProd
         return getInt(props, "batch.size", 200);
     }
 
-    public String getSerializerClass() {
-        return getString(props, "serializer.class", com.sohu.jafka.producer.serializer.DefaultEncoders.class.getName());
-    }
 
     public String getCbkHandler() {
         return getString(props, "callback.handler", null);

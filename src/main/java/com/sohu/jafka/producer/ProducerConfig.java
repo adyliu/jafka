@@ -110,7 +110,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
     }
 
     public String getSerializerClass() {
-        return asyncProducerConfigShared.getSerializerClass();
+        return synchConfigShared.getSerializerClass();
     }
 
     public String getCbkHandler() {
