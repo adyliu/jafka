@@ -21,10 +21,12 @@ import java.util.List;
 
 import com.sohu.jafka.cluster.Partition;
 
-
 /**
+ * message with topic and partition
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
+ * @see Partition
  */
 public class ProducerPoolData<V> {
 
@@ -39,6 +41,11 @@ public class ProducerPoolData<V> {
         this.topic = topic;
         this.partition = partition;
         this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return "ProducerPoolData [topic=" + topic + ", partition=" + partition + ", data size=" + (data != null ? data.size() : -1) + "]";
     }
 
 }

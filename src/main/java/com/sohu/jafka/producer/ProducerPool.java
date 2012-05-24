@@ -17,7 +17,6 @@
 
 package com.sohu.jafka.producer;
 
-
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,7 +49,7 @@ import com.sohu.jafka.utils.Utils;
  * @since 1.0
  */
 @ClientSide
-public class ProducerPool<V> implements Closeable{
+public class ProducerPool<V> implements Closeable {
 
     private final ProducerConfig config;
 
@@ -66,7 +65,8 @@ public class ProducerPool<V> implements Closeable{
 
     private boolean sync = true;
 
-private final Logger logger = Logger.getLogger(ProducerPool.class);
+    private final Logger logger = Logger.getLogger(ProducerPool.class);
+
     public ProducerPool(ProducerConfig config,//
             Encoder<V> serializer, //
             ConcurrentMap<Integer, SyncProducer> syncProducers,//
@@ -109,40 +109,45 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
 
     /**
      * add a new producer, either synchronous or asynchronous, connecting
-     * to the specified broker 
+     * to the specified broker
+     * 
      * @param broker broker to producer
      */
     public void addProducer(Broker broker) {
         Properties props = new Properties();
-      props.put("host", broker.host);
-      props.put("port", ""+broker.port);
-      props.putAll(config.getProperties());
-      if(sync) {
-          SyncProducer producer = new SyncProducer(new SyncProducerConfig(props));
-          logger.info("Creating sync producer for broker id = " + broker.id + " at " + broker.host + ":" + broker.port);
-          syncProducers.put(broker.id, producer);
-      } else {
-          AsyncProducer<V> producer = new AsyncProducer<V>(new AsyncProducerConfig(props),//
-                                              new SyncProducer(new SyncProducerConfig(props)),//
-                                              serializer,//
-                                              eventHandler,//
-                                              config.getEventHandlerProperties(),//
-                                              this.callbackHandler, //
-                                              config.getCbkHandlerProperties());
-          producer.start();
-          logger.info("Creating async producer for broker id = " + broker.id + " at " + broker.host + ":" + broker.port);
-          asyncProducers.put(broker.id, producer);
-      }
+        props.put("host", broker.host);
+        props.put("port", "" + broker.port);
+        props.putAll(config.getProperties());
+        if (sync) {
+            SyncProducer producer = new SyncProducer(new SyncProducerConfig(props));
+            logger.info("Creating sync producer for broker id = " + broker.id + " at " + broker.host + ":" + broker.port);
+            syncProducers.put(broker.id, producer);
+        } else {
+            AsyncProducer<V> producer = new AsyncProducer<V>(new AsyncProducerConfig(props),//
+                    new SyncProducer(new SyncProducerConfig(props)),//
+                    serializer,//
+                    eventHandler,//
+                    config.getEventHandlerProperties(),//
+                    this.callbackHandler, //
+                    config.getCbkHandlerProperties());
+            producer.start();
+            logger.info("Creating async producer for broker id = " + broker.id + " at " + broker.host + ":" + broker.port);
+            asyncProducers.put(broker.id, producer);
+        }
     }
 
     /**
-     * selects either a synchronous or an asynchronous producer, for
-     * the specified broker id and calls the send API on the selected
-     * producer to publish the data to the specified broker partition
+     * selects either a synchronous or an asynchronous producer, for the
+     * specified broker id and calls the send API on the selected producer
+     * to publish the data to the specified broker partition
+     * 
      * @param poolData the producer pool request object
      */
-    public void  send(ProducerPoolData<V> ppd) {
-        if(sync) {
+    public void send(ProducerPoolData<V> ppd) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("send message: " + ppd);
+        }
+        if (sync) {
             Message[] messages = new Message[ppd.data.size()];
             int index = 0;
             for (V v : ppd.data) {
@@ -152,28 +157,27 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
             ByteBufferMessageSet bbms = new ByteBufferMessageSet(config.getCompressionCodec(), messages);
             ProducerRequest request = new ProducerRequest(ppd.topic, ppd.partition.partId, bbms);
             SyncProducer producer = syncProducers.get(ppd.partition.brokerId);
-            if(producer == null) {
-                throw new UnavailableProducerException("Producer pool has not been initialized correctly. " +
-                        "Sync Producer for broker " + ppd.partition.brokerId + " does not exist in the pool");
+            if (producer == null) {
+                throw new UnavailableProducerException("Producer pool has not been initialized correctly. " + "Sync Producer for broker "
+                        + ppd.partition.brokerId + " does not exist in the pool");
             }
             producer.send(request.topic, request.partition, request.messages);
-        }else {
+        } else {
             AsyncProducer<V> asyncProducer = asyncProducers.get(ppd.partition.brokerId);
             for (V v : ppd.data) {
                 asyncProducer.send(ppd.topic, v, ppd.partition.partId);
             }
         }
     }
-    
+
     public void send(List<ProducerPoolData<V>> poolData) {
-        if(sync) {
+        if (sync) {
             syncSend(poolData);
-        }else {
+        } else {
             asyncSend(poolData);
         }
     }
 
-    
     private void asyncSend(List<ProducerPoolData<V>> poolData) {
         for (ProducerPoolData<V> ppd : poolData) {
             AsyncProducer<V> asyncProducer = asyncProducers.get(ppd.partition.brokerId);
@@ -202,9 +206,9 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
         }
         for (Map.Entry<Integer, List<ProducerRequest>> e : topicBrokerIdData.entrySet()) {
             SyncProducer producer = syncProducers.get(e.getKey());
-            if(producer == null) {
-                throw new UnavailableProducerException("Producer pool has not been initialized correctly. " +
-                        "Sync Producer for broker " + e.getKey() + " does not exist in the pool");
+            if (producer == null) {
+                throw new UnavailableProducerException("Producer pool has not been initialized correctly. " + "Sync Producer for broker " + e.getKey()
+                        + " does not exist in the pool");
             }
             if (e.getValue().size() == 1) {
                 ProducerRequest request = e.getValue().get(0);
@@ -215,31 +219,31 @@ private final Logger logger = Logger.getLogger(ProducerPool.class);
         }
     }
 
-    
     /**
      * Closes all the producers in the pool
      */
     public void close() {
         logger.info("Closing all sync producers");
-        if(sync) {
-            for(SyncProducer p:syncProducers.values()) {
+        if (sync) {
+            for (SyncProducer p : syncProducers.values()) {
                 p.close();
             }
-        }else {
-            for(AsyncProducer<V> p:asyncProducers.values()) {
+        } else {
+            for (AsyncProducer<V> p : asyncProducers.values()) {
                 p.close();
             }
         }
-      
+
     }
 
     /**
      * This constructs and returns the request object for the producer pool
+     * 
      * @param topic the topic to which the data should be published
      * @param bidPid the broker id and partition id
      * @param data the data to be published
      */
-    public ProducerPoolData<V> getProducerPoolData(String topic, Partition bidPid , List<V> data){
-      return new ProducerPoolData<V>(topic, bidPid, data);
+    public ProducerPoolData<V> getProducerPoolData(String topic, Partition bidPid, List<V> data) {
+        return new ProducerPoolData<V>(topic, bidPid, data);
     }
 }

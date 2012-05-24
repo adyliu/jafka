@@ -82,6 +82,7 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
             serverProperties.setProperty("port", String.valueOf(9092+i));
             serverProperties.setProperty("brokerid", "" + i);
             serverProperties.setProperty("num.partitions", ""+partition);
+            serverProperties.setProperty("topic.partition.count.map", "demo:2 ");//FIXME:
             serverProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath + "/jafka" + i);
             Jafka jafka = createJafka(serverProperties);
             jafkas[i] = jafka;
@@ -97,7 +98,8 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
         //send some message
         final int messageCount = 100;
         for (int i = 0; i < messageCount; i++) {
-            producer.send(new StringProducerData("demo").add("message#" + i));
+            String msg = "message#"+i;
+            producer.send(new StringProducerData("demo",null,null).add(msg));
         }
         Thread.sleep(1000L);
         //

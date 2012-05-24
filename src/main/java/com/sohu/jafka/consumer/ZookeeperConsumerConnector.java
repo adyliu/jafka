@@ -527,10 +527,6 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             ////////////////////////////
         }
 
-        /**
-         * @param cluster
-         * @param messagesStreams2
-         */
         private void updateFetcher(Cluster cluster, Map<String, List<MessageStream<T>>> messagesStreams2) {
             if (fetcher != null) {
                 List<PartitionTopicInfo> allPartitionInfos = new ArrayList<PartitionTopicInfo>();

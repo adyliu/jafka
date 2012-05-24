@@ -17,7 +17,6 @@
 
 package com.sohu.jafka.consumer;
 
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -43,7 +42,8 @@ import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.KV;
 
 /**
- * Simple message consumer 
+ * Simple message consumer
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -66,9 +66,10 @@ public class SimpleConsumer implements Closeable {
 
     private final Object lock = new Object();
 
-    public SimpleConsumer(String host,int port) {
-        this(host, port, 30*1000, 64 * 1024);
+    public SimpleConsumer(String host, int port) {
+        this(host, port, 30 * 1000, 64 * 1024);
     }
+
     public SimpleConsumer(String host, int port, int soTimeout, int bufferSize) {
         super();
         this.host = host;
@@ -145,16 +146,18 @@ public class SimpleConsumer implements Closeable {
         response.readCompletely(channel);
         return new KV<Receive, ErrorMapping>(response, ErrorMapping.valueOf(response.buffer().getShort()));
     }
+
     /**
      * get before offsets of message
+     * 
      * @param topic message topic
      * @param partition topic partition
-     * @param time the log file created time
-     * @param maxNumOffsets  the number of offsets
+     * @param time the log file created time {@link OffsetRequest#time}
+     * @param maxNumOffsets the number of offsets
      * @return offsets while file created before the time or empty offsets
      * @throws IOException
      */
-    public long[] getOffsetsBefore(String topic,int partition,long time,int maxNumOffsets) throws IOException{
+    public long[] getOffsetsBefore(String topic, int partition, long time, int maxNumOffsets) throws IOException {
         synchronized (lock) {
             KV<Receive, ErrorMapping> response = null;
             try {
@@ -162,7 +165,7 @@ public class SimpleConsumer implements Closeable {
                 sendRequest(new OffsetRequest(topic, partition, time, maxNumOffsets));
                 response = getResponse();
             } catch (IOException e) {
-                logger.info("Reconnect in get offset request due to socket error: ",e);
+                logger.info("Reconnect in get offset request due to socket error: ", e);
                 //retry once
                 try {
                     channel = connect();
@@ -176,7 +179,7 @@ public class SimpleConsumer implements Closeable {
             return OffsetRequest.deserializeOffsetArray(response.k.buffer());
         }
     }
-    
+
     public MultiFetchResponse multifetch(List<FetchRequest> fetches) throws IOException {
         synchronized (lock) {
             getOrMakeConnection();

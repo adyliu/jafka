@@ -187,7 +187,7 @@ public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
             this.originalBrokerTopicsParitions = originalBrokerTopicsParitions;
             this.originBrokerIds = originBrokerIds;
             logger.debug("[BrokerTopicsListener] Creating broker topics listener to watch the following paths - \n"
-                    + "/broker/topics, /broker/topics/topic, /broker/ids");
+                    + "/broker/topics, /broker/topics/<topic>, /broker/<ids>");
             logger.debug("[BrokerTopicsListener] Initialized this broker topics listener with initial mapping of broker id to "
                     + "partition id per topic with " + originalBrokerTopicsParitions);
         }

@@ -28,8 +28,9 @@ import com.sohu.jafka.utils.Utils;
 /**
  * offset request
  * <p>
- * Jafka will returns all offsets earlier than given time with max number limit. The fist
- * offset of result is the biggest and the the last is the smallest.
+ * Jafka will returns all offsets earlier than given time with max number
+ * limit. The fist offset of result is the biggest and the the last is the
+ * smallest.
  * </p>
  * 
  * @author adyliu (imxylz@gmail.com)
@@ -42,10 +43,12 @@ public class OffsetRequest implements Request {
     public static final String SMALLES_TTIME_STRING = "smallest";
 
     public static final String LARGEST_TIME_STRING = "largest";
+
     /**
      * reading the latest offset
      */
     public static final long LATES_TTIME = -1L;
+
     /**
      * reading the earilest offset
      */
@@ -56,14 +59,25 @@ public class OffsetRequest implements Request {
      * message topic
      */
     public String topic;
+
     /**
      * topic partition,default value is 0
      */
     public int partition;
+
     /**
      * the earliest time of messages(unix milliseconds time)
+     * <p>
+     * <ul>
+     * <li>{@link #LATES_TTIME}: the latest(largest) offset</li>
+     * <li>{@link #EARLIES_TTIME}: the earilest(smallest) offset</li>
+     * <li>time&gt;0: the log file offset which lastmodified time earlier
+     * than the time</li>
+     * </ul>
+     * </p>
      */
     public long time;
+
     /**
      * number of offsets
      */
@@ -74,8 +88,9 @@ public class OffsetRequest implements Request {
      * 
      * @param topic topic name
      * @param partition partition id
-     * @param time the log file created time
+     * @param time the log file created time {@link #time}
      * @param maxNumOffsets the number of offsets
+     * @see #time
      */
     public OffsetRequest(String topic, int partition, long time, int maxNumOffsets) {
         this.topic = topic;
