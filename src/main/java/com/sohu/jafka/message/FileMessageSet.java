@@ -222,7 +222,7 @@ public class FileMessageSet extends MessageSet {
      * 
      * @throws IOException
      */
-    long recover() throws IOException {
+    private long recover() throws IOException {
         checkMutable();
         long len = channel.size();
         ByteBuffer buffer = ByteBuffer.allocate(4);

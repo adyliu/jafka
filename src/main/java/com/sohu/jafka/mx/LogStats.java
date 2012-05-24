@@ -17,6 +17,8 @@
 
 package com.sohu.jafka.mx;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.sohu.jafka.log.Log;
@@ -33,23 +35,14 @@ public class LogStats implements LogStatsMBean, IMBeanName {
 
     private String mbeanName;
 
-    /**
-     * @param log
-     */
     public LogStats(Log log) {
         this.log = log;
     }
 
-    /**
-     * @return the mbeanName
-     */
     public String getMbeanName() {
         return mbeanName;
     }
 
-    /**
-     * @param mbeanName the mbeanName to set
-     */
     public void setMbeanName(String mbeanName) {
         this.mbeanName = mbeanName;
     }
@@ -58,24 +51,45 @@ public class LogStats implements LogStatsMBean, IMBeanName {
         return log.name;
     }
 
-    public long getSize() {
-        return log.size();
-    }
-
-    public int getNumberOfSegments() {
-        return log.getNumberOfSegments();
-    }
-
-    public long getCurrentOffset() {
-        return log.getHighwaterMark();
-    }
-
-    public long getNumAppendedMessages() {
-        return numCumulatedMessages.get();
-    }
-
     public void recordAppendedMessages(int nMessages) {
         numCumulatedMessages.getAndAdd(nMessages);
     }
 
+    @Override
+    public int getSegmentNum() {
+        return log.getNumberOfSegments();
+    }
+
+    @Override
+    public long getStartingAppendedMessagesNum() {
+        return numCumulatedMessages.get();
+    }
+
+    @Override
+    public long getLastSegmentSize() {
+        return log.getHighwaterMark();
+    }
+
+    @Override
+    public long getLastSegmentAddressingSize() {
+        return log.getLastSegmentAddressingSize();
+    }
+
+    @Override
+    public long getTotalSegmentSize() {
+        return log.size();
+    }
+
+    @Override
+    public long getTotalOffset() {
+        return log.getTotalOffset();
+    }
+
+    @Override
+    public String getLastFlushedTime() {
+        long time = log.getLastFlushedTime();
+        if (time == 0) return "--";
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return format.format(new Date(time));
+    }
 }

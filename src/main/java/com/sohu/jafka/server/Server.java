@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.log4j.Logger;
 
 import com.sohu.jafka.log.LogManager;
+import com.sohu.jafka.mx.ServerInfo;
 import com.sohu.jafka.mx.SocketServerStats;
 import com.sohu.jafka.network.SocketServer;
 import com.sohu.jafka.utils.Mx4jLoader;
@@ -37,7 +38,7 @@ import com.sohu.jafka.utils.Utils;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class Server implements Closeable{
+public class Server implements Closeable {
 
     final String CLEAN_SHUTDOWN_FILE = ".jafka_cleanshutdown";
 
@@ -57,6 +58,8 @@ public class Server implements Closeable{
 
     private final File logDir;
 
+    private final ServerInfo serverInfo = new ServerInfo();
+
     //
     public Server(ServerConfig config) {
         this.config = config;
@@ -69,6 +72,7 @@ public class Server implements Closeable{
     public void startup() {
         try {
             logger.info("Starting Jafka server...");
+            Utils.registerMBean(serverInfo);
             boolean needRecovery = true;
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
             if (cleanShutDownFile.exists()) {
@@ -89,15 +93,16 @@ public class Server implements Closeable{
             socketServer.startup();
             Mx4jLoader.maybeLoad();
             /**
-             * Registers this broker in ZK. After this, consumers can
-             * connect to broker. So this should happen after socket server
-             * start.
+             * Registers this broker in ZK. After this, consumers can connect to broker. So
+             * this should happen after socket server start.
              */
             logManager.startup();
             logger.info("Server started.");
         } catch (Exception ex) {
             logger.fatal("Fatal error during startup.", ex);
             close();
+        } finally {
+            serverInfo.started();
         }
     }
 

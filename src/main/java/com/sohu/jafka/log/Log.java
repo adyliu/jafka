@@ -101,7 +101,6 @@ public class Log implements ILog {
         segments = loadSegments();
     }
 
-   
     private SegmentList loadSegments() throws IOException {
         List<LogSegment> accum = new ArrayList<LogSegment>();
         File[] ls = dir.listFiles(new FileFilter() {
@@ -190,7 +189,7 @@ public class Log implements ILog {
         LogSegment found = findRange(views, offset, views.size());
         if (found == null) {
             if (logger.isTraceEnabled()) {
-                logger.trace(format("NOT FOUND MessageSet from Log[%s], offset=%d, length=%d",name,offset,length));
+                logger.trace(format("NOT FOUND MessageSet from Log[%s], offset=%d, length=%d", name, offset, length));
             }
             return MessageSet.Empty;
         }
@@ -239,7 +238,7 @@ public class Log implements ILog {
                 throw re;
             }
         }
-        return (List<Long>)null;
+        return (List<Long>) null;
     }
 
     /**
@@ -300,8 +299,10 @@ public class Log implements ILog {
         if (unflushed.get() == 0) return;
 
         synchronized (lock) {
-            logger.debug("Flushing log '" + name + "' last flushed: " + getLastFlushedTime() + " current time: " + System
-                    .currentTimeMillis());
+            if (logger.isTraceEnabled()) {
+                logger.debug("Flushing log '" + name + "' last flushed: " + getLastFlushedTime() + " current time: " + System
+                        .currentTimeMillis());
+            }
             segments.getLastView().getMessageSet().flush();
             unflushed.set(0);
             lastflushedTime.set(System.currentTimeMillis());
@@ -368,6 +369,11 @@ public class Log implements ILog {
         return lastflushedTime.get();
     }
 
+    /**
+     * all message size in the broker(some old messages has been deleted)
+     * 
+     * @return effected message size
+     */
     public long size() {
         int size = 0;
         for (LogSegment seg : segments.getView()) {
@@ -380,7 +386,7 @@ public class Log implements ILog {
      * get the current high watermark of the log
      */
     public long getHighwaterMark() {
-        return segments.getLastView().getMessageSet().highWaterMark();
+        return segments.getLastView().size();
     }
 
     /**
@@ -458,5 +464,19 @@ public class Log implements ILog {
     public String toString() {
         return "Log [dir=" + dir + ", lastflushedTime=" + //
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(lastflushedTime.get())) + "]";
+    }
+
+    public long getTotalOffset() {
+        LogSegment lastView = segments.getLastView();
+        return lastView.start() + lastView.size();
+    }
+
+    public long getTotalAddressingOffset() {
+        LogSegment lastView = segments.getLastView();
+        return lastView.start() + lastView.addressingSize();
+    }
+
+    public long getLastSegmentAddressingSize() {
+        return segments.getLastView().addressingSize();
     }
 }

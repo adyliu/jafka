@@ -42,7 +42,9 @@ public class ProducerTest extends BaseJafkaServer {
         producerConfig.setProperty("broker.list", "0:localhost:9092");
         producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
         Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
-        producer.send(new StringProducerData("demo").add("Hello jafka").add("https://github.com/adyliu/jafka"));
+        for (int i = 0; i < 1000; i++) {
+            producer.send(new StringProducerData("demo").add("Hello jafka").add("https://github.com/adyliu/jafka"));
+        }
         producer.close();
         close(jafka);
     }

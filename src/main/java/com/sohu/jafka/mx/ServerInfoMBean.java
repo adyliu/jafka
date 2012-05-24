@@ -18,31 +18,18 @@
 package com.sohu.jafka.mx;
 
 /**
- * a partition topic status
- * <p>
- * For the last writeable file:
- * <ul>
- * <li>size</li>
- * </p>
- * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.1
  */
-public interface LogStatsMBean {
+public interface ServerInfoMBean {
 
-    String getName();
+    String getVersion();
+
+    String getBuildDate();
+
+    String getStartupTime();
     
-    String getLastFlushedTime();
-
-    int getSegmentNum();
-
-    long getStartingAppendedMessagesNum();
-
-    long getLastSegmentSize();
-
-    long getLastSegmentAddressingSize();
-
-    long getTotalSegmentSize();
-
-    long getTotalOffset();
+    String getStartedTime();
+    
+    String getRunningTime();
 }

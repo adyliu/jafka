@@ -55,16 +55,10 @@ public class LogSegment implements Range, Comparable<LogSegment> {
         return deleted;
     }
 
-    /**
-     * @return the file
-     */
     public File getFile() {
         return file;
     }
 
-    /**
-     * @return the messageSet
-     */
     public FileMessageSet getMessageSet() {
         return messageSet;
     }
@@ -75,9 +69,20 @@ public class LogSegment implements Range, Comparable<LogSegment> {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
-
+    /**
+     * persistence size
+     */
     public long size() {
         return messageSet.highWaterMark();
+    }
+
+    /**
+     * addressing size is larger than {@link #size()} while some messages unflushed to disk
+     * 
+     * @return the addressing size
+     */
+    public long addressingSize() {
+        return messageSet.getSizeInBytes();
     }
 
     public int compareTo(LogSegment o) {
@@ -99,7 +104,7 @@ public class LogSegment implements Range, Comparable<LogSegment> {
     public String toString() {
         return "(file=" + file + ", start=" + start + ", size=" + size() + ")";
     }
-    
+
     public String getName() {
         return file.getName();
     }
