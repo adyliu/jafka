@@ -17,15 +17,17 @@
 
 package com.sohu.jafka.producer.serializer;
 
-
 import java.nio.ByteBuffer;
 
 import com.sohu.jafka.message.Message;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * UTF-8 bytes decoder
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
+ * @see StringEncoder
  */
 public class StringDecoder implements Decoder<String> {
 

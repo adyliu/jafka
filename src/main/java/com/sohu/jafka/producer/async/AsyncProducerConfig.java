@@ -55,7 +55,7 @@ public class AsyncProducerConfig extends SyncProducerConfig implements AsyncProd
     }
 
     public String getSerializerClass() {
-        return getString(props, "serializer.class", com.sohu.jafka.producer.serializer.DefaultEncoder.class.getName());
+        return getString(props, "serializer.class", com.sohu.jafka.producer.serializer.DefaultEncoders.class.getName());
     }
 
     public String getCbkHandler() {

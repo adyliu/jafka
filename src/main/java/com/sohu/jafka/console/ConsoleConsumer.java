@@ -28,7 +28,6 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.OptionSpecBuilder;
 
-
 import com.github.zkclient.ZkClient;
 import com.github.zkclient.exception.ZkInterruptedException;
 import com.sohu.jafka.consumer.Consumer;
@@ -36,7 +35,7 @@ import com.sohu.jafka.consumer.ConsumerConfig;
 import com.sohu.jafka.consumer.ConsumerConnector;
 import com.sohu.jafka.consumer.MessageStream;
 import com.sohu.jafka.message.Message;
-import com.sohu.jafka.producer.serializer.DefaultDecoder;
+import com.sohu.jafka.producer.serializer.MessageEncoders;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.ImmutableMap;
 import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
@@ -119,7 +118,7 @@ public class ConsoleConsumer {
             }
         });
         //
-        MessageStream<Message> stream = connector.createMessageStreams(ImmutableMap.of(topic, 1), new DefaultDecoder()).get(topic).get(0);
+        MessageStream<Message> stream = connector.createMessageStreams(ImmutableMap.of(topic, 1), new MessageEncoders()).get(topic).get(0);
         final MessageFormatter formatter = messageFormatterClass.newInstance();
         //formatter.init(props);
         //

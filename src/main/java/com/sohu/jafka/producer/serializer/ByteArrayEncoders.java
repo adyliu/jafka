@@ -17,15 +17,28 @@
 
 package com.sohu.jafka.producer.serializer;
 
+import java.nio.ByteBuffer;
+
 import com.sohu.jafka.message.Message;
 
 /**
+ * a bytes en/decoder
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.1
  */
-public class DefaultDecoder implements Decoder<Message> {
+public class ByteArrayEncoders implements Encoder<byte[]>, Decoder<byte[]> {
 
-    public Message toEvent(com.sohu.jafka.message.Message message) {
-        return message;
+    @Override
+    public Message toMessage(byte[] event) {
+        return new Message(event);
+    }
+
+    @Override
+    public byte[] toEvent(Message message) {
+        ByteBuffer buf = message.payload();
+        byte[] b = new byte[buf.remaining()];
+        buf.get(b);
+        return b;
     }
 }

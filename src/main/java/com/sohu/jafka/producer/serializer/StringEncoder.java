@@ -21,8 +21,11 @@ import com.sohu.jafka.message.Message;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * UTF-8 bytes encoder
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
+ * @see StringDecoder
  */
 public class StringEncoder implements Encoder<String> {
 

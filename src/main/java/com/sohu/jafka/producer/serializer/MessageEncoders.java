@@ -20,14 +20,22 @@ package com.sohu.jafka.producer.serializer;
 import com.sohu.jafka.message.Message;
 
 /**
- * convert Object&lt;T&gt; to message
+ * {@link Message} en/decoder(nothing to do)
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.1
  * @see Message
- * @see Decoder
  */
-public interface Encoder<T> {
+public class MessageEncoders implements Encoder<Message>, Decoder<Message> {
 
-    Message toMessage(T event);
+    @Override
+    public Message toMessage(Message event) {
+        return event;
+    }
+
+    @Override
+    public Message toEvent(Message message) {
+        return message;
+    }
+
 }

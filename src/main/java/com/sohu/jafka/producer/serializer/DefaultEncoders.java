@@ -17,15 +17,11 @@
 
 package com.sohu.jafka.producer.serializer;
 
-import com.sohu.jafka.message.Message;
-
 /**
+ * byte array en/decoder
+ * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.1
  */
-public class DefaultEncoder implements Encoder<Message> {
-
-    public com.sohu.jafka.message.Message toMessage(Message event) {
-        return event;
-    };
+public class DefaultEncoders extends ByteArrayEncoders {
 }

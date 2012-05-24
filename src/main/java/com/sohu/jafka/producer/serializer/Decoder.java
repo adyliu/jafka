@@ -20,8 +20,12 @@ package com.sohu.jafka.producer.serializer;
 import com.sohu.jafka.message.Message;
 
 /**
+ * convert Message to &lt;Object&gt;
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
+ * @see Message
+ * @see Encoder
  */
 public interface Decoder<T> {
 

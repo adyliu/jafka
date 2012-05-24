@@ -34,7 +34,7 @@ import com.sohu.jafka.consumer.ZookeeperTopicEventWatcher;
 import com.sohu.jafka.message.Message;
 import com.sohu.jafka.producer.Producer;
 import com.sohu.jafka.producer.ProducerConfig;
-import com.sohu.jafka.producer.serializer.DefaultDecoder;
+import com.sohu.jafka.producer.serializer.MessageEncoders;
 import com.sohu.jafka.utils.Closer;
 
 /**
@@ -150,7 +150,7 @@ public class EmbeddedConsumer implements TopicEventHandler<String> {
         threadList.clear();
 
         consumerConnector = Consumer.create(consumerConfig);
-        Map<String, List<MessageStream<Message>>> streams = consumerConnector.createMessageStreams(topicCountMap, new DefaultDecoder());
+        Map<String, List<MessageStream<Message>>> streams = consumerConnector.createMessageStreams(topicCountMap, new MessageEncoders());
         for (Map.Entry<String, List<MessageStream<Message>>> e : streams.entrySet()) {
             int i = 0;
             for (MessageStream<Message> stream : e.getValue()) {
