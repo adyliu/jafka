@@ -96,7 +96,7 @@ public class ConsumerConfig extends ZKConfig {
         this.autoCommitIntervalMs = get("autocommit.interval.ms", 1000);//1 seconds
         this.maxQueuedChunks = get("queuedchunks.max", 10);
         this.maxRebalanceRetries = get("rebalance.retries.max", 4);
-        this.rebalanceBackoffMs = get("rebalance.backoff.ms", getZkSyncTimeMs());
+        this.rebalanceBackoffMs = get("rebalance.backoff.ms", 10000);//change default rebalance backoff time to 10 seconds
         this.autoOffsetReset = get("autooffset.reset", OffsetRequest.SMALLES_TTIME_STRING);
         this.consumerTimeoutMs = get("consumer.timeout.ms", -1);
         this.mirrorTopicsWhitelist = get("mirror.topics.whitelist", "");
