@@ -39,14 +39,17 @@ public class GetOffsetShell {
     public static void main(String[] args) throws Exception {
 
         OptionParser parser = new OptionParser();
-        ArgumentAcceptingOptionSpec<String> urlOpt = parser.accepts("server", "REQUIRED: the hostname of the server to connect to.")//
-                .withRequiredArg().describedAs("jafka://hostname:port").ofType(String.class);
-        ArgumentAcceptingOptionSpec<String> topicOpt = parser.accepts("topic", "REQUIRED: The topic to get offset from.")//
+        ArgumentAcceptingOptionSpec<String> urlOpt = parser.accepts("server", "REQUIRED: the jafka request uri")//
+                .withRequiredArg().describedAs("jafka://ip:port").ofType(String.class);
+        ArgumentAcceptingOptionSpec<String> topicOpt = parser
+                .accepts("topic", "REQUIRED: The topic to get offset from.")//
                 .withRequiredArg().describedAs("topic").ofType(String.class);
         ArgumentAcceptingOptionSpec<Integer> partitionOpt = parser.accepts("partition", "partition id")//
                 .withRequiredArg().describedAs("partition_id").ofType(Integer.class).defaultsTo(0);
-        ArgumentAcceptingOptionSpec<Long> timeOpt = parser.accepts("time", "timestamp of the offsets before that")//
-                .withRequiredArg().describedAs("timestamp/-1(lastest)/-2(earliest)").ofType(Long.class);
+        ArgumentAcceptingOptionSpec<Long> timeOpt = parser
+                .accepts("time",
+                        "unix time(ms) of the offsets.         -1: lastest; -2: earliest; unix million seconds: offset before this time")//
+                .withRequiredArg().describedAs("unix_time").ofType(Long.class).defaultsTo(-1L);
         ArgumentAcceptingOptionSpec<Integer> noffsetsOpt = parser.accepts("offsets", "number of offsets returned")//
                 .withRequiredArg().describedAs("count").ofType(Integer.class).defaultsTo(1);
         OptionSet options = parser.parse(args);
@@ -69,7 +72,8 @@ public class GetOffsetShell {
         }
     }
 
-    static void checkRequiredArgs(OptionParser parser, OptionSet options, OptionSpec<?>... optionSepcs) throws IOException {
+    static void checkRequiredArgs(OptionParser parser, OptionSet options, OptionSpec<?>... optionSepcs)
+            throws IOException {
         for (OptionSpec<?> arg : optionSepcs) {
             if (!options.has(arg)) {
                 System.err.println("Missing required argument " + arg);
