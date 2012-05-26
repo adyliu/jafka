@@ -65,11 +65,22 @@ public class KV<K, V> {
         return String.format("KV [k=%s, v=%s]", k, v);
     }
 
-    public static class StringTuple extends KV<String, String> {
+    public static class StringTuple extends KV<String, String> implements Comparable<StringTuple> {
 
         public StringTuple(String k, String v) {
             super(k, v);
         }
 
+        @Override
+        public int compareTo(StringTuple o) {
+            if (k == null || o.k == null) {
+                return 0;
+            }
+            int c = this.k.compareTo(o.k);
+            if (c == 0) {
+                return v == null || o.v == null ? 0 : this.v.compareTo(o.v);
+            }
+            return c;
+        }
     }
 }

@@ -43,6 +43,7 @@ import com.sohu.jafka.producer.StringProducerData;
 import com.sohu.jafka.producer.serializer.StringDecoder;
 import com.sohu.jafka.producer.serializer.StringEncoder;
 import com.sohu.jafka.utils.ImmutableMap;
+import com.sohu.jafka.utils.KV;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -72,23 +73,23 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
     public void testCreateMessageStreams() throws Exception {
 
         //create some jafka
-        final int jafkaCount = 4;
-        final int partition = 2;
+        final int jafkaCount = 2;
+        final int partition = 5;
         Jafka[] jafkas = new Jafka[jafkaCount];
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < jafkaCount; i++) {
             Properties serverProperties = new Properties();
             serverProperties.setProperty("enable.zookeeper", "true");
             serverProperties.setProperty("zk.connect", "localhost:" + port);
-            serverProperties.setProperty("port", String.valueOf(9092+i));
+            serverProperties.setProperty("port", String.valueOf(9092 + i));
             serverProperties.setProperty("brokerid", "" + i);
-            serverProperties.setProperty("num.partitions", ""+partition);
-            serverProperties.setProperty("topic.partition.count.map", "demo:2 ");//FIXME:
+            serverProperties.setProperty("num.partitions", "" + partition);
+            serverProperties.setProperty("topic.partition.count.map", "demo:5");//FIXME:
             serverProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath + "/jafka" + i);
             Jafka jafka = createJafka(serverProperties);
             jafkas[i] = jafka;
         }
         //
-        Thread.sleep(3000L);//waiting for server register
+        //Thread.sleep(3000L);//waiting for server register
         //
         Properties props = new Properties();
         props.setProperty("zk.connect", "localhost:" + port);
@@ -98,8 +99,14 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
         //send some message
         final int messageCount = 100;
         for (int i = 0; i < messageCount; i++) {
-            String msg = "message#"+i;
-            producer.send(new StringProducerData("demo",null,null).add(msg));
+            String msg = "message#" + i+"#"+System.currentTimeMillis();
+            StringProducerData data = new StringProducerData("demo");
+            data.setKey(msg);
+            data.add(msg);
+            producer.send(data);
+            if(i ==0) {
+                Thread.sleep(2000L);//waiting broker register this topic
+            }
         }
         Thread.sleep(1000L);
         //
@@ -112,42 +119,57 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
         producer.close();
         //
         props.setProperty("groupid", "group1");
+        //
+        final AtomicInteger receiveCount = new AtomicInteger();
+        KV<ExecutorService, ConsumerConnector> kv1 = createConsumer(props, 2, "photopark_sohu-1337926225553-6e3daba6",receiveCount);
+        KV<ExecutorService, ConsumerConnector> kv2 = createConsumer(props, 2, "photopark_sohu-1337936606600-9c8a98c4",receiveCount);
+
+        Thread.sleep(3000L);
+        KV<ExecutorService, ConsumerConnector> kv3 = createConsumer(props, 2, "photopark_sohu-1337936716354-ab3c9481",receiveCount);
+        while(receiveCount.get()<messageCount) {
+        }
+        System.out.println("receive message => "+receiveCount.get());
+        kv1.v.close();
+        kv1.k.shutdown();
+        kv2.v.close();
+        kv2.k.shutdown();
+        kv3.v.close();
+        kv3.k.shutdown();
+        //close all servers
+        for (Jafka jafka : jafkas) {
+            close(jafka);
+        }
+        //
+        kv1.k.awaitTermination(30, TimeUnit.SECONDS);
+        //
+        //assertEquals(messageCount, receiveCount.get());
+        //
+    }
+
+    private KV<ExecutorService, ConsumerConnector> createConsumer(Properties oldProps, int topicCount,
+            final String consumerId,final AtomicInteger receiveCount) throws Exception {
+        Properties props = new Properties();
+        props.putAll(oldProps);
+        props.setProperty("consumerid", consumerId);
         ConsumerConfig consumerConfig = new ConsumerConfig(props);
         ConsumerConnector connector = Consumer.create(consumerConfig);
-        final int topicCount = jafkaCount*partition;
         Map<String, List<MessageStream<String>>> map = connector.createMessageStreams(
                 ImmutableMap.of("demo", topicCount), new StringDecoder());
         assertEquals(1, map.size());
         List<MessageStream<String>> streams = map.get("demo");
         assertEquals(topicCount, streams.size());
         final ExecutorService service = Executors.newFixedThreadPool(topicCount);
-        final AtomicInteger receiveCount = new AtomicInteger();
-        int index = 0;
         for (final MessageStream<String> stream : streams) {
-            final int streamIndex = index++;
             service.submit(new Runnable() {
-
                 public void run() {
                     for (String message : stream) {
-                        System.out.println(streamIndex+" => "+message);
+                        System.out.println(consumerId +  " => " + message);
                         receiveCount.incrementAndGet();
                     }
                 }
             });
         }
         //
-        Thread.sleep(5000L);
-        connector.close();
-        //close all servers
-        for (Jafka jafka : jafkas) {
-            close(jafka);
-        }
-        //
-        service.shutdown();
-        service.awaitTermination(5, TimeUnit.SECONDS);
-        //
-        assertEquals(messageCount, receiveCount.get());
-        //
+        return new KV<ExecutorService, ConsumerConnector>(service, connector);
     }
-
 }

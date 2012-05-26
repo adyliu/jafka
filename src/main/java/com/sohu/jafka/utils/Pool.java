@@ -20,15 +20,16 @@ package com.sohu.jafka.utils;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class Pool<K, V> implements Map<K, V> {
+public class Pool<K extends Comparable<K>, V> implements Map<K, V> {
 
-    private final ConcurrentHashMap<K, V> pool = new ConcurrentHashMap<K, V>();
+    private final ConcurrentMap<K, V> pool = new ConcurrentSkipListMap<K, V>();
 
     public int size() {
         return pool.size();
@@ -79,6 +80,11 @@ public class Pool<K, V> implements Map<K, V> {
 
     public Set<java.util.Map.Entry<K, V>> entrySet() {
         return pool.entrySet();
+    }
+    
+    @Override
+    public String toString() {
+        return pool.toString();
     }
 
 }
