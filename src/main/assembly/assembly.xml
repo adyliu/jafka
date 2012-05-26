@@ -5,7 +5,7 @@
   <formats>
     <format>tar.gz</format>
   </formats>
-  <baseDirectory>/${artifactId}</baseDirectory>
+  <baseDirectory>/${artifactId}-${version}</baseDirectory>
   <files>
 	<file>
 		<source>LICENSE</source>
