@@ -84,6 +84,7 @@ public class Dumper {
                     offset = mao.offset;
                     totalSize += msg.payloadSize();
                     messageCount++;
+                    index++;
                 }
                 System.out.println("-----------------------------------------------------------------------------");
                 System.out.println(filepath);
