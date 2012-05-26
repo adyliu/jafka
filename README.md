@@ -11,6 +11,10 @@ So it has following features:
 
 If you are interesting in [scala](http://www.scala-lang.org/), please using the origin kafka at [apache](http://incubator.apache.org/kafka/). Also it has git repository at [github](https://github.com/apache/kafka/).
 
+## News
+
+[2012-05-27] released v1.1.0
+
 ##Document & Wiki
 
 Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wiki)
