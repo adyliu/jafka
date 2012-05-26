@@ -20,17 +20,17 @@ package com.sohu.jafka.utils;
 import org.apache.log4j.Logger;
 
 /**
- * If mx4j-tools is in the classpath call maybeLoad to load the HTTP
- * interface of mx4j.
+ * If mx4j-tools is in the classpath call maybeLoad to load the HTTP interface of mx4j.
  * 
- * The default port is 8082. To override that provide e.g. -Dmx4jport=8083
- * The default listen address is 0.0.0.0. To override that provide
- * -Dmx4jaddress=127.0.0.1 This feature must be enabled with
- * -Dmx4jenable=true
+ * The default port is 8082. To override that provide e.g. -Dmx4jport=8083 The default listen
+ * address is 0.0.0.0. To override that provide -Dmx4jaddress=127.0.0.1 This feature must be
+ * enabled with -Dmx4jenable=true
  * 
  * <p>
- * see https://github.com/apache/cassandra/blob/trunk/src/java/org/apache/cassandra/utils/Mx4jTool.java
+ * see https://github.com/apache/cassandra/blob/trunk/src/java/org/apache/cassandra/utils/
+ * Mx4jTool.java
  * </p>
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -38,23 +38,30 @@ public class Mx4jLoader {
 
     private static final Logger logger = Logger.getLogger(Mx4jLoader.class);
 
+    private static Object httpAdaptor;
+
+    private static Class<?> httpAdaptorClass;
+
     /**
-     * Starts a JMX over http interface if and mx4j-tools.jar is in the
-     * classpath.
+     * Starts a JMX over http interface if and mx4j-tools.jar is in the classpath.
      * 
      * @return true if successfully loaded.
      */
-    public static boolean maybeLoad() {
+    public synchronized static boolean maybeLoad() {
         try {
             if (!Utils.getBoolean(System.getProperties(), "jafka_mx4jenable", false)) {
                 return false;
+            }
+            if (httpAdaptor != null) {
+                logger.warn("mx4j has started");
+                return true;
             }
             logger.debug("Will try to load mx4j now, if it's in the classpath");
             //MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
             //ObjectName processorName = new ObjectName("Server:name=XSLTProcessor");
 
-            Class<?> httpAdaptorClass = Class.forName("mx4j.tools.adaptor.http.HttpAdaptor");
-            Object httpAdaptor = httpAdaptorClass.newInstance();
+            httpAdaptorClass = Class.forName("mx4j.tools.adaptor.http.HttpAdaptor");
+            httpAdaptor = httpAdaptorClass.newInstance();
             httpAdaptorClass.getMethod("setHost", String.class).invoke(httpAdaptor, getAddress());
             httpAdaptorClass.getMethod("setPort", Integer.TYPE).invoke(httpAdaptor, getPort());
 
@@ -64,7 +71,8 @@ public class Mx4jLoader {
 
             Class<?> xsltProcessorClass = Class.forName("mx4j.tools.adaptor.http.XSLTProcessor");
             Object xsltProcessor = xsltProcessorClass.newInstance();
-            httpAdaptorClass.getMethod("setProcessor", Class.forName("mx4j.tools.adaptor.http.ProcessorMBean")).invoke(httpAdaptor, xsltProcessor);
+            httpAdaptorClass.getMethod("setProcessor", Class.forName("mx4j.tools.adaptor.http.ProcessorMBean")).invoke(
+                    httpAdaptor, xsltProcessor);
             //mbs.registerMBean(xsltProcessor, processorName);
             Utils.registerMBean(xsltProcessor, "Server:name=XSLTProcessor");
             httpAdaptorClass.getMethod("start").invoke(httpAdaptor);
@@ -76,6 +84,17 @@ public class Mx4jLoader {
             logger.warn("Could not start register mbean in JMX", e);
         }
         return false;
+    }
+
+    public static synchronized void close() {
+        if (httpAdaptor == null) {
+            return;
+        }
+        try {
+            httpAdaptorClass.getMethod("stop").invoke(httpAdaptor);
+        } catch (Exception e) {
+            logger.warn("close mx4j failed. " + e.getMessage());
+        }
     }
 
     private static String getAddress() {
