@@ -141,7 +141,7 @@ public class ProducerPool<V> implements Closeable {
      * specified broker id and calls the send API on the selected producer
      * to publish the data to the specified broker partition
      * 
-     * @param poolData the producer pool request object
+     * @param ppd the producer pool request object
      */
     public void send(ProducerPoolData<V> ppd) {
         if (logger.isDebugEnabled()) {
