@@ -99,7 +99,7 @@ public class Processor extends AbstractServerThread {
                         }
                     } catch (EOFException eofe) {
                         Socket socket = channelFor(key).socket();
-                        logger.info(format("connection closed by %s:%d.", socket.getInetAddress(), socket.getPort()));
+                        logger.debug(format("connection closed by %s:%d.", socket.getInetAddress(), socket.getPort()));
                         close(key);
                     } catch (InvalidRequestException ire) {
                         Socket socket = channelFor(key).socket();

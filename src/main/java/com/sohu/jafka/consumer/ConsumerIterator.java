@@ -97,6 +97,7 @@ public class ConsumerIterator<T> extends IteratorTemplate<T> {
                 }
             }
             if (currentDataChunk == ZookeeperConsumerConnector.SHUTDOWN_COMMAND) {
+                logger.warn("Now closing the message stream");
                 queue.offer(currentDataChunk);
                 return allDone();
             } else {

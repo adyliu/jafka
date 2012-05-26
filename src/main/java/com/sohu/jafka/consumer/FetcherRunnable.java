@@ -17,6 +17,8 @@
 
 package com.sohu.jafka.consumer;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +90,7 @@ public class FetcherRunnable extends Thread {
     public void run() {
         StringBuilder buf = new StringBuilder("[");
         for (PartitionTopicInfo pti : partitionTopicInfos) {
-            buf.append(pti.topic).append("-").append(pti.partition.partId).append(',');
+            buf.append(format("%s-%d-%d,", pti.topic,pti.partition.brokerId,pti.partition.partId));
         }
         buf.append(']');
         logger.info(String.format("%s comsume at %s:%d with %s", getName(), broker.host, broker.port, buf.toString()));
@@ -117,7 +119,7 @@ public class FetcherRunnable extends Thread {
             }
         }
         //
-        logger.info("stopping fetcher " + getName() + " to host " + broker);
+        logger.debug("stopping fetcher " + getName() + " to broker " + broker);
         Closer.closeQuietly(simpleConsumer);
         shutdownComplete();
     }
