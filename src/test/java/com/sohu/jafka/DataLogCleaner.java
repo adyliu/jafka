@@ -45,12 +45,16 @@ public class DataLogCleaner {
         if (subs != null) {
             for (File f : dir.listFiles()) {
                 if (f.isFile()) {
-                    f.delete();
+                    if(!f.delete()) {
+                        throw new IllegalStateException("delete file failed: "+f);
+                    }
                 } else {
                     cleanDataLogDir(f);
                 }
             }
         }
-        dir.delete();
+        if(!dir.delete()) {
+            throw new IllegalStateException("delete directory failed: "+dir);
+        }
     }
 }
