@@ -133,7 +133,7 @@
                                 <name>com.sohu.jafka</name>
                                 <manifestEntries>
                                     <Implementation-Title>jafka</Implementation-Title>
-                                    <Implementation-Version>${project.version}</Implementation-Version>
+                                    <Implementation-Version>1.1.0-20120526</Implementation-Version>
                                     <Implementation-Vendor>Ady Liu</Implementation-Vendor>
                                 </manifestEntries>
                             </manifestSection>

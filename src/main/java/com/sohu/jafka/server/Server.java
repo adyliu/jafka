@@ -71,7 +71,7 @@ public class Server implements Closeable {
 
     public void startup() {
         try {
-            logger.info("Starting Jafka server...");
+            logger.info("Starting Jafka server "+serverInfo.getVersion());
             Utils.registerMBean(serverInfo);
             boolean needRecovery = true;
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);

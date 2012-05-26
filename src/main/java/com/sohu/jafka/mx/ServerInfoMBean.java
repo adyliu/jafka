@@ -18,14 +18,13 @@
 package com.sohu.jafka.mx;
 
 /**
+ * Server information
  * @author adyliu (imxylz@gmail.com)
  * @since 1.1
  */
 public interface ServerInfoMBean {
 
     String getVersion();
-
-    String getBuildDate();
 
     String getStartupTime();
     

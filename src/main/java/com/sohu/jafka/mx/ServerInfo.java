@@ -52,11 +52,6 @@ public class ServerInfo implements ServerInfoMBean,IMBeanName {
     }
 
     @Override
-    public String getBuildDate() {
-        return "--";
-    }
-
-    @Override
     public String getStartupTime() {
         return startupTime;
     }
