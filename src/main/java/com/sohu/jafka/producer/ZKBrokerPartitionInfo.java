@@ -21,6 +21,7 @@ package com.sohu.jafka.producer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -184,8 +185,8 @@ public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
 
         public BrokerTopicsListener(Map<String, SortedSet<Partition>> originalBrokerTopicsParitions, Map<Integer, Broker> originBrokerIds) {
             super();
-            this.originalBrokerTopicsParitions = originalBrokerTopicsParitions;
-            this.originBrokerIds = originBrokerIds;
+            this.originalBrokerTopicsParitions = new LinkedHashMap<String, SortedSet<Partition>>(originalBrokerTopicsParitions);
+            this.originBrokerIds = new LinkedHashMap<Integer, Broker>(originBrokerIds);
             logger.debug("[BrokerTopicsListener] Creating broker topics listener to watch the following paths - \n"
                     + "/broker/topics, /broker/topics/<topic>, /broker/<ids>");
             logger.debug("[BrokerTopicsListener] Initialized this broker topics listener with initial mapping of broker id to "
