@@ -1,6 +1,6 @@
 Specification-Title: jafka
 Specification-Version: 1.1
 Specification-Vendor: Ady Liu
-Implementation-Version: 1.1.0-20110527
+Implementation-Version: 1.2.0-SNAPSHOT
 Implementation-Vendor: Ady Liu
 Implementation-Title: jafka
