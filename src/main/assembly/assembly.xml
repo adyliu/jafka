@@ -11,6 +11,11 @@
 		<source>LICENSE</source>
 		<outputDirectory>/</outputDirectory>
 	</file>
+	<file>
+		<source>conf/log4j.properties.in</source>
+		<outputDirectory>/bin</outputDirectory>
+		<destName>log4j.properties</destName>
+	</file>
   </files>
   <fileSets>
 	<fileSet>
