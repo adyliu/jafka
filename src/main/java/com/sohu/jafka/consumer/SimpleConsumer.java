@@ -17,7 +17,6 @@
 
 package com.sohu.jafka.consumer;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
@@ -26,6 +25,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.sohu.jafka.api.CreaterRequest;
 import com.sohu.jafka.api.FetchRequest;
 import com.sohu.jafka.api.MultiFetchRequest;
 import com.sohu.jafka.api.MultiFetchResponse;
@@ -40,6 +40,7 @@ import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Request;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.KV;
+import com.sohu.jafka.utils.Utils;
 
 /**
  * Simple message consumer
@@ -49,7 +50,7 @@ import com.sohu.jafka.utils.KV;
  */
 @ThreadSafe
 @ClientSide
-public class SimpleConsumer implements Closeable {
+public class SimpleConsumer implements IConsumer {
 
     private final Logger logger = Logger.getLogger(SimpleConsumer.class);
 
@@ -147,16 +148,29 @@ public class SimpleConsumer implements Closeable {
         return new KV<Receive, ErrorMapping>(response, ErrorMapping.valueOf(response.buffer().getShort()));
     }
 
-    /**
-     * get before offsets of message
-     * 
-     * @param topic message topic
-     * @param partition topic partition
-     * @param time the log file created time {@link OffsetRequest#time}
-     * @param maxNumOffsets the number of offsets
-     * @return offsets while file created before the time or empty offsets
-     * @throws IOException
-     */
+    public int createPartitions(String topic,int partitionNum,boolean enlarge) throws IOException{
+        synchronized (lock) {
+            KV<Receive, ErrorMapping> response = null;
+            try {
+                getOrMakeConnection();
+                sendRequest(new CreaterRequest(topic, partitionNum, enlarge));
+                response = getResponse();
+            } catch (IOException e) {
+                logger.info("Reconnect in createPartitions request due to socket error: ", e);
+                //retry once
+                try {
+                    channel = connect();
+                    sendRequest(new CreaterRequest(topic, partitionNum, enlarge));
+                    response = getResponse();
+                } catch (IOException e2) {
+                    channel = null;
+                    throw e2;
+                }
+            }
+            return Utils.deserializeIntArray(response.k.buffer())[0];
+        }
+    }
+    
     public long[] getOffsetsBefore(String topic, int partition, long time, int maxNumOffsets) throws IOException {
         synchronized (lock) {
             KV<Receive, ErrorMapping> response = null;
@@ -205,5 +219,11 @@ public class SimpleConsumer implements Closeable {
             }
             return new MultiFetchResponse(response.k.buffer(), fetches.size(), offsets);
         }
+    }
+    
+    @Override
+    public long getLatestOffset(String topic, int partition) throws IOException {
+        long[] result = getOffsetsBefore(topic, partition, -1, 1);
+        return result.length == 0 ? -1 : result[0];
     }
 }

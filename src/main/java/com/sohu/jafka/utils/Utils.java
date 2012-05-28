@@ -461,4 +461,41 @@ public class Utils {
             return f.getAbsoluteFile();
         }
     }
+    
+    public static ByteBuffer serializeArray(long[] numbers) {
+        int size = 4 + 8 * numbers.length;
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        buffer.putInt(numbers.length);
+        for(long num: numbers) {
+            buffer.putLong(num);
+        }
+        buffer.rewind();
+        return buffer;
+    }
+    public static ByteBuffer serializeArray(int[] numbers) {
+        int size = 4 + 4 * numbers.length;
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        buffer.putInt(numbers.length);
+        for(int num: numbers) {
+            buffer.putInt(num);
+        }
+        buffer.rewind();
+        return buffer;
+    }
+    public static int[] deserializeIntArray(ByteBuffer buffer) {
+        int size = buffer.getInt();
+        int[] nums = new int[size];
+        for (int i = 0; i < size; i++) {
+            nums[i] = buffer.getInt();
+        }
+        return nums;
+    }
+    public static long[] deserializeLongArray(ByteBuffer buffer) {
+        int size = buffer.getInt();
+        long[] nums = new long[size];
+        for (int i = 0; i < size; i++) {
+            nums[i] = buffer.getLong();
+        }
+        return nums;
+    }    
 }

@@ -51,6 +51,7 @@ import com.sohu.jafka.producer.serializer.StringEncoder;
 public class SimpleConsumerTest extends BaseJafkaServer {
 
     Jafka jafka;
+    final int jafkaPort = 9092;
 
     SimpleConsumer consumer;
 
@@ -67,28 +68,13 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             //we will fetch nothing while messages have note been flushed to disk
             props.put("log.flush.interval", "1");
             props.put("log.default.flush.scheduler.interval.ms", "100");//flush to disk every 100ms
-            props.put("log.file.size", "5120");//10k for rolling
+            props.put("log.file.size", "5120");//5k for rolling
             props.put("num.partitions", "" + partitions);//default divided three partitions
+            props.put("port", ""+jafkaPort);
             jafka = createJafka(props);
-            Properties producerConfig = new Properties();
-            producerConfig.setProperty("broker.list", "0:localhost:9092");
-            producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
-            Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
-            int index = 0;
-            for (int i = 0; i < 10; i++) {
-                StringProducerData data = new StringProducerData("demo");
-                StringProducerData data2 = new StringProducerData("test");
-                int batch = 100;
-                while (batch-- > 0) {
-                    data.add("message#" + index++);
-                    data2.add("message#test#" + index++);
-                }
-                producer.send(data);
-                producer.send(data2);
-            }
-            producer.close();
+            sendSomeMessages(1000,"demo","test");
             flush(jafka);
-            System.out.println("send " + index + " messages");
+            
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         }
         if (consumer == null) {
@@ -96,6 +82,33 @@ public class SimpleConsumerTest extends BaseJafkaServer {
         }
     }
 
+    private void sendSomeMessages(int count,final String ...topics) {
+        Properties producerConfig = new Properties();
+        producerConfig.setProperty("broker.list", "0:localhost:" + jafkaPort);
+        producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
+        Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
+        int index = 0;
+        boolean over = false;
+        while (!over) {
+            StringProducerData[] data = new StringProducerData[topics.length];
+            for(int x=0;x<data.length;x++) {
+                data[x] = new StringProducerData(topics[x]);
+            }
+            int batch = 50;
+            while (batch-- > 0 && !over) {
+                for(StringProducerData sd:data) {
+                    sd.add(sd.getTopic()+"#message#"+(index++));
+                }
+                over = index >= count;
+            }
+            for(StringProducerData sd:data) {
+                producer.send(sd);
+            }
+        }
+        producer.close();
+        System.out.println("send " + index + " messages");
+    }
+    
     @After
     public void destroy() throws Throwable {
         close(jafka);
@@ -106,6 +119,21 @@ public class SimpleConsumerTest extends BaseJafkaServer {
         }
     }
 
+    
+    @Test
+    public void testCreatePartitions() throws IOException{
+        int size = consumer.createPartitions("demo", partitions-1, false);
+        assertEquals(partitions, size);
+        size = consumer.createPartitions("demo", partitions+1, false);
+        assertEquals(partitions, size);
+        size = consumer.createPartitions("demo", partitions+3, true);
+        assertEquals(partitions, size);
+        //
+        final String largePartitionTopic = "largepartition";
+        size = consumer.createPartitions(largePartitionTopic, partitions+5, true);
+        assertEquals(partitions+5, size);
+        sendSomeMessages(1000, largePartitionTopic);
+    }
     /**
      * Test method for
      * {@link com.sohu.jafka.consumer.SimpleConsumer#close()}.

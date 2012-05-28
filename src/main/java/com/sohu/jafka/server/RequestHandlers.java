@@ -22,6 +22,7 @@ import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.RequestHandler;
 import com.sohu.jafka.network.RequestHandlerFactory;
+import com.sohu.jafka.network.handlers.CreaterHandler;
 import com.sohu.jafka.network.handlers.FetchHandler;
 import com.sohu.jafka.network.handlers.MultiFetchHandler;
 import com.sohu.jafka.network.handlers.MultiProduceHandler;
@@ -46,12 +47,15 @@ class RequestHandlers implements RequestHandlerFactory {
 
     private final ProducerHandler producerHandler;
 
+    private final CreaterHandler createrHandler;
+
     public RequestHandlers(LogManager logManager) {
         fetchHandler = new FetchHandler(logManager);
         multiFetchHandler = new MultiFetchHandler(logManager);
         multiProduceHandler = new MultiProduceHandler(logManager);
         offsetsHandler = new OffsetsHandler(logManager);
         producerHandler = new ProducerHandler(logManager);
+        createrHandler = new CreaterHandler(logManager);
     }
 
     @Override
@@ -67,6 +71,8 @@ class RequestHandlers implements RequestHandlerFactory {
                 return multiProduceHandler;
             case OFFSETS:
                 return offsetsHandler;
+            case CREATE:
+                return createrHandler;
         }
         throw new IllegalStateException("No mapping found for handler id " + id);
     }

@@ -33,7 +33,9 @@ public enum RequestKeys {
     FETCH, //1
     MULTIFETCH, //2
     MULTIPRODUCE, //3
-    OFFSETS;//4
+    OFFSETS,//4
+    CREATE,//5
+    DELETE;//6
 
     //
     public int value = ordinal();

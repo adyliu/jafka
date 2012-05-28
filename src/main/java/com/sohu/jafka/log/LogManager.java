@@ -70,7 +70,7 @@ public class LogManager implements PartitionChooser, Closeable {
 
     final int flushInterval;
 
-    final Object logCreationLock = new Object();
+    private final Object logCreationLock = new Object();
 
     final Random random = new Random();
 
@@ -148,11 +148,18 @@ public class LogManager implements PartitionChooser, Closeable {
                 } else {
                     logger.info("Loading log from " + dir.getAbsolutePath());
                     final KV<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
-                    Log log = new Log(dir, topicPartion.v, this.rollingStategy, flushInterval, needRecovery);
+                    final String topic = topicPartion.k;
+                    final int partition = topicPartion.v;
+                    Log log = new Log(dir, partition, this.rollingStategy, flushInterval, needRecovery);
 
-                    logs.putIfNotExists(topicPartion.k, new Pool<Integer, Log>());
-                    Pool<Integer, Log> parts = logs.get(topicPartion.k);
-                    parts.put(topicPartion.v, log);
+                    logs.putIfNotExists(topic, new Pool<Integer, Log>());
+                    Pool<Integer, Log> parts = logs.get(topic);
+                    
+                    parts.put(partition, log);
+                    int configPartition = getPartition(topic);
+                    if(configPartition < partition) {
+                        topicPartitionsMap.put(topic, partition);
+                    }
                 }
             }
         }
@@ -249,8 +256,8 @@ public class LogManager implements PartitionChooser, Closeable {
     }
 
     /**
-     * Runs through the log removing segments until the size of the log is
-     * at least logRetentionSize bytes in size
+     * Runs through the log removing segments until the size of the log is at least
+     * logRetentionSize bytes in size
      * 
      * @throws IOException
      */
@@ -288,8 +295,7 @@ public class LogManager implements PartitionChooser, Closeable {
     }
 
     /**
-     * Attemps to delete all provided segments from a log and returns how
-     * many it was able to
+     * Attemps to delete all provided segments from a log and returns how many it was able to
      */
     private int deleteSegments(Log log, List<LogSegment> segments) {
         int total = 0;
@@ -307,7 +313,8 @@ public class LogManager implements PartitionChooser, Closeable {
                     total += 1;
                 }
             } finally {
-                logger.warn(String.format("DELETE_LOG[%s] %s => %s", log.name, segment.getFile().getAbsolutePath(), deleted));
+                logger.warn(String.format("DELETE_LOG[%s] %s => %s", log.name, segment.getFile().getAbsolutePath(),
+                        deleted));
             }
         }
         return total;
@@ -352,7 +359,8 @@ public class LogManager implements PartitionChooser, Closeable {
                     }
                     final String flushLogFormat = "[%s] flush interval %d, last flushed %d, need flush? %s";
                     needFlush = timeSinceLastFlush >= logFlushInterval.intValue();
-                    logger.trace(String.format(flushLogFormat, log.getTopicName(), logFlushInterval, log.getLastFlushedTime(), needFlush));
+                    logger.trace(String.format(flushLogFormat, log.getTopicName(), logFlushInterval,
+                            log.getLastFlushedTime(), needFlush));
                 }
                 if (needFlush) {
                     log.flush();
@@ -469,6 +477,21 @@ public class LogManager implements PartitionChooser, Closeable {
             registerNewTopicInZK(topic);
         }
         return log;
+    }
+
+    public int createLogs(String topic, final int partitions, final boolean forceEnlarge) {
+        synchronized (logCreationLock) {
+            final int configPartitions = getPartition(topic);
+            if (configPartitions >= partitions || !forceEnlarge) {
+                return configPartitions;
+            }
+            if (getLogPool(topic, 0) != null) {//created already
+                return configPartitions;
+            }
+            topicPartitionsMap.put(topic, partitions);
+            registerNewTopicInZK(topic);
+            return partitions;
+        }
     }
 
     private Log createLog(String topic, int partition) throws IOException {
