@@ -83,6 +83,7 @@ public class FetcherRunnable extends Thread {
     public void shutdown() throws InterruptedException {
         logger.debug("shutdown the fetcher "+getName());
         stopped = true;
+        interrupt();
         shutdownLatch.await(5,TimeUnit.SECONDS);
     }
 
@@ -140,11 +141,18 @@ public class FetcherRunnable extends Thread {
                 read += processMessages(messages, info);
             } catch (IOException e) {
                 throw e;
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
                 if (!stopped) {
                     logger.error("error in FetcherRunnable for " + info, e);
                     info.enqueueError(e, info.getFetchedOffset());
                 }
+                throw e;
+            }catch (RuntimeException e) {
+                if (!stopped) {
+                    logger.error("error in FetcherRunnable for " + info, e);
+                    info.enqueueError(e, info.getFetchedOffset());
+                }
+                throw e;
             }
 
             //
