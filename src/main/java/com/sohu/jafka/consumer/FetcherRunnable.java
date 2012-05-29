@@ -83,7 +83,7 @@ public class FetcherRunnable extends Thread {
     public void shutdown() throws InterruptedException {
         logger.debug("shutdown the fetcher "+getName());
         stopped = true;
-        shutdownLatch.await(5000,TimeUnit.SECONDS);
+        shutdownLatch.await(5,TimeUnit.SECONDS);
     }
 
     @Override
