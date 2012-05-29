@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
@@ -82,8 +83,7 @@ public class FetcherRunnable extends Thread {
     public void shutdown() throws InterruptedException {
         logger.debug("shutdown the fetcher "+getName());
         stopped = true;
-        this.interrupt();
-        shutdownLatch.await();
+        shutdownLatch.await(5,TimeUnit.SECONDS);
     }
 
     @Override
