@@ -17,6 +17,8 @@
 
 package com.sohu.jafka.network.handlers;
 
+import static java.lang.String.format;
+
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.api.RequestKeys;
 import com.sohu.jafka.log.ILog;
@@ -33,6 +35,8 @@ import com.sohu.jafka.network.Send;
  * @since 1.0
  */
 public class ProducerHandler extends AbstractHandler {
+
+    final String errorFormat = "Error processing %s on %s:%d";
 
     public ProducerHandler(LogManager logManager) {
         super(logManager);
@@ -67,12 +71,20 @@ public class ProducerHandler extends AbstractHandler {
             BrokerTopicStat.getInstance(request.topic).recordBytesIn(messageSize);
             BrokerTopicStat.getBrokerAllTopicStat().recordBytesIn(messageSize);
         } catch (RuntimeException e) {
-            logger.error("Error processing " + request.getRequestKey() + " on " + request.topic + ":" + partition, e);
+            if (logger.isDebugEnabled()) {
+                logger.error(format(errorFormat, request.getRequestKey(), request.topic, request.partition), e);
+            } else {
+                logger.error("Producer failed. " + e.getMessage());
+            }
             BrokerTopicStat.getInstance(request.topic).recordFailedProduceRequest();
             BrokerTopicStat.getBrokerAllTopicStat().recordFailedProduceRequest();
             throw e;
         } catch (Exception e) {
-            logger.error("Error processing " + request.getRequestKey() + " on " + request.topic + ":" + partition, e);
+            if (logger.isDebugEnabled()) {
+                logger.error(format(errorFormat, request.getRequestKey(), request.topic, request.partition), e);
+            } else {
+                logger.error("Producer failed. " + e.getMessage());
+            }
             BrokerTopicStat.getInstance(request.topic).recordFailedProduceRequest();
             BrokerTopicStat.getBrokerAllTopicStat().recordFailedProduceRequest();
             throw new RuntimeException(e.getMessage(), e);

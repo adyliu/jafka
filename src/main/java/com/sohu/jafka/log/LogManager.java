@@ -422,7 +422,7 @@ public class LogManager implements PartitionChooser, Closeable {
             definePartition = numPartitions;
         }
         if (partition < 0 || partition >= definePartition.intValue()) {
-            String msg = "Wrong partition [%d] for topic [%s], valid partitions(0,%d)";
+            String msg = "Wrong partition [%d] for topic [%s], valid partitions [0,%d)";
             msg = format(msg, partition, topic, definePartition.intValue() - 1);
             logger.warn(msg);
             throw new InvalidPartitionException(msg);
