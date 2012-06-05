@@ -134,7 +134,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      * static broker and per-broker partition information. Format-
      * 
      * <pre>
-     *      brokerid1:host1:port1, brokerid2:host2:port2
+     *      brokerid1:host1:port1[:partitions], brokerid2:host2:port2[:partitions]
      * </pre>
      */
     public String getBrokerList() {

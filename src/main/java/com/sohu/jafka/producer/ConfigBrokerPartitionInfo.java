@@ -24,11 +24,11 @@ import java.util.TreeSet;
 
 import com.sohu.jafka.cluster.Broker;
 import com.sohu.jafka.cluster.Partition;
-import com.sohu.jafka.common.InvalidConfigException;
 import com.sohu.jafka.common.annotations.ClientSide;
 
-
 /**
+ * send messages with given brokers list
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -37,14 +37,17 @@ public class ConfigBrokerPartitionInfo implements BrokerPartitionInfo {
 
     private final ProducerConfig producerConfig;
 
-    private final SortedSet<Partition> brokerPartitions;
+    private final SortedSet<Partition> brokerPartitions = new TreeSet<Partition>();
 
-    private final Map<Integer, Broker> allBrokers;
+    private final Map<Integer, Broker> allBrokers = new HashMap<Integer, Broker>();
 
     public ConfigBrokerPartitionInfo(ProducerConfig producerConfig) {
         this.producerConfig = producerConfig;
-        this.brokerPartitions = getConfigTopicPartitionInfo();
-        this.allBrokers = getConfigBrokerInfo();
+        try {
+            init();
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("illegal broker.list", e);
+        }
     }
 
     public SortedSet<Partition> getBrokerPartitionInfo(String topic) {
@@ -63,28 +66,22 @@ public class ConfigBrokerPartitionInfo implements BrokerPartitionInfo {
     }
 
     public void close() {
+        brokerPartitions.clear();
+        allBrokers.clear();
     }
 
-    private SortedSet<Partition> getConfigTopicPartitionInfo() {
-        String[] brokerInfoList = producerConfig.getBrokerList().split(",");
-        if (brokerInfoList.length == 0) {
-            throw new InvalidConfigException("broker.list is empty");
-        }
-        final TreeSet<Partition> brokerParts = new TreeSet<Partition>();
-        for (String bInfo : brokerInfoList) {
-            brokerParts.add(new Partition(Integer.parseInt(bInfo.split(":")[0]), 0));
-        }
-        return brokerParts;
-    }
-
-    private Map<Integer, Broker> getConfigBrokerInfo() {
-        Map<Integer, Broker> brokerInfo = new HashMap<Integer, Broker>();
+    private void init() {
         String[] brokerInfoList = producerConfig.getBrokerList().split(",");
         for (String bInfo : brokerInfoList) {
             final String[] idHostPort = bInfo.split(":");
             final int id = Integer.parseInt(idHostPort[0]);
-            brokerInfo.put(id, new Broker(id, idHostPort[1], idHostPort[1], Integer.parseInt(idHostPort[2])));
+            final String host = idHostPort[1];
+            final int port = Integer.parseInt(idHostPort[2]);
+            final int partitions = idHostPort.length == 4 ? Integer.parseInt(idHostPort[3]) : 1;
+            allBrokers.put(id, new Broker(id, host, host, port));
+            for (int i = 0; i < partitions; i++) {
+                this.brokerPartitions.add(new Partition(id, i));
+            }
         }
-        return brokerInfo;
     }
 }
