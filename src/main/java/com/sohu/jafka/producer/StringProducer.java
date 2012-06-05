@@ -17,19 +17,39 @@
 
 package com.sohu.jafka.producer;
 
+import com.sohu.jafka.producer.serializer.Encoder;
+import com.sohu.jafka.producer.serializer.StringEncoder;
+
 /**
- * some messages to special broker(server)
+ * UTF-8 String Producer
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.2
  */
-public interface Partitioner<T> {
+public class StringProducer extends Producer<String, String> implements IStringProducer {
 
     /**
-     * Uses the key to calculate a partition bucket id for routing the data to the appropriate
-     * broker partition
+     * create a string producer with given partitioner rules
      * 
-     * @return an integer between 0 and numPartitions-1
+     * @param config producer config
+     * @param partitioner partitioner rules
      */
-    int partition(T key, int numPartitions);
+    public StringProducer(ProducerConfig config, Partitioner<String> partitioner) {
+        super(config, partitioner, null, true, null);
+    }
+
+    /**
+     * create a string producer
+     * 
+     * @param config producer config
+     */
+    public StringProducer(ProducerConfig config) {
+        super(config);
+    }
+
+    @Override
+    public Encoder<String> getEncoder() {
+        return new StringEncoder();
+    }
+
 }

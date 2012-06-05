@@ -17,19 +17,19 @@
 
 package com.sohu.jafka.producer;
 
+import com.sohu.jafka.common.InvalidPartitionException;
+import com.sohu.jafka.common.NoBrokersForPartitionException;
+
 /**
- * some messages to special broker(server)
+ * utf-8 string producer
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.2
  */
-public interface Partitioner<T> {
+public interface IStringProducer extends IProducer<String, String> {
 
-    /**
-     * Uses the key to calculate a partition bucket id for routing the data to the appropriate
-     * broker partition
-     * 
-     * @return an integer between 0 and numPartitions-1
-     */
-    int partition(T key, int numPartitions);
+    @Override
+    public void send(ProducerData<String, String> data) throws NoBrokersForPartitionException,
+            InvalidPartitionException;
+
 }

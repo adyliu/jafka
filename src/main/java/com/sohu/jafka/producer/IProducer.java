@@ -17,19 +17,42 @@
 
 package com.sohu.jafka.producer;
 
+import java.io.Closeable;
+
+import com.sohu.jafka.common.InvalidPartitionException;
+import com.sohu.jafka.common.NoBrokersForPartitionException;
+import com.sohu.jafka.producer.serializer.Encoder;
+
 /**
- * some messages to special broker(server)
+ * Producer interface
  * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.2
  */
-public interface Partitioner<T> {
+public interface IProducer<K, V> extends Closeable {
 
     /**
-     * Uses the key to calculate a partition bucket id for routing the data to the appropriate
-     * broker partition
+     * Send messages
      * 
-     * @return an integer between 0 and numPartitions-1
+     * @param data message data
+     * @throws NoBrokersForPartitionException no broker has this topic
+     * @throws InvalidPartitionException partition is out of range
      */
-    int partition(T key, int numPartitions);
+    void send(ProducerData<K, V> data) throws NoBrokersForPartitionException, InvalidPartitionException;
+
+    /**
+     * get message encoder
+     * 
+     * @return message encoder
+     * @see Encoder
+     */
+    Encoder<V> getEncoder();
+
+    /**
+     * get partition chooser
+     * 
+     * @return partition chooser
+     * @see Partitioner
+     */
+    Partitioner<K> getPartitioner();
 }

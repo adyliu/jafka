@@ -18,9 +18,8 @@
 package com.sohu.jafka.producer;
 
 
-import static com.sohu.jafka.utils.Closer.*;
+import static com.sohu.jafka.utils.Closer.closeQuietly;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 
 import org.apache.log4j.Logger;
 
@@ -53,11 +51,11 @@ import com.sohu.jafka.utils.ZKConfig;
  * @since 1.0
  */
 @ClientSide
-public class Producer<K, V> implements Callback, Closeable {
+public class Producer<K, V> implements Callback,IProducer<K, V> {
 
     ProducerConfig config;
 
-    Partitioner<K> partitioner;
+    private Partitioner<K> partitioner;
 
     ProducerPool<V> producerPool;
 
@@ -73,12 +71,16 @@ public class Producer<K, V> implements Callback, Closeable {
     private final Random random = new Random();
 
     private final boolean zkEnabled;
+    private Encoder<V> encoder;
 
     public Producer(ProducerConfig config, Partitioner<K> partitioner, ProducerPool<V> producerPool, boolean populateProducerPool,
             BrokerPartitionInfo brokerPartitionInfo) {
         super();
         this.config = config;
         this.partitioner = partitioner;
+        if(producerPool == null) {
+            producerPool =  new ProducerPool<V>(config, getEncoder());
+        }
         this.producerPool = producerPool;
         this.populateProducerPool = populateProducerPool;
         this.brokerPartitionInfo = brokerPartitionInfo;
@@ -112,11 +114,10 @@ public class Producer<K, V> implements Callback, Closeable {
      * 
      * @param config Producer Configuration object
      */
-    @SuppressWarnings("unchecked")
     public Producer(ProducerConfig config) {
         this(config, //
-                (Partitioner<K>) Utils.getObject(config.getPartitionerClass()),//
-                new ProducerPool<V>(config, (Encoder<V>) Utils.getObject(config.getSerializerClass())), //
+               null,//
+                null, //
                 true, //
                 null);
     }
@@ -152,13 +153,19 @@ public class Producer<K, V> implements Callback, Closeable {
      */
     public Producer(ProducerConfig config, Encoder<V> encoder, EventHandler<V> eventHandler, CallbackHandler<V> cbkHandler, Partitioner<K> partitioner) {
         this(config, //
-                partitioner == null ? new DefaultPartitioner<K>() : partitioner,//
+                partitioner,//
                 new ProducerPool<V>(config, encoder, eventHandler, cbkHandler), //
                 true, //
                 null);
     }
 
-    public void send(ProducerData<K, V> data) {
+    @SuppressWarnings("unchecked")
+    @Override
+    public Encoder<V> getEncoder() {
+        return encoder == null ?(Encoder<V>) Utils.getObject(config.getSerializerClass()):encoder;
+    }
+
+    public void send(ProducerData<K, V> data) throws NoBrokersForPartitionException, InvalidPartitionException {
         if (data == null) return;
         if (zkEnabled) {
             zkSend(data);
@@ -204,7 +211,7 @@ public class Producer<K, V> implements Callback, Closeable {
         if (numPartitions <= 0) {
             throw new InvalidPartitionException("Invalid number of partitions: " + numPartitions + "\n Valid values are > 0");
         }
-        int partition = key == null ? random.nextInt(numPartitions) : partitioner.partition(key, numPartitions);
+        int partition = key == null ? random.nextInt(numPartitions) : getPartitioner().partition(key, numPartitions);
         if (partition < 0 || partition >= numPartitions) {
             throw new InvalidPartitionException("Invalid partition id : " + partition + "\n Valid values are in the range inclusive [0, " + (numPartitions - 1)
                     + "]");
@@ -242,5 +249,18 @@ public class Producer<K, V> implements Callback, Closeable {
             closeQuietly(producerPool);
             closeQuietly(brokerPartitionInfo);
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public Partitioner<K> getPartitioner() {
+        if(partitioner == null) {
+            partitioner =  (Partitioner<K>) Utils.getObject(config.getPartitionerClass());
+        }
+        return partitioner;
+    }
+    
+    public void setPartitioner(Partitioner<K> partitioner) {
+        this.partitioner = partitioner;
     }
 }
