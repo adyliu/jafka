@@ -26,7 +26,7 @@ import com.sohu.jafka.network.Send;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 1.1
+ * @since 1.2
  */
 public class CreaterHandler extends AbstractHandler {
 

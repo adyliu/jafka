@@ -26,7 +26,7 @@ import com.sohu.jafka.utils.Utils;
 
 /**
  * @author adyliu (imxylz@gmail.com)
- * @since 1.1
+ * @since 1.2
  */
 @ClientSide
 @ServerSide
