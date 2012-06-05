@@ -19,6 +19,7 @@ package com.sohu.jafka.server;
 
 import java.io.Closeable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -82,7 +83,7 @@ public class MirroringThread extends Thread implements Closeable {
 
     public void close() {
         try {
-            shutdownComplete.await();
+            shutdownComplete.await(10,TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             logger.fatal("Shutdown of thread " + getName() + " interrupted.  Mirroring thread might leak data!");
         }
