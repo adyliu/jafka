@@ -22,12 +22,13 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
+ * Convert ByteBuffer to InputStream
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class ByteBufferBackedInputStream extends InputStream {
+class ByteBufferBackedInputStream extends InputStream {
 
-    final ByteBuffer buffer;
+    private final ByteBuffer buffer;
 
     public ByteBufferBackedInputStream(ByteBuffer buffer) {
         this.buffer = buffer;
