@@ -46,7 +46,30 @@ public class ProducerTest extends BaseJafkaServer {
             producer.send(new StringProducerData("demo").add("Hello jafka").add("https://github.com/adyliu/jafka"));
         }
         producer.close();
+        ////////////////////////////////////////////////
         close(jafka);
     }
-
+    /**
+     * Test method for
+     * {@link com.sohu.jafka.producer.Producer#send(com.sohu.jafka.producer.ProducerData)}.
+     */
+    @Test
+    public void testSendWithPartition() {
+        Properties props = new Properties();
+        props.setProperty("num.partitions", "5");
+        Jafka jafka = createJafka(props);
+        Properties producerConfig = new Properties();
+        producerConfig.setProperty("broker.list", "0:localhost:9092:5");
+        StringProducer producer = new StringProducer(new ProducerConfig(producerConfig));
+        for (int i = 0; i < 1000; i++) {
+            final String message = "Hello jafka. #"+i;
+            StringProducerData data= new StringProducerData("demo");
+            data.setKey(message);
+            data.add(message).add("https://github.com/adyliu/jafka");
+            producer.send(data);
+        }
+        producer.close();
+        ////////////////////////////////////////////////
+        close(jafka);
+    }
 }
