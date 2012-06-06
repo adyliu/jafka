@@ -22,6 +22,7 @@ import static java.lang.String.format;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +39,8 @@ import com.sohu.jafka.api.PartitionChooser;
 import com.sohu.jafka.common.InvalidPartitionException;
 import com.sohu.jafka.server.ServerConfig;
 import com.sohu.jafka.server.ServerRegister;
+import com.sohu.jafka.server.TopicTask;
+import com.sohu.jafka.server.TopicTask.TaskType;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.IteratorTemplate;
 import com.sohu.jafka.utils.KV;
@@ -81,10 +84,8 @@ public class LogManager implements PartitionChooser, Closeable {
 
     private final Scheduler logFlusherScheduler = new Scheduler(1, "jafka-logflusher-", false);
 
-    private final static String CLOSED_TOPIC = "";
-
     //
-    private final LinkedBlockingQueue<String> topicRegisterTasks = new LinkedBlockingQueue<String>();
+    private final LinkedBlockingQueue<TopicTask> topicRegisterTasks = new LinkedBlockingQueue<TopicTask>();
 
     private volatile boolean stopTopicRegisterTasks = false;
 
@@ -193,9 +194,9 @@ public class LogManager implements PartitionChooser, Closeable {
     private void registeredTaskLooply() {
         while (!stopTopicRegisterTasks) {
             try {
-                String topic = topicRegisterTasks.take();
-                if (topic == CLOSED_TOPIC) continue;
-                serverRegister.registerTopicInZk(topic);
+                TopicTask task = topicRegisterTasks.take();
+                if (task.type == TaskType.SHUTDOWN) break;
+                serverRegister.processTask(task);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
@@ -228,8 +229,8 @@ public class LogManager implements PartitionChooser, Closeable {
         if (config.getEnableZookeeper()) {
             stopTopicRegisterTasks = true;
             //wake up again and again
-            topicRegisterTasks.add(CLOSED_TOPIC);
-            topicRegisterTasks.add(CLOSED_TOPIC);
+            topicRegisterTasks.add(new TopicTask(TaskType.SHUTDOWN, null));
+            topicRegisterTasks.add(new TopicTask(TaskType.SHUTDOWN, null));
             Closer.closeQuietly(serverRegister);
         }
     }
@@ -327,7 +328,7 @@ public class LogManager implements PartitionChooser, Closeable {
         if (config.getEnableZookeeper()) {
             serverRegister.registerBrokerInZk();
             for (String topic : getAllTopics()) {
-                serverRegister.registerTopicInZk(topic);
+                serverRegister.processTask(new TopicTask(TaskType.CREATE, topic));
             }
             startupLatch.countDown();
         }
@@ -473,8 +474,8 @@ public class LogManager implements PartitionChooser, Closeable {
                 logger.info(format("Created log for [%s-%d]", topic, partition));
             }
         }
-        if (hasNewTopic) {
-            registerNewTopicInZK(topic);
+        if (hasNewTopic && config.getEnableZookeeper()) {
+            topicRegisterTasks.add(new TopicTask(TaskType.CREATE, topic));
         }
         return log;
     }
@@ -485,15 +486,43 @@ public class LogManager implements PartitionChooser, Closeable {
             if (configPartitions >= partitions || !forceEnlarge) {
                 return configPartitions;
             }
-            if (getLogPool(topic, 0) != null) {//created already
-                return configPartitions;
-            }
             topicPartitionsMap.put(topic, partitions);
-            registerNewTopicInZK(topic);
+            if (config.getEnableZookeeper()) {
+                if (getLogPool(topic, 0) != null) {//created already
+                    topicRegisterTasks.add(new TopicTask(TaskType.ENLARGE, topic));
+                } else {
+                    topicRegisterTasks.add(new TopicTask(TaskType.CREATE, topic));
+                }
+            }
             return partitions;
         }
     }
-
+    /**
+     * delete topic who is never used
+     * @param topic topic name
+     * @return number of deleted partitions or -1 if authentication failed
+     */
+    public int deleteLogs(String topic,String password) {
+        if(!config.getAuthentication().auth(password)) {
+            return -1;
+        }
+        int value = 0;
+        synchronized (logCreationLock) {
+            Pool<Integer, Log> parts = logs.remove(topic);
+            if (parts != null) {
+                List<Log> deleteLogs = new ArrayList<Log>(parts.values());
+                for (Log log : deleteLogs) {
+                    log.delete();
+                    value++;
+                }
+            }
+            if(config.getEnableZookeeper()) {
+                topicRegisterTasks.add(new TopicTask(TaskType.DELETE, topic));
+            }
+        }
+        return value;
+    }
+    
     private Log createLog(String topic, int partition) throws IOException {
         synchronized (logCreationLock) {
             File d = new File(logDir, topic + "-" + partition);
@@ -528,14 +557,7 @@ public class LogManager implements PartitionChooser, Closeable {
         return ILog.EMPTY_OFFSETS;
     }
 
-    private void registerNewTopicInZK(String topic) {
-        topicRegisterTasks.add(topic);
-    }
-
-    /**
-     * @return the topicPartitionsMap
-     */
-    public Map<String, Integer> getTopicPartitionsMap() {
+   public Map<String, Integer> getTopicPartitionsMap() {
         return topicPartitionsMap;
     }
 

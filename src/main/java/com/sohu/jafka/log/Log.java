@@ -160,7 +160,17 @@ public class Log implements ILog {
     public int getNumberOfSegments() {
         return segments.getView().size();
     }
-
+    /**
+     * delete all log segments in this topic-partition
+     * @return segment counts deleted
+     */
+    public int delete() {
+        close();
+       int count = segments.trunc(Integer.MAX_VALUE).size();
+       Utils.deleteDirectory(dir);
+       return count;
+    }
+    
     public void close() {
         synchronized (lock) {
             for (LogSegment seg : segments.getView()) {

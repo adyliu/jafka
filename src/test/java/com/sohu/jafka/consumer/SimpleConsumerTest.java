@@ -120,20 +120,20 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     }
 
     
-    @Test
-    public void testCreatePartitions() throws IOException{
-        int size = consumer.createPartitions("demo", partitions-1, false);
-        assertEquals(partitions, size);
-        size = consumer.createPartitions("demo", partitions+1, false);
-        assertEquals(partitions, size);
-        size = consumer.createPartitions("demo", partitions+3, true);
-        assertEquals(partitions, size);
-        //
-        final String largePartitionTopic = "largepartition";
-        size = consumer.createPartitions(largePartitionTopic, partitions+5, true);
-        assertEquals(partitions+5, size);
-        sendSomeMessages(1000, largePartitionTopic);
-    }
+//    @Test
+//    public void testCreatePartitions() throws IOException{
+//        int size = consumer.createPartitions("demo", partitions-1, false);
+//        assertEquals(partitions, size);
+//        size = consumer.createPartitions("demo", partitions+1, false);
+//        assertEquals(partitions, size);
+//        size = consumer.createPartitions("demo", partitions+3, true);
+//        assertEquals(partitions, size);
+//        //
+//        final String largePartitionTopic = "largepartition";
+//        size = consumer.createPartitions(largePartitionTopic, partitions+5, true);
+//        assertEquals(partitions+5, size);
+//        sendSomeMessages(1000, largePartitionTopic);
+//    }
     /**
      * Test method for
      * {@link com.sohu.jafka.consumer.SimpleConsumer#close()}.

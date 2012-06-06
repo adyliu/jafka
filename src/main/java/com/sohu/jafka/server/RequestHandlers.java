@@ -18,11 +18,13 @@
 package com.sohu.jafka.server;
 
 import com.sohu.jafka.api.RequestKeys;
+import com.sohu.jafka.common.annotations.ServerSide;
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.RequestHandler;
 import com.sohu.jafka.network.RequestHandlerFactory;
 import com.sohu.jafka.network.handlers.CreaterHandler;
+import com.sohu.jafka.network.handlers.DeleterHandler;
 import com.sohu.jafka.network.handlers.FetchHandler;
 import com.sohu.jafka.network.handlers.MultiFetchHandler;
 import com.sohu.jafka.network.handlers.MultiProduceHandler;
@@ -35,6 +37,7 @@ import com.sohu.jafka.network.handlers.ProducerHandler;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
+@ServerSide
 class RequestHandlers implements RequestHandlerFactory {
 
     private final FetchHandler fetchHandler;
@@ -48,6 +51,7 @@ class RequestHandlers implements RequestHandlerFactory {
     private final ProducerHandler producerHandler;
 
     private final CreaterHandler createrHandler;
+    private final DeleterHandler deleterHandler;
 
     public RequestHandlers(LogManager logManager) {
         fetchHandler = new FetchHandler(logManager);
@@ -56,6 +60,7 @@ class RequestHandlers implements RequestHandlerFactory {
         offsetsHandler = new OffsetsHandler(logManager);
         producerHandler = new ProducerHandler(logManager);
         createrHandler = new CreaterHandler(logManager);
+        deleterHandler = new DeleterHandler(logManager);
     }
 
     @Override
@@ -73,8 +78,10 @@ class RequestHandlers implements RequestHandlerFactory {
                 return offsetsHandler;
             case CREATE:
                 return createrHandler;
+            case DELETE:
+                return deleterHandler;
         }
-        throw new IllegalStateException("No mapping found for handler id " + id);
+        return null;
     }
 
 }

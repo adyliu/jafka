@@ -45,17 +45,6 @@ public interface IConsumer extends Closeable {
     ByteBufferMessageSet fetch(FetchRequest request) throws IOException;
 
     /**
-     * create partitions in the broker
-     * 
-     * @param topic topic name
-     * @param partitionNum partition numbers
-     * @param enlarge enlarge partition number if broker configuration has setted
-     * @return partition number in the broker
-     * @throws IOException if an I/O error occurs
-     */
-    int createPartitions(String topic, int partitionNum, boolean enlarge) throws IOException;
-
-    /**
      * get before offsets of message
      * 
      * @param topic message topic

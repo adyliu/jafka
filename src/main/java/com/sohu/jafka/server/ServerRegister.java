@@ -17,12 +17,11 @@
 
 package com.sohu.jafka.server;
 
-
 import java.io.Closeable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
@@ -32,6 +31,7 @@ import com.github.zkclient.ZkClient;
 import com.github.zkclient.exception.ZkNodeExistsException;
 import com.sohu.jafka.cluster.Broker;
 import com.sohu.jafka.log.LogManager;
+import com.sohu.jafka.server.TopicTask.TaskType;
 import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
 
@@ -59,14 +59,10 @@ public class ServerRegister implements IZkStateListener, Closeable {
 
     private ZkClient zkClient;
 
-    private List<String> topics = new ArrayList<String>();
+    private Set<String> topics = new LinkedHashSet<String>();
 
     private final Object lock = new Object();
 
-    /**
-     * @param config
-     * @param logManager
-     */
     public ServerRegister(ServerConfig config, LogManager logManager) {
         this.config = config;
         this.logManager = logManager;
@@ -74,42 +70,43 @@ public class ServerRegister implements IZkStateListener, Closeable {
         this.brokerIdPath = ZkUtils.BrokerIdsPath + "/" + config.getBrokerId();
     }
 
-    /**
-     * 
-     */
     public void startup() {
         logger.info("connecting to zookeeper: " + config.getZkConnect());
         zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(), config.getZkConnectionTimeoutMs(), ZKStringSerializer.getInstance());
         zkClient.subscribeStateChanges(this);
     }
 
-    /**
-     * @param topic
-     */
-    public void registerTopicInZk(String topic) {
-        registerTopicInZkInternal(topic);
+    public void processTask(TopicTask task) {
+        final String brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + task.topic + "/" + config.getBrokerId();
         synchronized (lock) {
-            topics.add(topic);
+            switch (task.type) {
+                case DELETE:
+                    ZkUtils.deletePath(zkClient, brokerTopicPath);
+                    topics.remove(task.topic);
+                    break;
+                case CREATE:
+                    ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + getPartitions(task.topic));
+                    break;
+                case ENLARGE:
+                    ZkUtils.deletePath(zkClient, brokerTopicPath);
+                    ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + getPartitions(task.topic));
+                    break;
+                default:
+                    logger.error("unknow task: "+task);
+                    break;
+            }
         }
     }
 
-    private void registerTopicInZkInternal(String topic) {
-        //path: /brokers/topics/<topic>/<brokerid>
-        final String brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + topic + "/" + config.getBrokerId();
+    private int getPartitions(String topic) {
         Integer numParts = logManager.getTopicPartitionsMap().get(topic);
-        if (numParts == null) {
-            numParts = Integer.valueOf(config.getNumPartitions());
-        }
-        logger.info("Begin registering broker topic " + brokerTopicPath + " with " + numParts + " partitions");
-        ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + numParts);
-        logger.info("End registering broker topic " + brokerTopicPath);
+        return numParts == null ? config.getNumPartitions() : numParts.intValue();
     }
 
     /**
      * register broker in the zookeeper
      * <p>
-     * path: /brokers/ids/<id>
-     * <br/>
+     * path: /brokers/ids/<id> <br/>
      * data: creator:host:port
      * </p>
      */
@@ -153,7 +150,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
         synchronized (lock) {
             logger.info("re-registering broker topics in zookeeper for broker " + config.getBrokerId());
             for (String topic : topics) {
-                registerTopicInZkInternal(topic);
+                processTask(new TopicTask(TaskType.CREATE, topic));
             }
         }
 

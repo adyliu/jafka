@@ -15,43 +15,33 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.api;
-
-import com.sohu.jafka.common.annotations.ClientSide;
-import com.sohu.jafka.common.annotations.ServerSide;
+package com.sohu.jafka.server;
 
 /**
- * Request Type
- * 
+ * Task for topic processor(create/delete/enlarge/shutdown/...)
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.2
  */
-@ClientSide
-@ServerSide
-public enum RequestKeys {
-    PRODUCE, //0
-    FETCH, //1
-    MULTIFETCH, //2
-    MULTIPRODUCE, //3
-    OFFSETS,//4
-    /** create more partitions
-     * @since 1.2
-     */
-    CREATE,//5
-    /**
-     * delete unused topic
-     * @since 1.2
-     */
-    DELETE;//6
+public class TopicTask {
 
-    //
-    public int value = ordinal();
+    public static enum TaskType {
+        CREATE, //
+        DELETE, //
+        ENLARGE, //
+        SHUTDOWN;
+    }
 
-    //
-    final static int size = values().length;
+    public final String topic;
 
-    public static RequestKeys valueOf(int ordinal) {
-        if (ordinal < 0 || ordinal >= size) return null;
-        return values()[ordinal];
+    public final TaskType type;
+
+    public TopicTask(TaskType type, String topic) {
+        this.type = type;
+        this.topic = topic;
+    }
+
+    @Override
+    public String toString() {
+        return "TopicTask [type=" + type + ", topic=" + topic + "]";
     }
 }

@@ -522,4 +522,23 @@ public class Utils {
             throw new IllegalArgumentException(e);
         }
     }
+    
+    public static void deleteDirectory(File dir) {
+        if (!dir.exists()) return;
+        File[] subs = dir.listFiles();
+        if (subs != null) {
+            for (File f : dir.listFiles()) {
+                if (f.isFile()) {
+                    if(!f.delete()) {
+                        throw new IllegalStateException("delete file failed: "+f);
+                    }
+                } else {
+                    deleteDirectory(f);
+                }
+            }
+        }
+        if(!dir.delete()) {
+            throw new IllegalStateException("delete directory failed: "+dir);
+        }
+    }
 }

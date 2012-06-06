@@ -15,43 +15,33 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.api;
+package com.sohu.jafka.network.handlers;
 
-import com.sohu.jafka.common.annotations.ClientSide;
-import com.sohu.jafka.common.annotations.ServerSide;
+import com.sohu.jafka.api.DeleterRequest;
+import com.sohu.jafka.api.RequestKeys;
+import com.sohu.jafka.log.LogManager;
+import com.sohu.jafka.network.NumbersSend.IntegersSend;
+import com.sohu.jafka.network.Receive;
+import com.sohu.jafka.network.Send;
 
 /**
- * Request Type
- * 
  * @author adyliu (imxylz@gmail.com)
- * @since 1.0
+ * @since 1.2
  */
-@ClientSide
-@ServerSide
-public enum RequestKeys {
-    PRODUCE, //0
-    FETCH, //1
-    MULTIFETCH, //2
-    MULTIPRODUCE, //3
-    OFFSETS,//4
-    /** create more partitions
-     * @since 1.2
-     */
-    CREATE,//5
-    /**
-     * delete unused topic
-     * @since 1.2
-     */
-    DELETE;//6
+public class DeleterHandler extends AbstractHandler {
 
-    //
-    public int value = ordinal();
-
-    //
-    final static int size = values().length;
-
-    public static RequestKeys valueOf(int ordinal) {
-        if (ordinal < 0 || ordinal >= size) return null;
-        return values()[ordinal];
+    public DeleterHandler(LogManager logManager) {
+        super(logManager);
     }
+
+    @Override
+    public Send handler(RequestKeys requestType, Receive request) {
+        DeleterRequest deleterRequest = DeleterRequest.readFrom(request.buffer());
+        if (logger.isDebugEnabled()) {
+            logger.debug("delete request " + deleterRequest);
+        }
+        int value = logManager.deleteLogs(deleterRequest.topic,deleterRequest.password);
+        return new IntegersSend(value);
+    }
+
 }
