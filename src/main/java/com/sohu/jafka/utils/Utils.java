@@ -27,6 +27,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -498,4 +499,27 @@ public class Utils {
         }
         return nums;
     }    
+    private final static char hexDigits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+    /**
+     * digest message with MD5
+     * @param source message
+     * @return 32 bit MD5 value (lower case)
+     */
+    public static String md5(byte[] source) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(source);
+            byte tmp[] = md.digest();
+            char str[] = new char[32];
+            int k = 0;
+            for (byte b : tmp) {
+                str[k++] = hexDigits[b >>> 4 & 0xf];
+                str[k++] = hexDigits[b & 0xf];
+            }
+            return new String(str);
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 }
