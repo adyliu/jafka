@@ -171,8 +171,8 @@ public class UtilsTest {
      */
     @Test
     public void testCrc32ByteArrayIntInt() {
-        long c1 = crc32("demo".getBytes());
-        long c2 = crc32("demo".getBytes());
+        long c1 = crc32("jafka".getBytes());
+        long c2 = crc32("jafka".getBytes());
         assertEquals(c1, c2);
         assertTrue(c1>0);
     }

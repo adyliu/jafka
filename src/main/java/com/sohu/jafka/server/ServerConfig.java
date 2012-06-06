@@ -36,8 +36,10 @@ import com.sohu.jafka.utils.ZKConfig;
  */
 public class ServerConfig extends ZKConfig {
 
+    private final Authentication authentication;
     public ServerConfig(Properties props) {
         super(props);
+        authentication = Authentication.build(getString(props, "password", null));
     }
 
     /** the port to listen and accept connections on (default 9092) */
@@ -191,5 +193,15 @@ public class ServerConfig extends ZKConfig {
      */
     public RollingStrategy getRollingStrategy() {
         return Utils.getObject(getString(props, "log.rolling.strategy", null));
+    }
+
+    /**
+     * get Authentication method
+     * 
+     * @return Authentication method
+     * @see Authentication#build(String)
+     */
+    public Authentication getAuthentication() {
+        return authentication;
     }
 }
