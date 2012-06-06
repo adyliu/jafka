@@ -14,3 +14,4 @@ build-dist.sh
 __pycache__
 *.pyc
 *.swp
+/.idea
