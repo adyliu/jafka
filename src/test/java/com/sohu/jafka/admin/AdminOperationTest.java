@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.console;
+package com.sohu.jafka.admin;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import com.sohu.jafka.BaseJafkaServer;
 import com.sohu.jafka.Jafka;
+import com.sohu.jafka.admin.AdminOperation;
 import com.sohu.jafka.producer.Producer;
 import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.StringProducerData;
@@ -113,7 +114,7 @@ public class AdminOperationTest extends BaseJafkaServer {
 
     /**
      * Test method for
-     * {@link com.sohu.jafka.console.AdminOperation#createPartitions(java.lang.String, int, boolean)}
+     * {@link com.sohu.jafka.admin.AdminOperation#createPartitions(java.lang.String, int, boolean)}
      * .
      */
     @Test
@@ -129,7 +130,7 @@ public class AdminOperationTest extends BaseJafkaServer {
 
     /**
      * Test method for
-     * {@link com.sohu.jafka.console.AdminOperation#deleteTopic(java.lang.String, java.lang.String)}
+     * {@link com.sohu.jafka.admin.AdminOperation#deleteTopic(java.lang.String, java.lang.String)}
      * .
      */
     @Test

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.sohu.jafka.console;
+package com.sohu.jafka.admin;
 
 import java.io.IOException;
 
