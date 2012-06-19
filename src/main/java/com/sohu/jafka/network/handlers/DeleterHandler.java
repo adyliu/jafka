@@ -25,6 +25,7 @@ import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Send;
 
 /**
+ * Delete Operation
  * @author adyliu (imxylz@gmail.com)
  * @since 1.2
  */

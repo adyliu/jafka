@@ -499,6 +499,9 @@ public class LogManager implements PartitionChooser, Closeable {
     }
     /**
      * delete topic who is never used
+     * <p>
+     * This will delete all log files and remove node data from zookeeper
+     * </p>
      * @param topic topic name
      * @return number of deleted partitions or -1 if authentication failed
      */

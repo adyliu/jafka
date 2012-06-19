@@ -25,6 +25,11 @@ import com.sohu.jafka.network.Request;
 import com.sohu.jafka.utils.Utils;
 
 /**
+ * Create Operation
+ * <p>
+ * This operation creates topic in a broker or enlarge the partition number of topic.
+ * </p>
+ * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.2
  */
@@ -36,10 +41,19 @@ public class CreaterRequest implements Request {
 
     private static final byte IGNORE_ENLARGE = (byte) 0;
 
+    /**
+     * topic name
+     */
     public final String topic;
 
+    /**
+     * topic partition will be created or enlarged
+     */
     public final int partitions;
 
+    /**
+     * enlarge the partition number if {@link #partitions} is larger than the real number.
+     */
     public final boolean enlarge;
 
     public CreaterRequest(String topic, int partitions) {

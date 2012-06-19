@@ -18,6 +18,7 @@
 package com.sohu.jafka.api;
 
 /**
+ * Choose the partition index for the topic
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
