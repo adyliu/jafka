@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -36,8 +37,8 @@ import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
 
 /**
- * Handles the server's interaction with zookeeper. The server needs to
- * register the following paths:
+ * Handles the server's interaction with zookeeper. The server needs to register the following
+ * paths:
  * 
  * <pre>
  *   /topics/[topic]/[node_id-partition_num]
@@ -72,19 +73,26 @@ public class ServerRegister implements IZkStateListener, Closeable {
 
     public void startup() {
         logger.info("connecting to zookeeper: " + config.getZkConnect());
-        zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(), config.getZkConnectionTimeoutMs(), ZKStringSerializer.getInstance());
+        zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(),
+                config.getZkConnectionTimeoutMs(), ZKStringSerializer.getInstance());
         zkClient.subscribeStateChanges(this);
     }
 
     public void processTask(TopicTask task) {
+        final String topicPath = ZkUtils.BrokerTopicsPath + "/" + task.topic;
         final String brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + task.topic + "/" + config.getBrokerId();
         synchronized (lock) {
             switch (task.type) {
                 case DELETE:
-                    ZkUtils.deletePath(zkClient, brokerTopicPath);
                     topics.remove(task.topic);
+                    ZkUtils.deletePath(zkClient, brokerTopicPath);
+                    List<String> brokers = ZkUtils.getChildrenParentMayNotExist(zkClient, topicPath);
+                    if (brokers != null && brokers.size() == 0) {
+                        ZkUtils.deletePath(zkClient, topicPath);
+                    }
                     break;
                 case CREATE:
+                    topics.add(task.topic);
                     ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + getPartitions(task.topic));
                     break;
                 case ENLARGE:
@@ -92,7 +100,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
                     ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + getPartitions(task.topic));
                     break;
                 default:
-                    logger.error("unknow task: "+task);
+                    logger.error("unknow task: " + task);
                     break;
             }
         }
@@ -126,9 +134,8 @@ public class ServerRegister implements IZkStateListener, Closeable {
         try {
             ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerIdPath, broker.getZKString());
         } catch (ZkNodeExistsException e) {
-            throw new RuntimeException("A broker is already registered on the path " + brokerIdPath + ". This probably "
-                    + "indicates that you either have configured a brokerid that is already in use, or "
-                    + "else you have shutdown this broker and restarted it faster than the zookeeper " + "timeout so it appears to be re-registering.");
+            throw new RuntimeException(
+                    "A broker is already registered on the path " + brokerIdPath + ". This probably " + "indicates that you either have configured a brokerid that is already in use, or " + "else you have shutdown this broker and restarted it faster than the zookeeper " + "timeout so it appears to be re-registering.");
         }
         //
         logger.info("Registering broker " + brokerIdPath + " succeeded with " + broker);
