@@ -114,16 +114,18 @@ def main(host=default_host):
             ccounts[cid] = topic_count_map
         ctopics = get_children('/consumers/%s/offsets'%group)
 
-        #records: [(topic,broker,part,offset,0),...]
+        #records: [(topic,broker,part,coffset,toffset,consumerid),...]
         records = []
         broker_records = {}
         for ctopic in ctopics:
             cparts = get_children('/consumers/%s/offsets/%s'%(group,ctopic))
             for cpart in cparts:
                 coffset = get('/consumers/%s/offsets/%s/%s'%(group,ctopic,cpart))
+                consumerid = get('/consumers/%s/owners/%s/%s'%(group,ctopic,cpart))
+                consumerid = consumerid if consumerid else '-'
                 #print('%15s: %20s %s => %13s'%(group,ctopic,cpart,coffset))
                 cbroker,cpartition = cpart.split('-')
-                record = [ctopic,cbroker,cpartition,coffset,-1]
+                record = [ctopic,cbroker,cpartition,coffset,-1,consumerid]
                 ######################
                 rds = broker_records.get(cbroker,[])
                 if not rds: broker_records[cbroker] = rds
@@ -140,29 +142,30 @@ def main(host=default_host):
             finally:
                 consumer.close()
 
-        title=('groupid','topic','part','consumeoffset','totaloffset','backlog')
+        title=('groupid','topic','part','consumeoffset','totaloffset','backlog','consumerid')
         wid_sep = list(len(x) for x in title)
         records=sorted(records,key=lambda r:r[0]+r[1]+r[2])
         print_records=[]
         for record in records:
-            (ctopic,cbroker,cpartition,coffset,toffset) = record
+            (ctopic,cbroker,cpartition,coffset,toffset,consumerid) = record
             left = int(toffset) - int(coffset)
-            pr = (group,ctopic,cbroker+'-'+cpartition,coffset,toffset,left)
+            pr = (group,ctopic,cbroker+'-'+cpartition,coffset,toffset,left,consumerid)
             print_records.append(pr)
             wid_sep_num = list(len(str(x)) for x in pr)
             for i in range(len(wid_sep)):
                 if wid_sep[i] < wid_sep_num[i]:
                     wid_sep[i] = wid_sep_num[i]
         format_sep=' '.join(list('{:>'+str(x)+'}' for x in wid_sep))
-        print(format_sep.format(*title))
-        print('------------------------------------------------------------')
+        ptitle = format_sep.format(*title)
+        print(ptitle)
+        print('-'*len(ptitle))
         for pr in print_records:
             print(format_sep.format(*pr))
         print()
     
 
 if __name__ == '__main__':
-    print('Jafka watcher v0.1')
+    print('Jafka watcher v0.2')
     try:
         main()
     finally:
