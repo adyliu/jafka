@@ -13,7 +13,7 @@ If you are interesting in [scala](http://www.scala-lang.org/), please using the 
 
 ## News
 
-[2012-05-29] released [v1.1.1](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/1.1.1/)
+[2012-06-25] [released](https://github.com/adyliu/jafka/wiki/history) [v1.2.0](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/)
 
 ##Document & Wiki
 
