@@ -2,8 +2,8 @@
 #-*- coding:utf-8 -*-
 #Jafka watcher
 #author:imxylz@gmail.com
-#version:0.1
-#date:2012/5/25
+#version:0.2
+#date:2012/6/20
 
 import zookeeper
 import threading
@@ -166,6 +166,7 @@ def main(host=default_host):
 
 if __name__ == '__main__':
     print('Jafka watcher v0.2')
+    print()
     try:
         main()
     finally:
