@@ -148,7 +148,11 @@ public class LogManager implements PartitionChooser, Closeable {
                     logger.warn("Skipping unexplainable file '" + dir.getAbsolutePath() + "'--should it be there?");
                 } else {
                     logger.info("Loading log from " + dir.getAbsolutePath());
-                    final KV<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
+                    final String topicNameAndPartition = dir.getName();
+                    if(-1 == topicNameAndPartition.indexOf('-')) {
+                        throw new IllegalArgumentException("error topic directory: "+dir.getAbsolutePath());
+                    }
+                    final KV<String, Integer> topicPartion = Utils.getTopicPartition(topicNameAndPartition);
                     final String topic = topicPartion.k;
                     final int partition = topicPartion.v;
                     Log log = new Log(dir, partition, this.rollingStategy, flushInterval, needRecovery);
