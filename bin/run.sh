@@ -20,7 +20,7 @@
 
 # Application
 APP_NAME="jafka"
-APP_LONG_NAME="jafka-1.2.0-20120625"
+APP_LONG_NAME="jafka-1.3.0"
 
 # Wrapper
 #WRAPPER_CMD="./jafka"
