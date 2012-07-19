@@ -2,12 +2,13 @@
 #-*- coding:utf-8 -*-
 #Jafka watcher
 #author:imxylz@gmail.com
-#version:0.2
-#date:2012/6/20
+#version:0.3
+#date:2012/7/19
 
 import zookeeper
 import threading
 import sys
+import datetime
 import json
 import jafka
 
@@ -49,14 +50,18 @@ def normal_path(path,env=""):
         path = path[0:-1]
     return path
 
-def get(path):
+def gets(path):
     init_client()
     global handle
     try:
         (data,stat) = zookeeper.get(handle,path,None)
-        return data
+        return (data,stat)
     except zookeeper.NoNodeException:
         return None
+
+def get(path):
+    r = gets(path)
+    return r[0] if r else None
 
 def close():
     global handle
@@ -114,18 +119,21 @@ def main(host=default_host):
             ccounts[cid] = topic_count_map
         ctopics = get_children('/consumers/%s/offsets'%group)
 
-        #records: [(topic,broker,part,coffset,toffset,consumerid),...]
+        #records: [(topic,broker,part,coffset,toffset,consumerid,lastmtime),...]
         records = []
         broker_records = {}
         for ctopic in ctopics:
             cparts = get_children('/consumers/%s/offsets/%s'%(group,ctopic))
             for cpart in cparts:
-                coffset = get('/consumers/%s/offsets/%s/%s'%(group,ctopic,cpart))
+                coffset,coffsetstats = gets('/consumers/%s/offsets/%s/%s'%(group,ctopic,cpart))
                 consumerid = get('/consumers/%s/owners/%s/%s'%(group,ctopic,cpart))
                 consumerid = consumerid if consumerid else '-'
                 #print('%15s: %20s %s => %13s'%(group,ctopic,cpart,coffset))
                 cbroker,cpartition = cpart.split('-')
-                record = [ctopic,cbroker,cpartition,coffset,-1,consumerid]
+                lastmtime = coffsetstats['mtime'] if coffsetstats else -1
+                if lastmtime:
+                    lastmtime = datetime.datetime.fromtimestamp(int(lastmtime)/1000).strftime('%m-%d %H:%M:%S')
+                record = [ctopic,cbroker,cpartition,coffset,-1,consumerid,lastmtime]
                 ######################
                 rds = broker_records.get(cbroker,[])
                 if not rds: broker_records[cbroker] = rds
@@ -142,14 +150,14 @@ def main(host=default_host):
             finally:
                 consumer.close()
 
-        title=('groupid','topic','part','consumeoffset','totaloffset','backlog','consumerid')
+        title=('groupid','topic','part','consumeoffset','totaloffset','backlog','consumerid','lastmtime')
         wid_sep = list(len(x) for x in title)
         records=sorted(records,key=lambda r:r[0]+r[1]+r[2])
         print_records=[]
         for record in records:
-            (ctopic,cbroker,cpartition,coffset,toffset,consumerid) = record
+            (ctopic,cbroker,cpartition,coffset,toffset,consumerid,lastmtime) = record
             left = int(toffset) - int(coffset)
-            pr = (group,ctopic,cbroker+'-'+cpartition,coffset,toffset,left,consumerid)
+            pr = (group,ctopic,cbroker+'-'+cpartition,coffset,toffset,left,consumerid,lastmtime)
             print_records.append(pr)
             wid_sep_num = list(len(str(x)) for x in pr)
             for i in range(len(wid_sep)):
