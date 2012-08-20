@@ -162,8 +162,8 @@ public class LogManager implements PartitionChooser, Closeable {
                     
                     parts.put(partition, log);
                     int configPartition = getPartition(topic);
-                    if(configPartition < partition) {
-                        topicPartitionsMap.put(topic, partition);
+                    if(configPartition <= partition) {
+                        topicPartitionsMap.put(topic, partition+1);
                     }
                 }
             }
