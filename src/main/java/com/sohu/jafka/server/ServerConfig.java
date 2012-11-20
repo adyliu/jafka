@@ -204,4 +204,11 @@ public class ServerConfig extends ZKConfig {
     public Authentication getAuthentication() {
         return authentication;
     }
+
+    /** maximum size of message that the server can receive (default 1MB)
+     * @return maximum size of message
+     */
+    public int getMaxMessageSize() {
+        return getIntInRange(props,"max.message.size",1024*1024,0,Integer.MAX_VALUE);
+    }
 }

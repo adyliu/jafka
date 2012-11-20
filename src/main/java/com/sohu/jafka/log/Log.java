@@ -83,18 +83,21 @@ public class Log implements ILog {
     private final SegmentList segments;
 
     public final int partition;
+    private final int maxMessageSize;
 
     public Log(File dir, //
             int partition,//
             RollingStrategy rollingStategy,//
             int flushInterval, //
-            boolean needRecovery) throws IOException {
+            boolean needRecovery,//
+            int maxMessageSize) throws IOException {
         super();
         this.dir = dir;
         this.partition = partition;
         this.rollingStategy = rollingStategy;
         this.flushInterval = flushInterval;
         this.needRecovery = needRecovery;
+        this.maxMessageSize = maxMessageSize;
         this.name = dir.getName();
         this.logStats.setMbeanName("jafka:type=jafka.logs." + name);
         Utils.registerMBean(logStats);
@@ -209,6 +212,7 @@ public class Log implements ILog {
 
     public List<Long> append(ByteBufferMessageSet messages) {
         //validate the messages
+        messages.verifyMessageSize(maxMessageSize);
         int numberOfMessages = 0;
         for (MessageAndOffset messageAndOffset : messages) {
             if (!messageAndOffset.message.isValid()) {

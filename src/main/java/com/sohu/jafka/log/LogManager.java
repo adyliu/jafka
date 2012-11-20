@@ -102,6 +102,8 @@ public class LogManager implements PartitionChooser, Closeable {
     private final Map<String, Integer> topicPartitionsMap;
 
     private RollingStrategy rollingStategy;
+    
+    private final int maxMessageSize;
 
     public LogManager(ServerConfig config, //
             Scheduler scheduler, //
@@ -110,6 +112,7 @@ public class LogManager implements PartitionChooser, Closeable {
             boolean needRecovery) {
         super();
         this.config = config;
+        this.maxMessageSize = config.getMaxMessageSize();
         this.scheduler = scheduler;
         //        this.time = time;
         this.logCleanupIntervalMs = logCleanupIntervalMs;
@@ -156,7 +159,7 @@ public class LogManager implements PartitionChooser, Closeable {
                     final KV<String, Integer> topicPartion = Utils.getTopicPartition(topicNameAndPartition);
                     final String topic = topicPartion.k;
                     final int partition = topicPartion.v;
-                    Log log = new Log(dir, partition, this.rollingStategy, flushInterval, needRecovery);
+                    Log log = new Log(dir, partition, this.rollingStategy, flushInterval, needRecovery,maxMessageSize);
 
                     logs.putIfNotExists(topic, new Pool<Integer, Log>());
                     Pool<Integer, Log> parts = logs.get(topic);
@@ -537,7 +540,7 @@ public class LogManager implements PartitionChooser, Closeable {
         synchronized (logCreationLock) {
             File d = new File(logDir, topic + "-" + partition);
             d.mkdirs();
-            return new Log(d, partition, this.rollingStategy, flushInterval, false);
+            return new Log(d, partition, this.rollingStategy, flushInterval, false,maxMessageSize);
         }
     }
 
