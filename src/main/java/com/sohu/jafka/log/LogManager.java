@@ -46,6 +46,7 @@ import com.sohu.jafka.utils.IteratorTemplate;
 import com.sohu.jafka.utils.KV;
 import com.sohu.jafka.utils.Pool;
 import com.sohu.jafka.utils.Scheduler;
+import com.sohu.jafka.utils.TopicNameValidator;
 import com.sohu.jafka.utils.Utils;
 
 /**
@@ -443,6 +444,7 @@ public class LogManager implements PartitionChooser, Closeable {
      * @return a log for the topic or null if not exist
      */
     public ILog getLog(String topic, int partition) {
+        TopicNameValidator.validate(topic);
         Pool<Integer, Log> p = getLogPool(topic, partition);
         return p == null ? null : p.get(partition);
     }
@@ -485,6 +487,7 @@ public class LogManager implements PartitionChooser, Closeable {
     }
 
     public int createLogs(String topic, final int partitions, final boolean forceEnlarge) {
+        TopicNameValidator.validate(topic);
         synchronized (logCreationLock) {
             final int configPartitions = getPartition(topic);
             if (configPartitions >= partitions || !forceEnlarge) {
