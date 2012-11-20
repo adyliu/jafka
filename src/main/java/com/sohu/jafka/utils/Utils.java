@@ -142,6 +142,7 @@ public class Utils {
         if (value == null || value.trim().length() < 3) return map;
         for (String one : value.trim().split(",")) {
             String[] kv = one.split(":");
+            //FIXME: force positive number
             map.put(kv[0].trim(), Integer.valueOf(kv[1].trim()));
         }
         return map;

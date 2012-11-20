@@ -20,7 +20,7 @@ package com.sohu.jafka.utils;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-/**
+/** a template for object iterator
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -48,6 +48,8 @@ public abstract class IteratorTemplate<T> implements Iterator<T> {
                 return false;
             case READY:
                 return true;
+            case NOT_READY:
+                break;
         }
         return maybeComputeNext();
     }

@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.log4j.Logger;
 
 import com.sohu.jafka.log.LogManager;
+import com.sohu.jafka.mx.Log4jController;
 import com.sohu.jafka.mx.ServerInfo;
 import com.sohu.jafka.mx.SocketServerStats;
 import com.sohu.jafka.network.SocketServer;
@@ -59,6 +60,7 @@ public class Server implements Closeable {
     private final File logDir;
 
     private final ServerInfo serverInfo = new ServerInfo();
+    private final Log4jController log4jController = new Log4jController();
 
     //
     public Server(ServerConfig config) {
@@ -73,6 +75,7 @@ public class Server implements Closeable {
         try {
             logger.info("Starting Jafka server "+serverInfo.getVersion());
             Utils.registerMBean(serverInfo);
+            Utils.registerMBean(log4jController);
             boolean needRecovery = true;
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
             if (cleanShutDownFile.exists()) {
@@ -127,6 +130,7 @@ public class Server implements Closeable {
             }
             shutdownLatch.countDown();
             logger.info("shutdown Jafka server completed");
+            Utils.unregisterMBean(log4jController);
         }
     }
 

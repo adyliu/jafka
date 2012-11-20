@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Topic name validator
  * @author adyliu(imxylz@gmail.com)
- * @since 2012-11-20
+ * @since 1.3
  */
 public class TopicNameValidator {
 
