@@ -20,7 +20,6 @@ package com.sohu.jafka;
 import java.io.File;
 import java.io.IOException;
 
-import com.github.zkclient.IDefaultNameSpace;
 import com.github.zkclient.ZkServer;
 
 /**
@@ -32,11 +31,6 @@ public class ZkServerTestUtil {
         System.setProperty("zookeeper.preAllocSize", "1024");//1M data log
     }
 
-    static class EmptyNameSpace implements IDefaultNameSpace {
-
-        public void createDefaultNameSpace(com.github.zkclient.ZkClient zkClient) {
-        }
-    }
 
     public static ZkServer startZkServer(int port) throws IOException {
         final String dataPath=DataLogCleaner.defaultBuildPath+"/zk/default/data";
@@ -47,7 +41,7 @@ public class ZkServerTestUtil {
         DataLogCleaner.cleanDataLogDir(logDir);
         dataDir.mkdirs();
         logDir.mkdirs();
-        ZkServer zkServer = new ZkServer(dataPath, logPath, new EmptyNameSpace(), port,
+        ZkServer zkServer = new ZkServer(dataPath, logPath, port,
                 ZkServer.DEFAULT_TICK_TIME, 100);
         zkServer.start();
         return zkServer;

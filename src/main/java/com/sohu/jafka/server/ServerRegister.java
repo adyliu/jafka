@@ -33,7 +33,6 @@ import com.github.zkclient.exception.ZkNodeExistsException;
 import com.sohu.jafka.cluster.Broker;
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.server.TopicTask.TaskType;
-import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
 
 /**
@@ -74,7 +73,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
     public void startup() {
         logger.info("connecting to zookeeper: " + config.getZkConnect());
         zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(),
-                config.getZkConnectionTimeoutMs(), ZKStringSerializer.getInstance());
+                config.getZkConnectionTimeoutMs());
         zkClient.subscribeStateChanges(this);
     }
 

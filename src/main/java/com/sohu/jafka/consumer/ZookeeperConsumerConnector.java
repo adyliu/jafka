@@ -17,8 +17,6 @@
 
 package com.sohu.jafka.consumer;
 
-import static java.lang.String.format;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -58,10 +56,11 @@ import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.KV.StringTuple;
 import com.sohu.jafka.utils.Pool;
 import com.sohu.jafka.utils.Scheduler;
-import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
 import com.sohu.jafka.utils.zookeeper.ZkGroupDirs;
 import com.sohu.jafka.utils.zookeeper.ZkGroupTopicDirs;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
+
+import static java.lang.String.format;
 
 /**
  * This class handles the consumers interaction with zookeeper
@@ -352,7 +351,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
     private void connectZk() {
         logger.info("Connecting to zookeeper instance at " + config.getZkConnect());
         this.zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(),
-                config.getZkConnectionTimeoutMs(), ZKStringSerializer.getInstance());
+                config.getZkConnectionTimeoutMs());
         logger.info("Connected to zookeeper at " + config.getZkConnect());
     }
 

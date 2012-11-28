@@ -215,6 +215,7 @@ public class Utils {
     }
 
     public static String fromBytes(byte[] b, String encoding) {
+        if(b == null) return null;
         try {
             return new String(b, encoding);
         } catch (UnsupportedEncodingException e) {
@@ -227,6 +228,7 @@ public class Utils {
     }
 
     public static byte[] getBytes(String s, String encoding) {
+        if(s == null)return null;
         try {
             return s.getBytes(encoding);
         } catch (UnsupportedEncodingException e) {

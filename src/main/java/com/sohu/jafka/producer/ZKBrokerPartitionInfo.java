@@ -36,7 +36,6 @@ import com.sohu.jafka.cluster.Broker;
 import com.sohu.jafka.cluster.Partition;
 import com.sohu.jafka.common.NoBrokersForPartitionException;
 import com.sohu.jafka.utils.ZKConfig;
-import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
 
 /**
@@ -67,8 +66,7 @@ public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
         //
         this.zkClient = new ZkClient(zkConfig.getZkConnect(), //
                 zkConfig.getZkSessionTimeoutMs(), //
-                zkConfig.getZkConnectionTimeoutMs(),//
-                ZKStringSerializer.getInstance());
+                zkConfig.getZkConnectionTimeoutMs());
         //
         this.topicBrokerPartitions = getZKTopicPartitionInfo();
         this.allBrokers = getZKBrokerInfo();

@@ -26,13 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 import com.github.zkclient.ZkClient;
 import com.github.zkclient.exception.ZkNoNodeException;
 import com.github.zkclient.exception.ZkNodeExistsException;
 import com.sohu.jafka.cluster.Broker;
 import com.sohu.jafka.cluster.Cluster;
 import com.sohu.jafka.consumer.TopicCount;
+import static com.sohu.jafka.utils.Utils.*;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -71,22 +71,22 @@ public class ZkUtils {
     }
 
     public static String readData(ZkClient zkClient, String path) {
-        return zkClient.readData(path);
+        return fromBytes(zkClient.readData(path));
     }
 
     public static String readDataMaybeNull(ZkClient zkClient, String path) {
-        return zkClient.readData(path, true);
+        return fromBytes(zkClient.readData(path, true));
     }
 
     public static void updatePersistentPath(ZkClient zkClient, String path, String data) {
         try {
-            zkClient.writeData(path, data);
+            zkClient.writeData(path, getBytes(data));
         } catch (ZkNoNodeException e) {
             createParentPath(zkClient, path);
             try {
-                zkClient.createPersistent(path, data);
+                zkClient.createPersistent(path, getBytes(data));
             } catch (ZkNodeExistsException e2) {
-                zkClient.writeData(path, data);
+                zkClient.writeData(path, getBytes(data));
             }
         }
     }
@@ -182,17 +182,17 @@ public class ZkUtils {
     }
     
     public static String readDataMaybyNull(ZkClient zkClient,String path) {
-        return zkClient.readData(path, true);
+        return fromBytes(zkClient.readData(path, true));
     }
     /**
      * Create an ephemeral node with the given path and data. Create parents if necessary.
      */
     public static void createEphemeralPath(ZkClient zkClient, String path, String data) {
         try {
-            zkClient.createEphemeral(path, data);
+            zkClient.createEphemeral(path, getBytes(data));
         } catch (ZkNoNodeException e) {
             createParentPath(zkClient, path);
-            zkClient.createEphemeral(path, data);
+            zkClient.createEphemeral(path, getBytes(data));
         }
     }
     

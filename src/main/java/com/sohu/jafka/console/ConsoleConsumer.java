@@ -38,7 +38,6 @@ import com.sohu.jafka.message.Message;
 import com.sohu.jafka.producer.serializer.MessageEncoders;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.ImmutableMap;
-import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -171,7 +170,7 @@ public class ConsoleConsumer {
     static void tryCleanupZookeeper(String zkConnect, String groupId) {
         try {
             String dir = "/consumers/" + groupId;
-            ZkClient zk = new ZkClient(zkConnect, 30 * 1000, 30 * 1000, ZKStringSerializer.getInstance());
+            ZkClient zk = new ZkClient(zkConnect, 30 * 1000, 30 * 1000);
             zk.deleteRecursive(dir);
             zk.close();
         } catch (ZkInterruptedException e) {

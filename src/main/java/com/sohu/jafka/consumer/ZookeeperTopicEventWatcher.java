@@ -29,7 +29,6 @@ import com.github.zkclient.IZkStateListener;
 import com.github.zkclient.ZkClient;
 import com.sohu.jafka.common.ConsumerRebalanceFailedException;
 import com.sohu.jafka.server.ServerStartable;
-import com.sohu.jafka.utils.zookeeper.ZKStringSerializer;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
 
 /**
@@ -58,8 +57,9 @@ public class ZookeeperTopicEventWatcher implements Closeable {
         this.eventHandler = eventHandler;
         this.serverStartable = serverStartable;
         //
-        this.zkClient = new ZkClient(consumerConfig.getZkConnect(), consumerConfig.getZkSessionTimeoutMs(), consumerConfig.getZkConnectionTimeoutMs(),
-                ZKStringSerializer.getInstance());
+        this.zkClient = new ZkClient(consumerConfig.getZkConnect(), //
+                consumerConfig.getZkSessionTimeoutMs(), //
+                consumerConfig.getZkConnectionTimeoutMs());
 
         startWatchingTopicEvents();
 
@@ -73,7 +73,7 @@ public class ZookeeperTopicEventWatcher implements Closeable {
 
         List<String> topics = zkClient.subscribeChildChanges(ZkUtils.BrokerTopicsPath, topicEventListener);
         //
-        //call to bootstrap topic list
+        // call to bootstrap topic list
         try {
             topicEventListener.handleChildChange(ZkUtils.BrokerTopicsPath, topics);
         } catch (Exception e) {
@@ -102,7 +102,8 @@ public class ZookeeperTopicEventWatcher implements Closeable {
 
         public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
             synchronized (lock) {
-                if (zkClient == null) return;
+                if (zkClient == null)
+                    return;
                 try {
                     List<String> latestTopics = zkClient.getChildren(ZkUtils.BrokerTopicsPath);
                     logger.debug("all Topics: " + latestTopics);
