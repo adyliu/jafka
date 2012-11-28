@@ -51,7 +51,11 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.8.5</version>
         </dependency>
-       
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+            <version>1.8.5</version>
+        </dependency>
         <dependency>
             <groupId>mx4j</groupId>
             <artifactId>mx4j-tools</artifactId>
