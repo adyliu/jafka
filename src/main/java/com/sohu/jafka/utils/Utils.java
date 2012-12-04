@@ -411,6 +411,7 @@ public class Utils {
      * @param mutable writeable
      * @return open the FileChannel
      */
+    @SuppressWarnings("resource")
     public static FileChannel openChannel(File file, boolean mutable) throws IOException {
         if (mutable) {
             return new RandomAccessFile(file, "rw").getChannel();

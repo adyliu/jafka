@@ -106,5 +106,6 @@ public class Jafka implements Closeable {
         Jafka jafka = new Jafka();
         jafka.start(args[0], argsSize > 1 ? args[1] : null, argsSize > 1 ? args[2] : null);
         jafka.awaitShutdown();
+        jafka.close();
     }
 }
