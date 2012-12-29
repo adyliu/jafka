@@ -50,7 +50,6 @@ public class SyncProducer implements Closeable {
     private final Logger logger = Logger.getLogger(SyncProducer.class);
 
     //private static final RequestKeys RequestKey = RequestKeys.Produce;//0
-    private static final Random randomGenerator = new Random();
 
     /////////////////////////////////////////////////////////////////////
     private final SyncProducerConfig config;
@@ -58,10 +57,6 @@ public class SyncProducer implements Closeable {
     private final int MaxConnectBackoffMs = 60000;
 
     private SocketChannel channel = null;
-
-    private int sentOnConnection = 0;
-
-    private long lastConnectionTime;
 
     private final Object lock = new Object();
 
@@ -77,7 +72,6 @@ public class SyncProducer implements Closeable {
         this.host = config.getHost();
         this.port = config.getPort();
         //
-        lastConnectionTime = System.currentTimeMillis() - (long) (randomGenerator.nextDouble() * config.reconnectInterval);
     }
 
     public void send(String topic, ByteBufferMessageSet message) {
@@ -106,14 +100,6 @@ public class SyncProducer implements Closeable {
                 if (logger.isDebugEnabled()) {
                     logger.debug(format("write %d bytes data to %s:%d", written, host, port));
                 }
-            }
-            sentOnConnection++;
-            if (sentOnConnection >= config.reconnectInterval//
-                    || (config.reconnectTimeInterval >= 0 && System.currentTimeMillis() - lastConnectionTime >= config.reconnectTimeInterval)) {
-                disconnect();
-                channel = connect();
-                sentOnConnection = 0;
-                lastConnectionTime = System.currentTimeMillis();
             }
             final long endTime = System.nanoTime();
             SyncProducerStats.recordProduceRequest(endTime - startTime);
