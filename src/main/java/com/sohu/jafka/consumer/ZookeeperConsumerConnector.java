@@ -519,7 +519,8 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 final int nPartsPerConsumer = curBrokerPartitions.size() / curConsumers.size();
                 final int nConsumersWithExtraPart = curBrokerPartitions.size() % curConsumers.size();
 
-                logger.info("Consumer " + consumerIdString + " rebalancing the following partitions:\n    " + curBrokerPartitions + "\nfor topic " + topic + " with consumers:\n    " + curConsumers);
+                logger.info("Consumer " + consumerIdString + " rebalancing the following partitions:\n    "//
+                        + curBrokerPartitions + "\nfor topic " + topic + " with consumers:\n    " + curConsumers);
                 if (logger.isDebugEnabled()) {
                     StringBuilder buf = new StringBuilder(1024);
                     buf.append("[").append(topic).append("] preassigning details:");
@@ -549,6 +550,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                      */
                     if (nParts <= 0) {
                         logger.warn("No broker partitions consumed by consumer thread " + consumerThreadId + " for topic " + topic);
+                        logger.warn("Check the consumer threads or the brokers for topic " + topic);
                     } else {
                         for (int i = startPart; i < startPart + nParts; i++) {
                             String brokerPartition = curBrokerPartitions.get(i);
