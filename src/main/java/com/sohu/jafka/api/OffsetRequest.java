@@ -40,7 +40,7 @@ import com.sohu.jafka.utils.Utils;
 @ServerSide
 public class OffsetRequest implements Request {
 
-    public static final String SMALLES_TTIME_STRING = "smallest";
+    public static final String SMALLES_TIME_STRING = "smallest";
 
     public static final String LARGEST_TIME_STRING = "largest";
 

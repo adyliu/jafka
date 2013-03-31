@@ -639,7 +639,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             // If first time starting a consumer, set the initial offset based on the config
             long offset = 0L;
             if (offsetString == null) {
-                if (OffsetRequest.SMALLES_TTIME_STRING.equals(config.getAutoOffsetReset())) {
+                if (OffsetRequest.SMALLES_TIME_STRING.equals(config.getAutoOffsetReset())) {
                     offset = earliestOrLatestOffset(topic, partition.brokerId, partition.partId,
                             OffsetRequest.EARLIES_TTIME);
                 } else if (OffsetRequest.LARGEST_TIME_STRING.equals(config.getAutoOffsetReset())) {

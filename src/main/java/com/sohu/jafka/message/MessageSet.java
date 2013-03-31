@@ -94,7 +94,7 @@ public abstract class MessageSet implements Iterable<MessageAndOffset> {
     }
 
     /////////////////////////////////////////////////////////////////////////
-    //                                          abstract method
+    //                             abstract method
     /////////////////////////////////////////////////////////////////////////
     /**
      * Write the messages in this set to the given channel starting at the

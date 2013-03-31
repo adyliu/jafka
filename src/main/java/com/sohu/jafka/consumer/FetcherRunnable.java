@@ -186,7 +186,7 @@ public class FetcherRunnable extends Thread {
     private long resetConsumerOffsets(String topic, Partition partition) throws IOException {
         long offset = -1;
         String autoOffsetReset = config.getAutoOffsetReset();
-        if (OffsetRequest.SMALLES_TTIME_STRING.equals(autoOffsetReset)) {
+        if (OffsetRequest.SMALLES_TIME_STRING.equals(autoOffsetReset)) {
             offset = OffsetRequest.EARLIES_TTIME;
         } else if (OffsetRequest.LARGEST_TIME_STRING.equals(autoOffsetReset)) {
             offset = OffsetRequest.LATES_TTIME;
