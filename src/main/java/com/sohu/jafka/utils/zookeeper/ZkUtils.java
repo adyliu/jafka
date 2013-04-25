@@ -118,9 +118,9 @@ public class ZkUtils {
         return TopicCount.parse(consumerId, topicCountJson);
     }
     /**
-     * 
+     * read broker info for watching topics
      * @param zkClient
-     * @param topics
+     * @param topics topic names
      * @return topic->(brokerid-0,brokerid-1...brokerid2-0,brokerid2-1...)
      */
     public static Map<String, List<String>> getPartitionsForTopics(ZkClient zkClient,Collection<String> topics){
@@ -128,11 +128,13 @@ public class ZkUtils {
         for(String topic:topics) {
             List<String> partList = new ArrayList<String>();
             List<String> brokers = getChildrenParentMayNotExist(zkClient, BrokerTopicsPath+"/"+topic);
-            for(String broker:brokers) {
-                final String parts = readData(zkClient, BrokerTopicsPath+"/"+topic+"/"+broker);
-                int nParts = Integer.parseInt(parts);
-                for(int i=0;i<nParts;i++) {
-                    partList.add(broker+"-"+i);
+            if(brokers != null){
+                for(String broker:brokers) {
+                    final String parts = readData(zkClient, BrokerTopicsPath+"/"+topic+"/"+broker);
+                    int nParts = Integer.parseInt(parts);
+                    for(int i=0;i<nParts;i++) {
+                        partList.add(broker+"-"+i);
+                    }
                 }
             }
             Collections.sort(partList);
