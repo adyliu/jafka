@@ -28,15 +28,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.sohu.jafka.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.github.zkclient.ZkServer;
-import com.sohu.jafka.BaseJafkaServer;
-import com.sohu.jafka.DataLogCleaner;
-import com.sohu.jafka.Jafka;
-import com.sohu.jafka.ZkServerTestUtil;
 import com.sohu.jafka.producer.Producer;
 import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.StringProducerData;
@@ -52,7 +49,7 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
 
     private ZkServer zkServer;
 
-    final int port = 2188;
+    final int port = PortUtils.checkAvailablePort(2188);
 
     @Before
     public void createZkServer() throws IOException {
@@ -76,11 +73,12 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
         final int jafkaCount = 2;
         final int partition = 5;
         Jafka[] jafkas = new Jafka[jafkaCount];
+
         for (int i = 0; i < jafkaCount; i++) {
             Properties serverProperties = new Properties();
             serverProperties.setProperty("enable.zookeeper", "true");
             serverProperties.setProperty("zk.connect", "localhost:" + port);
-            serverProperties.setProperty("port", String.valueOf(9092 + i));
+            serverProperties.setProperty("port", String.valueOf(PortUtils.checkAvailablePort(9092)));
             serverProperties.setProperty("brokerid", "" + i);
             serverProperties.setProperty("num.partitions", "" + partition);
             serverProperties.setProperty("topic.partition.count.map", "demo:5");//FIXME:

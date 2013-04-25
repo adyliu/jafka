@@ -51,7 +51,6 @@ import com.sohu.jafka.producer.serializer.StringEncoder;
 public class SimpleConsumerTest extends BaseJafkaServer {
 
     Jafka jafka;
-    final int jafkaPort = 9092;
 
     SimpleConsumer consumer;
 
@@ -70,7 +69,6 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             props.put("log.default.flush.scheduler.interval.ms", "100");//flush to disk every 100ms
             props.put("log.file.size", "5120");//5k for rolling
             props.put("num.partitions", "" + partitions);//default divided three partitions
-            props.put("port", ""+jafkaPort);
             jafka = createJafka(props);
             sendSomeMessages(1000,"demo","test");
             flush(jafka);
@@ -78,13 +76,13 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         }
         if (consumer == null) {
-            consumer = new SimpleConsumer("localhost", 9092, 10 * 1000, 1024 * 1024);
+            consumer = new SimpleConsumer("localhost", jafka.getPort(), 10 * 1000, 1024 * 1024);
         }
     }
 
     private void sendSomeMessages(int count,final String ...topics) {
         Properties producerConfig = new Properties();
-        producerConfig.setProperty("broker.list", "0:localhost:" + jafkaPort);
+        producerConfig.setProperty("broker.list", "0:localhost:" + jafka.getPort());
         producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
         Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
         int index = 0;

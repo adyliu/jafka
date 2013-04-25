@@ -43,6 +43,9 @@ public abstract class BaseJafkaServer {
         if (!mainProperties.containsKey("log.dir")) {
             mainProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath);
         }
+        if(!mainProperties.containsKey("port")){
+            mainProperties.setProperty("port",""+PortUtils.checkAvailablePort(9092));
+        }
         DataLogCleaner.cleanDataLogDir(new File(mainProperties.getProperty("log.dir")));
         jafka.start(mainProperties, null, null);
         return jafka;

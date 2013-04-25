@@ -18,6 +18,7 @@
 package com.sohu.jafka.utils;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.Selector;
 
@@ -78,6 +79,14 @@ public final class Closer {
         }
     }
 
+    public static void closeQuietly(ServerSocket serverSocket){
+        if(serverSocket == null)return;
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            closerLogger.error(e.getMessage(),e);
+        }
+    }
     /**
      * Close a closeable object quietly(not throwing {@link IOException})
      * 

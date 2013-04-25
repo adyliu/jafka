@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -33,19 +33,25 @@ public class JafkaTest {
      * Test method for
      * {@link com.sohu.jafka.Jafka#start(java.util.Properties, java.util.Properties, java.util.Properties)}
      * .
-     * 
+     *
      * @throws InterruptedException
      */
     @Test
     public void testStartPropertiesPropertiesProperties() {
         DataLogCleaner.cleanDataLogDir();
         Jafka jafka = new Jafka();
-        Properties mainProperties = new Properties();
-        mainProperties.setProperty("brokerid", "0");
-        mainProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath);
-        jafka.start(mainProperties, null, null);
-        Closer.closeQuietly(jafka);
-        jafka.awaitShutdown();
+        int port = PortUtils.checkAvailablePort(9092);
+        try {
+            Properties mainProperties = new Properties();
+            mainProperties.setProperty("port", "" + port);
+            mainProperties.setProperty("brokerid", "0");
+            mainProperties.setProperty("log.dir", DataLogCleaner.defaultDataLogPath);
+            jafka.start(mainProperties, null, null);
+        } finally {
+            Closer.closeQuietly(jafka);
+            jafka.awaitShutdown();
+        }
+
     }
 
 }

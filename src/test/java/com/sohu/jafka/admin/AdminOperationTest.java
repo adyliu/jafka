@@ -44,8 +44,6 @@ public class AdminOperationTest extends BaseJafkaServer {
 
     Jafka jafka;
 
-    final int jafkaPort = 9092;
-
     final int partitions = 3;
 
     final String password = "jafka";
@@ -62,7 +60,6 @@ public class AdminOperationTest extends BaseJafkaServer {
             props.put("log.default.flush.scheduler.interval.ms", "100");//flush to disk every 100ms
             props.put("log.file.size", "5120");//5k for rolling
             props.put("num.partitions", "" + partitions);//default divided three partitions
-            props.put("port", "" + jafkaPort);
             props.put("password", "plain:" + password);
             jafka = createJafka(props);
             sendSomeMessages(1000, "demo", "test");
@@ -71,13 +68,13 @@ public class AdminOperationTest extends BaseJafkaServer {
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         }
         if (admin == null) {
-            admin = new AdminOperation("localhost", 9092);
+            admin = new AdminOperation("localhost", jafka.getPort());
         }
     }
 
     private void sendSomeMessages(int count, final String... topics) {
         Properties producerConfig = new Properties();
-        producerConfig.setProperty("broker.list", "0:localhost:" + jafkaPort);
+        producerConfig.setProperty("broker.list", "0:localhost:" + jafka.getPort());
         producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
         Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
         int index = 0;

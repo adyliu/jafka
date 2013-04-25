@@ -39,7 +39,7 @@ public class ProducerTest extends BaseJafkaServer {
     public void testSend() {
         Jafka jafka = createJafka();
         Properties producerConfig = new Properties();
-        producerConfig.setProperty("broker.list", "0:localhost:9092");
+        producerConfig.setProperty("broker.list", "0:localhost:"+jafka.getPort());
         producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
         Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerConfig));
         for (int i = 0; i < 1000; i++) {
@@ -59,7 +59,7 @@ public class ProducerTest extends BaseJafkaServer {
         props.setProperty("num.partitions", "5");
         Jafka jafka = createJafka(props);
         Properties producerConfig = new Properties();
-        producerConfig.setProperty("broker.list", "0:localhost:9092:5");
+        producerConfig.setProperty("broker.list", String.format("0:localhost:%d:5",jafka.getPort()));
         StringProducer producer = new StringProducer(new ProducerConfig(producerConfig));
         for (int i = 0; i < 1000; i++) {
             final String message = "Hello jafka. #"+i;

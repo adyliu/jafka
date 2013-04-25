@@ -56,10 +56,10 @@ class Acceptor extends AbstractServerThread {
             serverChannel.socket().bind(new InetSocketAddress(port));
             serverChannel.register(getSelector(), SelectionKey.OP_ACCEPT);
         } catch (IOException e) {
+            logger.error("listener on port " + port + " failed.");
             throw new RuntimeException(e);
         }
         //
-
         logger.info("Awaiting connection on port "+port);
         startupComplete();
         //
