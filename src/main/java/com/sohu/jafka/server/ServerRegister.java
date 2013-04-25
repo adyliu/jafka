@@ -122,7 +122,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
         String hostname = config.getHostName();
         if (hostname == null) {
             try {
-                hostname = InetAddress.getLocalHost().getHostAddress();
+                hostname = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
                 throw new RuntimeException("cannot get local host, setting 'hostname' in configuration");
             }

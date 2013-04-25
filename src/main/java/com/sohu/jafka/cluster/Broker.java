@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -21,7 +21,7 @@ import com.sohu.jafka.server.ServerRegister;
 
 /**
  * messages store broker
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -34,7 +34,7 @@ public class Broker {
 
     /**
      * the broker creator (hostname with created time)
-     * 
+     *
      * @see ServerRegister#registerBrokerInZk()
      */
     public final String creatorId;
@@ -51,11 +51,11 @@ public class Broker {
 
     /**
      * create a broker
-     * 
-     * @param id broker id
+     *
+     * @param id        broker id
      * @param creatorId
-     * @param host broker hostname
-     * @param port broker port
+     * @param host      broker hostname
+     * @param port      broker port
      */
     public Broker(int id, String creatorId, String host, int port) {
         super();
@@ -70,11 +70,17 @@ public class Broker {
      * <p>
      * format: <b>creatorId:host:port</b>
      * </p>
-     * 
+     *
      * @return broker info saved in zookeeper
      */
     public String getZKString() {
-        return creatorId + ":" + host + ":" + port;
+        StringBuilder buf = new StringBuilder(32);
+        buf.append(creatorId.replace(':','#'));
+        buf.append(':');
+        buf.append(host.replace(':','#'));
+        buf.append(':');
+        buf.append(port);
+        return buf.toString();
     }
 
     @Override
@@ -108,15 +114,18 @@ public class Broker {
 
     /**
      * create a broker with given broker info
-     * 
-     * @param id broker id
+     *
+     * @param id               broker id
      * @param brokerInfoString broker info format: <b>creatorId:host:port</b>
      * @return broker instance with connection config
      * @see #getZKString()
      */
     public static Broker createBroker(int id, String brokerInfoString) {
         String[] brokerInfo = brokerInfoString.split(":");
-        return new Broker(id, brokerInfo[0], brokerInfo[1], Integer.parseInt(brokerInfo[2]));
+        String creator = brokerInfo[0].replace('#', ':');
+        String hostname = brokerInfo[1].replace('#', ':');
+        String port = brokerInfo[2];
+        return new Broker(id, creator, hostname, Integer.parseInt(port));
     }
 
 }

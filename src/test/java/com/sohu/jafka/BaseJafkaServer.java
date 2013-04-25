@@ -46,6 +46,7 @@ public abstract class BaseJafkaServer {
         if(!mainProperties.containsKey("port")){
             mainProperties.setProperty("port",""+PortUtils.checkAvailablePort(9092));
         }
+        mainProperties.setProperty("num.threads",String.valueOf(Math.min(2,Runtime.getRuntime().availableProcessors())));
         DataLogCleaner.cleanDataLogDir(new File(mainProperties.getProperty("log.dir")));
         jafka.start(mainProperties, null, null);
         return jafka;
