@@ -1,5 +1,7 @@
 #A fast distributed messaging system (MQ)
 
+[![Build Status](https://api.travis-ci.org/adyliu/jafka.png?branch=master)](https://api.travis-ci.org/adyliu/jafka)
+
 Jafka mq is a distributed publish-subscribe messaging system cloning from [Apache Kafka](http://incubator.apache.org/kafka/).
 
 So it has following features:
