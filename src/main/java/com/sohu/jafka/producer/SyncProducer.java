@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,30 +17,25 @@
 
 package com.sohu.jafka.producer;
 
-import static java.lang.String.format;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.List;
-import java.util.Random;
-
-import org.apache.log4j.Logger;
-
 import com.sohu.jafka.api.MultiProducerRequest;
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.common.annotations.ThreadSafe;
 import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.mx.SyncProducerStats;
+import com.sohu.jafka.network.BlockingChannel;
 import com.sohu.jafka.network.BoundedByteBufferSend;
 import com.sohu.jafka.network.Request;
-import com.sohu.jafka.utils.Closer;
+import org.apache.log4j.Logger;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
+
+import static java.lang.String.format;
 
 /**
  * file{producer/SyncProducer.scala}
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -54,9 +49,7 @@ public class SyncProducer implements Closeable {
     /////////////////////////////////////////////////////////////////////
     private final SyncProducerConfig config;
 
-    private final int MaxConnectBackoffMs = 60000;
-
-    private SocketChannel channel = null;
+    private final BlockingChannel blockingChannel;
 
     private final Object lock = new Object();
 
@@ -72,6 +65,7 @@ public class SyncProducer implements Closeable {
         this.host = config.getHost();
         this.port = config.getPort();
         //
+        this.blockingChannel = new BlockingChannel(host, port, -1, config.socketTimeoutMs, config.bufferSize);
     }
 
     public void send(String topic, ByteBufferMessageSet message) {
@@ -86,12 +80,10 @@ public class SyncProducer implements Closeable {
     private void send(Request request) {
         BoundedByteBufferSend send = new BoundedByteBufferSend(request);
         synchronized (lock) {
-            verifySendBuffer(send.getBuffer().slice());
             long startTime = System.nanoTime();
-            getOrMakeConnection();
             int written = -1;
             try {
-                written = send.writeCompletely(channel);
+                written = connect().send(send);
             } catch (IOException e) {
                 // no way to tell if write succeeded. Disconnect and re-throw exception to let client handle retry
                 disconnect();
@@ -106,54 +98,25 @@ public class SyncProducer implements Closeable {
         }
     }
 
-    private void getOrMakeConnection() {
-        if (channel == null) {
-            channel = connect();
-        }
-    }
-
-    private SocketChannel connect() {
-        long connectBackoffMs = 1;
-        long beginTimeMs = System.currentTimeMillis();
-        while (channel == null && !shutdown) {
+    private BlockingChannel connect() {
+        if (!blockingChannel.isConnected() && !shutdown) {
             try {
-                channel = SocketChannel.open();
-                channel.socket().setSendBufferSize(config.bufferSize);
-                channel.configureBlocking(true);
-                channel.socket().setSoTimeout(config.getSocketTimeoutMs());
-                channel.socket().setKeepAlive(true);
-                channel.connect(new InetSocketAddress(config.getHost(), config.getPort()));
-                logger.info("Connected to " + config.getHost() + ":" + config.getPort() + " for producing");
-            } catch (IOException e) {
-                disconnect();
-                long endTimeMs = System.currentTimeMillis();
-                if ((endTimeMs - beginTimeMs + connectBackoffMs) > config.connectTimeoutMs) {
-                    logger.error(
-                            "Producer connection to " + config.getHost() + ":" + config.getPort() + " timing out after " + config.connectTimeoutMs + " ms",
-                            e);
-                    throw new RuntimeException(e.getMessage(), e);
+                blockingChannel.connect();
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe.getMessage(), ioe);
+            } finally {
+                if (!blockingChannel.isConnected()) {
+                    disconnect();
                 }
-                logger.error(
-                        "Connection attempt to " + config.getHost() + ":" + config.getPort() + " failed, next attempt in " + connectBackoffMs + " ms",
-                        e);
-                try {
-                    Thread.sleep(connectBackoffMs);
-                } catch (InterruptedException e1) {
-                    logger.warn(e1.getMessage());
-                    Thread.currentThread().interrupt();
-                }
-                connectBackoffMs = Math.min(10 * connectBackoffMs, MaxConnectBackoffMs);
             }
         }
-        return channel;
+        return blockingChannel;
     }
 
     private void disconnect() {
-        if (channel != null) {
+        if (blockingChannel.isConnected()) {
             logger.info("Disconnecting from " + config.getHost() + ":" + config.getPort());
-            Closer.closeQuietly(channel);
-            Closer.closeQuietly(channel.socket());
-            channel = null;
+            blockingChannel.disconnect();
         }
     }
 
@@ -167,9 +130,6 @@ public class SyncProducer implements Closeable {
         }
     }
 
-    private void verifySendBuffer(ByteBuffer slice) {
-        //TODO: check the source
-    }
 
     public void multiSend(List<ProducerRequest> produces) {
         for (ProducerRequest request : produces) {
