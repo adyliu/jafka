@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,20 +17,19 @@
 
 package com.sohu.jafka.consumer;
 
-import static java.lang.String.format;
+import com.sohu.jafka.common.ConsumerTimeoutException;
+import com.sohu.jafka.message.MessageAndOffset;
+import com.sohu.jafka.mx.ConsumerTopicStat;
+import com.sohu.jafka.producer.serializer.Decoder;
+import com.sohu.jafka.utils.IteratorTemplate;
+import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.log4j.Logger;
-
-import com.sohu.jafka.common.ConsumerTimeoutException;
-import com.sohu.jafka.message.MessageAndOffset;
-import com.sohu.jafka.mx.ConsumerTopicStat;
-import com.sohu.jafka.producer.serializer.Decoder;
-import com.sohu.jafka.utils.IteratorTemplate;
+import static java.lang.String.format;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -55,7 +54,7 @@ public class ConsumerIterator<T> extends IteratorTemplate<T> {
     private long consumedOffset = -1L;
 
     public ConsumerIterator(String topic, BlockingQueue<FetchedDataChunk> queue, int consumerTimeoutMs,
-            Decoder<T> decoder) {
+                            Decoder<T> decoder) {
         super();
         this.topic = topic;
         this.queue = queue;
@@ -102,7 +101,7 @@ public class ConsumerIterator<T> extends IteratorTemplate<T> {
                 return allDone();
             } else {
                 currentTopicInfo = currentDataChunk.topicInfo;
-                if (currentTopicInfo.getConsumedOffset() != currentDataChunk.fetchOffset) {
+                if (currentTopicInfo.getConsumedOffset() < currentDataChunk.fetchOffset) {
                     logger.error(format(
                             "consumed offset: %d doesn't match fetch offset: %d for %s;\n Consumer may lose data", //
                             currentTopicInfo.getConsumedOffset(), currentDataChunk.fetchOffset, currentTopicInfo));
@@ -113,6 +112,9 @@ public class ConsumerIterator<T> extends IteratorTemplate<T> {
             }
         }
         MessageAndOffset item = localCurrent.next();
+        while (item.offset < currentTopicInfo.getConsumedOffset() && localCurrent.hasNext()) {
+            item = localCurrent.next();
+        }
         consumedOffset = item.offset;
         return decoder.toEvent(item.message);
     }
