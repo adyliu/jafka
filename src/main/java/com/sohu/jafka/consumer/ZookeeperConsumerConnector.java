@@ -739,6 +739,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             }
             fetcher.stopConnectionsToAllBrokers();
             fetcher.clearFetcherQueues(queuesToBeCleared, messageStreams.values());
+            if(config.isAutoCommit()){
+                logger.info("Committing all offsets after clearing the fetcher queues");
+                commitOffsets();
+            }
         }
 
         private void resetState() {
