@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,32 +17,35 @@
 
 package com.sohu.jafka.server;
 
-import static com.sohu.jafka.utils.Utils.*;
-
-import java.util.Map;
-import java.util.Properties;
-
 import com.sohu.jafka.log.FixedSizeRollingStrategy;
 import com.sohu.jafka.log.RollingStrategy;
 import com.sohu.jafka.message.Message;
 import com.sohu.jafka.utils.Utils;
 import com.sohu.jafka.utils.ZKConfig;
 
+import java.util.Map;
+import java.util.Properties;
+
+import static com.sohu.jafka.utils.Utils.*;
+
 /**
  * Configuration for the jafka server
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public class ServerConfig extends ZKConfig {
 
     private final Authentication authentication;
+
     public ServerConfig(Properties props) {
         super(props);
         authentication = Authentication.build(getString(props, "password", null));
     }
 
-    /** the port to listen and accept connections on (default 9092) */
+    /**
+     * the port to listen and accept connections on (default 9092)
+     */
     public int getPort() {
         return getInt(props, "port", 9092);
     }
@@ -56,9 +59,11 @@ public class ServerConfig extends ZKConfig {
         return getString(props, "hostname", null);
     }
 
-    /** the broker id for this server */
+    /**
+     * the broker id for this server
+     */
     public int getBrokerId() {
-        return getInt(props, "brokerid");
+        return getIntInRange(props, "brokerid", -1, 0, Integer.MAX_VALUE);
     }
 
     /**
@@ -68,17 +73,23 @@ public class ServerConfig extends ZKConfig {
         return getInt(props, "max.connections", 10000);
     }
 
-    /** the SO_SNDBUFF buffer of the socket sever sockets */
+    /**
+     * the SO_SNDBUFF buffer of the socket sever sockets
+     */
     public int getSocketSendBuffer() {
         return getInt(props, "socket.send.buffer", 100 * 1024);
     }
 
-    /** the SO_RCVBUFF buffer of the socket sever sockets */
+    /**
+     * the SO_RCVBUFF buffer of the socket sever sockets
+     */
     public int getSocketReceiveBuffer() {
         return getInt(props, "socket.receive.buffer", 100 * 1024);
     }
 
-    /** the maximum number of bytes in a socket request */
+    /**
+     * the maximum number of bytes in a socket request
+     */
     public int getMaxSocketRequestSize() {
         return getIntInRange(props, "max.socket.request.bytes", 100 * 1024 * 1024, 1, Integer.MAX_VALUE);
     }
@@ -99,17 +110,23 @@ public class ServerConfig extends ZKConfig {
         return getIntInRange(props, "monitoring.period.secs", 600, 1, Integer.MAX_VALUE);
     }
 
-    /** the default number of log partitions per topic */
+    /**
+     * the default number of log partitions per topic
+     */
     public int getNumPartitions() {
         return getIntInRange(props, "num.partitions", 1, 1, Integer.MAX_VALUE);
     }
 
-    /** the directory in which the log data is kept */
+    /**
+     * the directory in which the log data is kept
+     */
     public String getLogDir() {
         return getString(props, "log.dir");
     }
 
-    /** the maximum size of a single log file */
+    /**
+     * the maximum size of a single log file
+     */
     public int getLogFileSize() {
         return getIntInRange(props, "log.file.size", 1 * 1024 * 1024 * 1024, Message.MinHeaderSize, Integer.MAX_VALUE);
     }
@@ -122,12 +139,16 @@ public class ServerConfig extends ZKConfig {
         return getIntInRange(props, "log.flush.interval", 500, 1, Integer.MAX_VALUE);
     }
 
-    /** the number of hours to keep a log file before deleting it */
+    /**
+     * the number of hours to keep a log file before deleting it
+     */
     public int getLogRetentionHours() {
         return getIntInRange(props, "log.retention.hours", 24 * 7, 1, Integer.MAX_VALUE);
     }
 
-    /** the maximum size of the log before deleting it */
+    /**
+     * the maximum size of the log before deleting it
+     */
     public int getLogRetentionSize() {
         return getInt(props, "log.retention.size", -1);
     }
@@ -148,7 +169,9 @@ public class ServerConfig extends ZKConfig {
         return getIntInRange(props, "log.cleanup.interval.mins", 10, 1, Integer.MAX_VALUE);
     }
 
-    /** enable zookeeper registration in the server */
+    /**
+     * enable zookeeper registration in the server
+     */
     public boolean getEnableZookeeper() {
         return getBoolean(props, "enable.zookeeper", false);
     }
@@ -188,7 +211,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * get the rolling strategy (default value is
      * {@link FixedSizeRollingStrategy})
-     * 
+     *
      * @return RollingStrategy Object
      */
     public RollingStrategy getRollingStrategy() {
@@ -197,7 +220,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * get Authentication method
-     * 
+     *
      * @return Authentication method
      * @see Authentication#build(String)
      */
@@ -205,10 +228,12 @@ public class ServerConfig extends ZKConfig {
         return authentication;
     }
 
-    /** maximum size of message that the server can receive (default 1MB)
+    /**
+     * maximum size of message that the server can receive (default 1MB)
+     *
      * @return maximum size of message
      */
     public int getMaxMessageSize() {
-        return getIntInRange(props,"max.message.size",1024*1024,0,Integer.MAX_VALUE);
+        return getIntInRange(props, "max.message.size", 1024 * 1024, 0, Integer.MAX_VALUE);
     }
 }
