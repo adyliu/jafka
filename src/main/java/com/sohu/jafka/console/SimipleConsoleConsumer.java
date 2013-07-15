@@ -38,9 +38,7 @@ import com.sohu.jafka.utils.Utils;
  */
 public class SimipleConsoleConsumer {
 
-    /**
-     * @param args
-     */
+
     public static void main(String[] args) throws Exception {
         OptionParser parser = new OptionParser();
         ArgumentAcceptingOptionSpec<String> topicIdOpt = parser.accepts("topic", "REQUIRED: The topic id to consumer on.")//

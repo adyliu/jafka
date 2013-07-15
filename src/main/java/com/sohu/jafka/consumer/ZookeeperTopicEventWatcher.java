@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,19 +17,18 @@
 
 package com.sohu.jafka.consumer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.apache.zookeeper.Watcher.Event.KeeperState;
-
 import com.github.zkclient.IZkChildListener;
 import com.github.zkclient.IZkStateListener;
 import com.github.zkclient.ZkClient;
 import com.sohu.jafka.common.ConsumerRebalanceFailedException;
 import com.sohu.jafka.server.ServerStartable;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
+import org.apache.log4j.Logger;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -47,11 +46,7 @@ public class ZookeeperTopicEventWatcher implements Closeable {
 
     private static final Logger logger = Logger.getLogger(ZookeeperTopicEventWatcher.class);
 
-    /**
-     * @param consumerConfig
-     * @param eventHandler
-     * @param serverStartable
-     */
+
     public ZookeeperTopicEventWatcher(ConsumerConfig consumerConfig, TopicEventHandler<String> eventHandler, ServerStartable serverStartable) {
         super();
         this.eventHandler = eventHandler;

@@ -25,6 +25,7 @@ import com.sohu.jafka.utils.Utils;
  * @author adyliu (imxylz@gmail.com)
  * @since 1.2
  */
+@SuppressWarnings("ALL")
 public abstract class Authentication {
 
    public abstract boolean auth(String password);
@@ -59,7 +60,7 @@ public abstract class Authentication {
 
    public static class Md5Auth extends Authentication {
 
-        protected final String password;
+        final String password;
 
         public Md5Auth(String passwd) {
             this.password = passwd;

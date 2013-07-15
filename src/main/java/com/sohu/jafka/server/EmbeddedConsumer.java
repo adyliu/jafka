@@ -66,9 +66,9 @@ public class EmbeddedConsumer implements TopicEventHandler<String> {
     private List<String> mirrorTopics = new ArrayList<String>();
 
     /**
-     * @param consumerConfig
-     * @param producerConfig
-     * @param serverStartable
+     * @param consumerConfig the inner consumer config
+     * @param producerConfig the producer config
+     * @param serverStartable server instance
      */
     public EmbeddedConsumer(ConsumerConfig consumerConfig, ProducerConfig producerConfig, ServerStartable serverStartable) {
         this.consumerConfig = consumerConfig;

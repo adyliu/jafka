@@ -24,35 +24,23 @@ package com.sohu.jafka.common;
  */
 public class ConsumerTimeoutException extends RuntimeException {
 
-    /**
-     * 
-     */
+
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 
-     */
+
     public ConsumerTimeoutException() {
     }
 
-    /**
-     * @param message
-     */
+
     public ConsumerTimeoutException(String message) {
         super(message);
     }
 
-    /**
-     * @param cause
-     */
+
     public ConsumerTimeoutException(Throwable cause) {
         super(cause);
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
     public ConsumerTimeoutException(String message, Throwable cause) {
         super(message, cause);
     }

@@ -37,10 +37,7 @@ import joptsimple.OptionSpec;
  */
 public class ConsoleProducer {
 
-    /**
-     * @param args
-     * @throws IOException
-     */
+
     public static void main(String[] args) throws Exception {
 
         OptionParser parser = new OptionParser();

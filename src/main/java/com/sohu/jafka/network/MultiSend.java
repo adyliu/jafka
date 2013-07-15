@@ -48,9 +48,7 @@ public abstract class MultiSend<S extends Send> extends AbstractSend {
         setSends(sends);
     }
 
-    /**
-     * @param sends
-     */
+
     protected void setSends(List<S> sends) {
         this.sends = sends;
         this.iter = sends.iterator();
@@ -59,9 +57,6 @@ public abstract class MultiSend<S extends Send> extends AbstractSend {
         }
     }
 
-    /**
-     * @return the sends
-     */
     public List<S> getSends() {
         return sends;
     }

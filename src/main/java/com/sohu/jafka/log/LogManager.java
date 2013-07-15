@@ -455,11 +455,11 @@ public class LogManager implements PartitionChooser, Closeable {
     /**
      * Create the log if it does not exist or return back exist log
      * 
-     * @param topic
-     * @param partition
+     * @param topic the topic name
+     * @param partition the partition id
      * @return read or create a log
-     * @throws InterruptedException
-     * @throws IOException
+     * @throws InterruptedException the current thread is interrupted
+     * @throws IOException any IOException
      */
     public ILog getOrCreateLog(String topic, int partition) throws IOException {
         boolean hasNewTopic = false;
@@ -559,7 +559,7 @@ public class LogManager implements PartitionChooser, Closeable {
     /**
      * read offsets before given time
      * 
-     * @param offsetRequest
+     * @param offsetRequest the offset request
      * @return offsets before given time
      */
     public List<Long> getOffsets(OffsetRequest offsetRequest) {

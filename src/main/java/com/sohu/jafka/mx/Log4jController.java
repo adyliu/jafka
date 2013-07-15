@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 /**
  * remote controller of log4j
  * 
- * @author adyliu(imxylz@gmail.com)
+ * @author adyliu (imxylz@gmail.com)
  * @since 1.3
  */
 public class Log4jController implements Log4jControllerMBean, IMBeanName {

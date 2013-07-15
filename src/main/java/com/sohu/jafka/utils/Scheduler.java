@@ -41,13 +41,6 @@ public class Scheduler {
 
     final String baseThreadName;
 
-    /**
-     * create a scheduler
-     * 
-     * @param numThreads
-     * @param baseThreadName
-     * @param isDaemon
-     */
     public Scheduler(int numThreads, final String baseThreadName, final boolean isDaemon) {
         this.baseThreadName = baseThreadName;
         executor = new ScheduledThreadPoolExecutor(numThreads, new ThreadFactory() {

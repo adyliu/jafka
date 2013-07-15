@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,6 +17,11 @@
 
 package com.sohu.jafka.message;
 
+import com.sohu.jafka.mx.LogFlushStats;
+import com.sohu.jafka.utils.IteratorTemplate;
+import com.sohu.jafka.utils.Utils;
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,18 +31,12 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.Logger;
-
-import com.sohu.jafka.mx.LogFlushStats;
-import com.sohu.jafka.utils.IteratorTemplate;
-import com.sohu.jafka.utils.Utils;
-
 /**
  * An on-disk message set. The set can be opened either mutably or immutably. Mutation attempts
  * will fail on an immutable message set. An optional limit and offset can be applied to the
  * message set which will control the offset into the file and the effective length into the
  * file from which messages will be read
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -59,7 +58,7 @@ public class FileMessageSet extends MessageSet {
     private final AtomicLong setHighWaterMark = new AtomicLong();
 
     public FileMessageSet(FileChannel channel, long offset, long limit, //
-            boolean mutable, AtomicBoolean needRecover) throws IOException {
+                          boolean mutable, AtomicBoolean needRecover) throws IOException {
         super();
         this.channel = channel;
         this.offset = offset;
@@ -150,7 +149,7 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * the max offset(next message id).<br/>
-     * The <code>{@link #getSizeInBytes()}</code> maybe is larger than {@link #highWaterMark()}
+     * The <code> #getSizeInBytes()</code> maybe is larger than {@link #highWaterMark()}
      * while some messages were cached in memory(not flush to disk).
      */
     public long getSizeInBytes() {
@@ -164,9 +163,9 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * read message from file
-     * 
+     *
      * @param readOffset offset in this channel(file);not the message offset
-     * @param size max data size
+     * @param size       max data size
      * @return messages sharding data with file log
      * @throws IOException reading file failed
      */
@@ -177,9 +176,9 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * Append this message to the message set
-     * 
-     * @throws IOException
+     *
      * @return the written size and first offset
+     * @throws IOException
      */
     public long[] append(MessageSet messages) throws IOException {
         checkMutable();
@@ -187,12 +186,12 @@ public class FileMessageSet extends MessageSet {
         while (written < messages.getSizeInBytes())
             written += messages.writeTo(channel, 0, messages.getSizeInBytes());
         long beforeOffset = setSize.getAndAdd(written);
-        return new long[] {  written,beforeOffset };
+        return new long[]{written, beforeOffset};
     }
 
     /**
      * Commit all written data to the physical disk
-     * 
+     *
      * @throws IOException
      */
     public void flush() throws IOException {
@@ -208,7 +207,7 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * Close this message set
-     * 
+     *
      * @throws IOException
      */
     public void close() throws IOException {
@@ -219,7 +218,7 @@ public class FileMessageSet extends MessageSet {
     /**
      * Recover log up to the last complete entry. Truncate off any bytes from any incomplete
      * messages written
-     * 
+     *
      * @throws IOException
      */
     private long recover() throws IOException {
@@ -245,7 +244,7 @@ public class FileMessageSet extends MessageSet {
     /**
      * Read, validate, and discard a single message, returning the next valid offset, and the
      * message being validated
-     * 
+     *
      * @throws IOException
      */
     private long validateMessage(FileChannel channel, long start, long len, ByteBuffer buffer) throws IOException {
@@ -281,7 +280,7 @@ public class FileMessageSet extends MessageSet {
     /**
      * The max offset(next message id) persisted in the log file.<br/>
      * Messages with smaller offsets have persisted in file.
-     * 
+     *
      * @return max offset
      */
     public long highWaterMark() {

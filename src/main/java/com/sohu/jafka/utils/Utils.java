@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,40 +17,29 @@
 
 package com.sohu.jafka.utils;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
+import com.sohu.jafka.mx.IMBeanName;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.CRC32;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import com.sohu.jafka.mx.IMBeanName;
 
 /**
  * common utilities
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public class Utils {
     /**
      * loading Properties from files
+     *
      * @param filename file path
      * @return properties
      * @throws RuntimeException while file not exist or loading fail
@@ -93,10 +82,10 @@ public class Utils {
     /**
      * Get a string property, or, if no such property is defined, return
      * the given default value
-     * 
-     * @param props
-     * @param name
-     * @param defaultValue
+     *
+     * @param props        the properties
+     * @param name         the key in the properties
+     * @param defaultValue the default value if the key not exists
      * @return value in the props or defaultValue while name not exist
      */
     public static String getString(Properties props, String name, String defaultValue) {
@@ -180,8 +169,9 @@ public class Utils {
 
     /**
      * read data from channel to buffer
+     *
      * @param channel readable channel
-     * @param buffer bytebuffer
+     * @param buffer  bytebuffer
      * @return read size
      * @throws IOException
      */
@@ -194,9 +184,9 @@ public class Utils {
     /**
      * Write a size prefixed string where the size is stored as a 2 byte
      * short
-     * 
+     *
      * @param buffer The buffer to write to
-     * @param s The string to write
+     * @param s      The string to write
      */
     public static void writeShortString(ByteBuffer buffer, String s) {
         if (s == null) {
@@ -215,7 +205,7 @@ public class Utils {
     }
 
     public static String fromBytes(byte[] b, String encoding) {
-        if(b == null) return null;
+        if (b == null) return null;
         try {
             return new String(b, encoding);
         } catch (UnsupportedEncodingException e) {
@@ -228,7 +218,7 @@ public class Utils {
     }
 
     public static byte[] getBytes(String s, String encoding) {
-        if(s == null)return null;
+        if (s == null) return null;
         try {
             return s.getBytes(encoding);
         } catch (UnsupportedEncodingException e) {
@@ -239,7 +229,7 @@ public class Utils {
     /**
      * Read an unsigned integer from the current position in the buffer,
      * incrementing the position by 4 bytes
-     * 
+     *
      * @param buffer The buffer to read from
      * @return The integer read, as a long to avoid signedness
      */
@@ -250,9 +240,9 @@ public class Utils {
     /**
      * Read an unsigned integer from the given position without modifying
      * the buffers position
-     * 
+     *
      * @param buffer The buffer to read from
-     * @param index the index from which to read the integer
+     * @param index  the index from which to read the integer
      * @return The integer read, as a long to avoid signedness
      */
     public static long getUnsignedInt(ByteBuffer buffer, int index) {
@@ -262,9 +252,9 @@ public class Utils {
     /**
      * Write the given long value as a 4 byte unsigned integer. Overflow is
      * ignored.
-     * 
+     *
      * @param buffer The buffer to write to
-     * @param value The value to write
+     * @param value  The value to write
      */
     public static void putUnsignedInt(ByteBuffer buffer, long value) {
         buffer.putInt((int) (value & 0xffffffffL));
@@ -273,10 +263,10 @@ public class Utils {
     /**
      * Write the given long value as a 4 byte unsigned integer. Overflow is
      * ignored.
-     * 
+     *
      * @param buffer The buffer to write to
-     * @param index The position in the buffer at which to begin writing
-     * @param value The value to write
+     * @param index  The position in the buffer at which to begin writing
+     * @param value  The value to write
      */
     public static void putUnsignedInt(ByteBuffer buffer, int index, long value) {
         buffer.putInt(index, (int) (value & 0xffffffffL));
@@ -284,7 +274,7 @@ public class Utils {
 
     /**
      * Compute the CRC32 of the byte array
-     * 
+     *
      * @param bytes The array to compute the checksum for
      * @return The CRC32
      */
@@ -295,10 +285,10 @@ public class Utils {
     /**
      * Compute the CRC32 of the segment of the byte array given by the
      * specificed size and offset
-     * 
-     * @param bytes The bytes to checksum
+     *
+     * @param bytes  The bytes to checksum
      * @param offset the offset at which to begin checksumming
-     * @param size the number of bytes to checksum
+     * @param size   the number of bytes to checksum
      * @return The CRC32
      */
     public static long crc32(byte[] bytes, int offset, int size) {
@@ -309,10 +299,10 @@ public class Utils {
 
     /**
      * Create a new thread
-     * 
-     * @param name The name of the thread
+     *
+     * @param name     The name of the thread
      * @param runnable The work for the thread to do
-     * @param daemon Should the thread block JVM shutdown?
+     * @param daemon   Should the thread block JVM shutdown?
      * @return The unstarted thread
      */
     public static Thread newThread(String name, Runnable runnable, boolean daemon) {
@@ -323,7 +313,7 @@ public class Utils {
 
     /**
      * read bytes with a short sign prefix(mark the size of bytes)
-     * 
+     *
      * @param buffer data buffer
      * @return string result(encoding with UTF-8)
      * @see #writeShortString(ByteBuffer, String)
@@ -340,7 +330,7 @@ public class Utils {
 
     /**
      * caculate string length with size prefix
-     * 
+     *
      * @param topic the string value (support UTF-8 bytes)
      * @return string size with short prefix (2+topic.length)
      * @see #readShortString(ByteBuffer)
@@ -348,7 +338,7 @@ public class Utils {
     public static int caculateShortString(String topic) {
         return 2 + getBytes(topic).length;
     }
-    
+
     public static boolean registerMBean(IMBeanName object) {
         return registerMBean(object, object.getMbeanName());
     }
@@ -359,10 +349,10 @@ public class Utils {
      * will not throw an exception if the registration fails (since there
      * is nothing you can do and it isn't fatal), instead it just returns
      * false indicating the registration failed.
-     * 
+     *
      * @param mbean The object to register as an mbean
-     * @param name The name to register this mbean with
-     * @returns true if the registration succeeded
+     * @param name  The name to register this mbean with
+     * @return true if the registration succeeded
      */
     static boolean registerMBean(Object mbean, String name) {
         try {
@@ -380,14 +370,14 @@ public class Utils {
         }
         return false;
     }
-    
+
     public static void unregisterMBean(IMBeanName mbean) {
         unregisterMBean(mbean.getMbeanName());
     }
 
     /**
      * Unregister the mbean with the given name, if there is one registered
-     * 
+     *
      * @param name The mbean name to unregister
      * @see #registerMBean(Object, String)
      */
@@ -407,7 +397,8 @@ public class Utils {
 
     /**
      * open a readable or writeable FileChannel
-     * @param file file object
+     *
+     * @param file    file object
      * @param mutable writeable
      * @return open the FileChannel
      */
@@ -434,6 +425,7 @@ public class Utils {
 
     /**
      * create an instance from the className
+     *
      * @param className full class name
      * @return an object or null if className is null
      */
@@ -466,27 +458,29 @@ public class Utils {
             return f.getAbsoluteFile();
         }
     }
-    
+
     public static ByteBuffer serializeArray(long[] numbers) {
         int size = 4 + 8 * numbers.length;
         ByteBuffer buffer = ByteBuffer.allocate(size);
         buffer.putInt(numbers.length);
-        for(long num: numbers) {
+        for (long num : numbers) {
             buffer.putLong(num);
         }
         buffer.rewind();
         return buffer;
     }
+
     public static ByteBuffer serializeArray(int[] numbers) {
         int size = 4 + 4 * numbers.length;
         ByteBuffer buffer = ByteBuffer.allocate(size);
         buffer.putInt(numbers.length);
-        for(int num: numbers) {
+        for (int num : numbers) {
             buffer.putInt(num);
         }
         buffer.rewind();
         return buffer;
     }
+
     public static int[] deserializeIntArray(ByteBuffer buffer) {
         int size = buffer.getInt();
         int[] nums = new int[size];
@@ -495,6 +489,7 @@ public class Utils {
         }
         return nums;
     }
+
     public static long[] deserializeLongArray(ByteBuffer buffer) {
         int size = buffer.getInt();
         long[] nums = new long[size];
@@ -502,10 +497,13 @@ public class Utils {
             nums[i] = buffer.getLong();
         }
         return nums;
-    }    
-    private final static char hexDigits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+    }
+
+    private final static char hexDigits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
     /**
      * digest message with MD5
+     *
      * @param source message
      * @return 32 bit MD5 value (lower case)
      */
@@ -526,23 +524,19 @@ public class Utils {
             throw new IllegalArgumentException(e);
         }
     }
-    
+
     public static void deleteDirectory(File dir) {
         if (!dir.exists()) return;
-        File[] subs = dir.listFiles();
-        if (subs != null) {
-            for (File f : dir.listFiles()) {
-                if (f.isFile()) {
-                    if(!f.delete()) {
-                        throw new IllegalStateException("delete file failed: "+f);
-                    }
-                } else {
+        if (dir.isDirectory()) {
+            File[] subs = dir.listFiles();
+            if (subs != null) {
+                for (File f : subs) {
                     deleteDirectory(f);
                 }
             }
         }
-        if(!dir.delete()) {
-            throw new IllegalStateException("delete directory failed: "+dir);
+        if (!dir.delete()) {
+            throw new IllegalStateException("delete directory failed: " + dir);
         }
     }
 }

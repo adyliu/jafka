@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,9 +17,9 @@
 
 package com.sohu.jafka.mx;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.sohu.jafka.utils.Utils;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -27,9 +27,9 @@ import com.sohu.jafka.utils.Utils;
  */
 public class AsyncProducerStats implements AsyncProducerStatsMBean, IMBeanName {
 
-    final AtomicInteger droppedEvents = new AtomicInteger();
+    private final AtomicInteger droppedEvents = new AtomicInteger();
 
-    final AtomicInteger numEvents = new AtomicInteger();
+    private final AtomicInteger numEvents = new AtomicInteger();
 
     public int getAsyncProducerEvents() {
         return numEvents.get();
@@ -46,6 +46,7 @@ public class AsyncProducerStats implements AsyncProducerStatsMBean, IMBeanName {
     private static class AsyncProducerStatsHolder {
 
         static AsyncProducerStats instance = new AsyncProducerStats();
+
         static {
             Utils.registerMBean(instance);
         }

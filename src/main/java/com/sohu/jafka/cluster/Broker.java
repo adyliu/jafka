@@ -53,7 +53,7 @@ public class Broker {
      * create a broker
      *
      * @param id        broker id
-     * @param creatorId
+     * @param creatorId the creator id
      * @param host      broker hostname
      * @param port      broker port
      */

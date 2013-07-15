@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -19,6 +19,8 @@ package com.sohu.jafka.common.annotations;
 
 
 /**
+ * an annotation of thread-safe markup
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */

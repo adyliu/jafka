@@ -622,13 +622,6 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             return true;
         }
 
-        /**
-         * @param currentTopicRegistry
-         * @param topicDirs
-         * @param brokerPartition broker-partition format
-         * @param topic
-         * @param consumerThreadId
-         */
         private void addPartitionTopicInfo(Pool<String, Pool<Partition, PartitionTopicInfo>> currentTopicRegistry,
                 ZkGroupTopicDirs topicDirs, String brokerPartition, String topic, String consumerThreadId) {
             Partition partition = Partition.parse(brokerPartition);

@@ -285,20 +285,13 @@ public class Log implements ILog {
         }
     }
 
-    /**
-     * @return
-     * @throws IOException
-     */
+
     private long nextAppendOffset() throws IOException {
         flush();
         LogSegment lastView = segments.getLastView();
         return lastView.start() + lastView.size();
     }
 
-    /**
-     * @param numberOfMessages
-     * @throws IOException
-     */
     private void maybeFlush(int numberOfMessages) throws IOException {
         if (unflushed.addAndGet(numberOfMessages) >= flushInterval) {
             flush();

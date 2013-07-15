@@ -33,9 +33,7 @@ import joptsimple.OptionSpec;
  */
 public class GetOffsetShell {
 
-    /**
-     * @param args
-     */
+
     public static void main(String[] args) throws Exception {
 
         OptionParser parser = new OptionParser();

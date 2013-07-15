@@ -30,24 +30,14 @@ public class QueueClosedException extends RuntimeException {
     public QueueClosedException() {
     }
 
-    /**
-     * @param message
-     */
     public QueueClosedException(String message) {
         super(message);
     }
 
-    /**
-     * @param cause
-     */
     public QueueClosedException(Throwable cause) {
         super(cause);
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
     public QueueClosedException(String message, Throwable cause) {
         super(message, cause);
     }

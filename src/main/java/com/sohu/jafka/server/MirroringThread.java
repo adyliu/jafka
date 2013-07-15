@@ -47,11 +47,6 @@ public class MirroringThread extends Thread implements Closeable {
 
     private final Producer<Void, Message> producer;
 
-    /**
-     * @param stream
-     * @param topic
-     * @param threadId
-     */
     public MirroringThread(MessageStream<Message> stream, String topic, int threadId, Producer<Void, Message> producer) {
         super();
         this.stream = stream;

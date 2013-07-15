@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,9 +17,9 @@
 
 package com.sohu.jafka.mx;
 
-import java.util.concurrent.BlockingQueue;
-
 import com.sohu.jafka.producer.async.QueueItem;
+
+import java.util.concurrent.BlockingQueue;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -27,7 +27,7 @@ import com.sohu.jafka.producer.async.QueueItem;
  */
 public class AsyncProducerQueueSizeStats<T> implements AsyncProducerQueueSizeStatsMBean, IMBeanName {
 
-    final BlockingQueue<QueueItem<T>> queue;
+    private final BlockingQueue<QueueItem<T>> queue;
 
     private String mbeanName;
 
@@ -40,7 +40,7 @@ public class AsyncProducerQueueSizeStats<T> implements AsyncProducerQueueSizeSta
         return queue.size();
     }
 
-    
+
     /**
      * @return the mbeanName
      */
@@ -48,7 +48,7 @@ public class AsyncProducerQueueSizeStats<T> implements AsyncProducerQueueSizeSta
         return mbeanName;
     }
 
-    
+
     /**
      * @param mbeanName the mbeanName to set
      */
@@ -56,5 +56,5 @@ public class AsyncProducerQueueSizeStats<T> implements AsyncProducerQueueSizeSta
         this.mbeanName = mbeanName;
     }
 
-   
+
 }

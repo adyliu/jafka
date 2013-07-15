@@ -227,10 +227,7 @@ public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
             }
         }
 
-        /**
-         * @param parentPath
-         * @param curChilds
-         */
+
         private void processBrokerChange(String parentPath, List<String> curChilds) {
             final Map<Integer, Broker> oldBrokerIdMap = new HashMap<Integer, Broker>(originBrokerIds);
             for (int i = curChilds.size() - 1; i >= 0; i--) {
@@ -271,10 +268,6 @@ public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
             }
         }
 
-        /**
-         * @param topic
-         * @param brokerList
-         */
         private void processNewBrokerInExistingTopic(String topic, List<String> brokerList) {
 
             SortedSet<Partition> updatedBrokerParts = getBrokerPartitions(zkClient, topic, brokerList);

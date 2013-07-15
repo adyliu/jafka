@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -28,24 +28,15 @@ public class UnavailableProducerException extends RuntimeException {
     public UnavailableProducerException() {
     }
 
-    /**
-     * @param message
-     */
+
     public UnavailableProducerException(String message) {
         super(message);
     }
 
-    /**
-     * @param cause
-     */
     public UnavailableProducerException(Throwable cause) {
         super(cause);
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
     public UnavailableProducerException(String message, Throwable cause) {
         super(message, cause);
     }

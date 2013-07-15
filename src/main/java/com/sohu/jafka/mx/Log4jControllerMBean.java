@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * remote controller of log4j
  * 
- * @author adyliu(imxylz@gmail.com)
+ * @author adyliu (imxylz@gmail.com)
  * @since 2012-11-20
  * @since 1.3
  */
