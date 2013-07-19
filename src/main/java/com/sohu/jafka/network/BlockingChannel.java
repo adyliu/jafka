@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * A simple blocking channel with timeouts correctly enabled.
  *
  * @author adyliu (imxylz@gmail.com)
- * @since 2013-07-12
+ * @since 1.3
  */
 @NotThreadSafe
 public class BlockingChannel {
