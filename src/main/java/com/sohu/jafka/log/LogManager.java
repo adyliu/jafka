@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,23 +17,6 @@
 
 package com.sohu.jafka.log;
 
-import static java.lang.String.format;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.log4j.Logger;
-
 import com.sohu.jafka.api.OffsetRequest;
 import com.sohu.jafka.api.PartitionChooser;
 import com.sohu.jafka.common.InvalidPartitionException;
@@ -41,15 +24,21 @@ import com.sohu.jafka.server.ServerConfig;
 import com.sohu.jafka.server.ServerRegister;
 import com.sohu.jafka.server.TopicTask;
 import com.sohu.jafka.server.TopicTask.TaskType;
-import com.sohu.jafka.utils.Closer;
-import com.sohu.jafka.utils.IteratorTemplate;
-import com.sohu.jafka.utils.KV;
-import com.sohu.jafka.utils.Pool;
-import com.sohu.jafka.utils.Scheduler;
-import com.sohu.jafka.utils.TopicNameValidator;
-import com.sohu.jafka.utils.Utils;
+import com.sohu.jafka.utils.*;
+import org.apache.log4j.Logger;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import static java.lang.String.format;
 
 /**
+ * The log management system is responsible for log creation, retrieval, and cleaning.
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -102,14 +91,14 @@ public class LogManager implements PartitionChooser, Closeable {
     private final Map<String, Integer> topicPartitionsMap;
 
     private RollingStrategy rollingStategy;
-    
+
     private final int maxMessageSize;
 
     public LogManager(ServerConfig config, //
-            Scheduler scheduler, //
-            long logCleanupIntervalMs, //
-            long logCleanupDefaultAgeMs, //
-            boolean needRecovery) {
+                      Scheduler scheduler, //
+                      long logCleanupIntervalMs, //
+                      long logCleanupDefaultAgeMs, //
+                      boolean needRecovery) {
         super();
         this.config = config;
         this.maxMessageSize = config.getMaxMessageSize();
@@ -153,21 +142,21 @@ public class LogManager implements PartitionChooser, Closeable {
                 } else {
                     logger.info("Loading log from " + dir.getAbsolutePath());
                     final String topicNameAndPartition = dir.getName();
-                    if(-1 == topicNameAndPartition.indexOf('-')) {
-                        throw new IllegalArgumentException("error topic directory: "+dir.getAbsolutePath());
+                    if (-1 == topicNameAndPartition.indexOf('-')) {
+                        throw new IllegalArgumentException("error topic directory: " + dir.getAbsolutePath());
                     }
                     final KV<String, Integer> topicPartion = Utils.getTopicPartition(topicNameAndPartition);
                     final String topic = topicPartion.k;
                     final int partition = topicPartion.v;
-                    Log log = new Log(dir, partition, this.rollingStategy, flushInterval, needRecovery,maxMessageSize);
+                    Log log = new Log(dir, partition, this.rollingStategy, flushInterval, needRecovery, maxMessageSize);
 
                     logs.putIfNotExists(topic, new Pool<Integer, Log>());
                     Pool<Integer, Log> parts = logs.get(topic);
-                    
+
                     parts.put(partition, log);
                     int configPartition = getPartition(topic);
-                    if(configPartition <= partition) {
-                        topicPartitionsMap.put(topic, partition+1);
+                    if (configPartition <= partition) {
+                        topicPartitionsMap.put(topic, partition + 1);
                     }
                 }
             }
@@ -245,7 +234,7 @@ public class LogManager implements PartitionChooser, Closeable {
 
     /**
      * Runs through the log removing segments older than a certain age
-     * 
+     *
      * @throws IOException
      */
     private void cleanupLogs() throws IOException {
@@ -267,7 +256,7 @@ public class LogManager implements PartitionChooser, Closeable {
     /**
      * Runs through the log removing segments until the size of the log is at least
      * logRetentionSize bytes in size
-     * 
+     *
      * @throws IOException
      */
     private int cleanupSegmentsToMaintainSize(final Log log) throws IOException {
@@ -351,7 +340,7 @@ public class LogManager implements PartitionChooser, Closeable {
 
     /**
      * flush all messages to disk
-     * 
+     *
      * @param force flush anyway(ignore flush interval)
      */
     public void flushAllLogs(final boolean force) {
@@ -441,8 +430,8 @@ public class LogManager implements PartitionChooser, Closeable {
 
     /**
      * Get the log if exists or return null
-     * 
-     * @param topic topic name
+     *
+     * @param topic     topic name
      * @param partition partition index
      * @return a log for the topic or null if not exist
      */
@@ -454,12 +443,12 @@ public class LogManager implements PartitionChooser, Closeable {
 
     /**
      * Create the log if it does not exist or return back exist log
-     * 
-     * @param topic the topic name
+     *
+     * @param topic     the topic name
      * @param partition the partition id
      * @return read or create a log
      * @throws InterruptedException the current thread is interrupted
-     * @throws IOException any IOException
+     * @throws IOException          any IOException
      */
     public ILog getOrCreateLog(String topic, int partition) throws IOException {
         boolean hasNewTopic = false;
@@ -507,16 +496,18 @@ public class LogManager implements PartitionChooser, Closeable {
             return partitions;
         }
     }
+
     /**
      * delete topic who is never used
      * <p>
      * This will delete all log files and remove node data from zookeeper
      * </p>
+     *
      * @param topic topic name
      * @return number of deleted partitions or -1 if authentication failed
      */
-    public int deleteLogs(String topic,String password) {
-        if(!config.getAuthentication().auth(password)) {
+    public int deleteLogs(String topic, String password) {
+        if (!config.getAuthentication().auth(password)) {
             return -1;
         }
         int value = 0;
@@ -529,18 +520,18 @@ public class LogManager implements PartitionChooser, Closeable {
                     value++;
                 }
             }
-            if(config.getEnableZookeeper()) {
+            if (config.getEnableZookeeper()) {
                 topicRegisterTasks.add(new TopicTask(TaskType.DELETE, topic));
             }
         }
         return value;
     }
-    
+
     private Log createLog(String topic, int partition) throws IOException {
         synchronized (logCreationLock) {
             File d = new File(logDir, topic + "-" + partition);
             d.mkdirs();
-            return new Log(d, partition, this.rollingStategy, flushInterval, false,maxMessageSize);
+            return new Log(d, partition, this.rollingStategy, flushInterval, false, maxMessageSize);
         }
     }
 
@@ -558,7 +549,7 @@ public class LogManager implements PartitionChooser, Closeable {
 
     /**
      * read offsets before given time
-     * 
+     *
      * @param offsetRequest the offset request
      * @return offsets before given time
      */
@@ -570,7 +561,7 @@ public class LogManager implements PartitionChooser, Closeable {
         return ILog.EMPTY_OFFSETS;
     }
 
-   public Map<String, Integer> getTopicPartitionsMap() {
+    public Map<String, Integer> getTopicPartitionsMap() {
         return topicPartitionsMap;
     }
 

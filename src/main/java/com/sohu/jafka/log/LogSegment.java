@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,12 +17,14 @@
 
 package com.sohu.jafka.log;
 
-import java.io.File;
-
 import com.sohu.jafka.message.FileMessageSet;
 import com.sohu.jafka.utils.Range;
 
+import java.io.File;
+
 /**
+ * A segment with a file would store the log message
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -69,6 +71,7 @@ public class LogSegment implements Range, Comparable<LogSegment> {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
+
     /**
      * persistence size
      */
@@ -78,7 +81,7 @@ public class LogSegment implements Range, Comparable<LogSegment> {
 
     /**
      * addressing size is larger than {@link #size()} while some messages unflushed to disk
-     * 
+     *
      * @return the addressing size
      */
     public long addressingSize() {
@@ -97,7 +100,7 @@ public class LogSegment implements Range, Comparable<LogSegment> {
         long size = size();
         long start = start();
         return ((size == 0 && value == start) //
-        || (size > 0 && value >= start && value <= start + size - 1));
+                || (size > 0 && value >= start && value <= start + size - 1));
     }
 
     @Override

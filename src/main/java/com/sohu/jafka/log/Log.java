@@ -50,7 +50,7 @@ import com.sohu.jafka.utils.Range;
 import com.sohu.jafka.utils.Utils;
 
 /**
- * a log is a message sets with more than one files.
+ * a log is message sets with more than one files.
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
