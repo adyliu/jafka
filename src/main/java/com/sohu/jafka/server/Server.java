@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,13 +17,6 @@
 
 package com.sohu.jafka.server;
 
-import java.io.Closeable;
-import java.io.File;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.log4j.Logger;
-
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.mx.Log4jController;
 import com.sohu.jafka.mx.ServerInfo;
@@ -32,10 +25,16 @@ import com.sohu.jafka.network.SocketServer;
 import com.sohu.jafka.utils.Mx4jLoader;
 import com.sohu.jafka.utils.Scheduler;
 import com.sohu.jafka.utils.Utils;
+import org.apache.log4j.Logger;
+
+import java.io.Closeable;
+import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The main server container
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -73,7 +72,7 @@ public class Server implements Closeable {
 
     public void startup() {
         try {
-            logger.info("Starting Jafka server "+serverInfo.getVersion());
+            logger.info("Starting Jafka server " + serverInfo.getVersion());
             Utils.registerMBean(serverInfo);
             Utils.registerMBean(log4jController);
             boolean needRecovery = true;
@@ -111,36 +110,35 @@ public class Server implements Closeable {
 
     public void close() {
         boolean canShutdown = isShuttingDown.compareAndSet(false, true);
-        if (canShutdown) {
-            logger.info("Shutting down Jafka server...");
-            try {
-                scheduler.shutdown();
-                if (socketServer != null) {
-                    socketServer.close();
-                    Utils.unregisterMBean(socketServer.getStats());
-                }
-                if (logManager != null) {
-                    logManager.close();
-                }
+        if (!canShutdown) return;//CLOSED
 
-                File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
-                cleanShutDownFile.createNewFile();
-            } catch (Exception ex) {
-                logger.fatal(ex.getMessage(), ex);
+        logger.info("Shutting down Jafka server...");
+        try {
+            scheduler.shutdown();
+            if (socketServer != null) {
+                socketServer.close();
+                Utils.unregisterMBean(socketServer.getStats());
             }
-            shutdownLatch.countDown();
-            logger.info("shutdown Jafka server completed");
-            Utils.unregisterMBean(log4jController);
+            if (logManager != null) {
+                logManager.close();
+            }
+
+            File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
+            cleanShutDownFile.createNewFile();
+        } catch (Exception ex) {
+            logger.fatal(ex.getMessage(), ex);
         }
+        shutdownLatch.countDown();
+        logger.info("shutdown Jafka server completed");
+        Utils.unregisterMBean(log4jController);
+
     }
 
     public void awaitShutdown() throws InterruptedException {
         shutdownLatch.await();
     }
 
-    /**
-     * @return the logManager
-     */
+
     public LogManager getLogManager() {
         return logManager;
     }
