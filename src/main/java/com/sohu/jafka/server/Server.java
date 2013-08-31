@@ -100,11 +100,12 @@ public class Server implements Closeable {
              */
             logManager.startup();
             logger.info("Server started.");
-        } catch (Exception ex) {
-            logger.fatal("Fatal error during startup.", ex);
-            close();
-        } finally {
             serverInfo.started();
+        } catch (Exception ex) {
+            logger.fatal("========================================");
+            logger.fatal("Fatal error during startup.", ex);
+            logger.fatal("========================================");
+            close();
         }
     }
 
