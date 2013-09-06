@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,18 +17,18 @@
 
 package com.sohu.jafka.mx;
 
-import static java.lang.String.format;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static java.lang.String.format;
+
 /**
  * Some thing about the Jafka server
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.1
  */
-public class ServerInfo implements ServerInfoMBean,IMBeanName {
+public class ServerInfo implements ServerInfoMBean, IMBeanName {
 
     private final String startupTime;
 
@@ -47,8 +47,9 @@ public class ServerInfo implements ServerInfoMBean,IMBeanName {
         String version = null;
         try {
             version = ServerInfo.class.getPackage().getImplementationVersion();
-        } catch (Exception e) {}
-        return version != null ? version : "1.3";
+        } catch (Exception e) {
+        }
+        return version != null ? version : "1.4";
     }
 
     @Override
