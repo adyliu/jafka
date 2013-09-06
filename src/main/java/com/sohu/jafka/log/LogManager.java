@@ -24,13 +24,25 @@ import com.sohu.jafka.server.ServerConfig;
 import com.sohu.jafka.server.ServerRegister;
 import com.sohu.jafka.server.TopicTask;
 import com.sohu.jafka.server.TopicTask.TaskType;
-import com.sohu.jafka.utils.*;
+import com.sohu.jafka.utils.Closer;
+import com.sohu.jafka.utils.IteratorTemplate;
+import com.sohu.jafka.utils.KV;
+import com.sohu.jafka.utils.Pool;
+import com.sohu.jafka.utils.Scheduler;
+import com.sohu.jafka.utils.TopicNameValidator;
+import com.sohu.jafka.utils.Utils;
 import org.apache.log4j.Logger;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -447,10 +459,13 @@ public class LogManager implements PartitionChooser, Closeable {
      * @param topic     the topic name
      * @param partition the partition id
      * @return read or create a log
-     * @throws InterruptedException the current thread is interrupted
      * @throws IOException          any IOException
      */
     public ILog getOrCreateLog(String topic, int partition) throws IOException {
+        final int configPartitionNumber = getPartition(topic);
+        if (partition >= configPartitionNumber) {
+            throw new IOException("partition is bigger than the number of configuration: " + configPartitionNumber);
+        }
         boolean hasNewTopic = false;
         Pool<Integer, Log> parts = getLogPool(topic, partition);
         if (parts == null) {
@@ -478,6 +493,14 @@ public class LogManager implements PartitionChooser, Closeable {
         return log;
     }
 
+    /**
+     * create logs with given partition number
+     *
+     * @param topic        the topic name
+     * @param partitions   partition number
+     * @param forceEnlarge enlarge the partition number of log if smaller than runtime
+     * @return the partition number of the log after enlarging
+     */
     public int createLogs(String topic, final int partitions, final boolean forceEnlarge) {
         TopicNameValidator.validate(topic);
         synchronized (logCreationLock) {

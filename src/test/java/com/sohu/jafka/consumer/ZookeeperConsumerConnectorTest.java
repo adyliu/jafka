@@ -161,7 +161,7 @@ public class ZookeeperConsumerConnectorTest extends BaseJafkaServer {
             service.submit(new Runnable() {
                 public void run() {
                     for (String message : stream) {
-                        System.out.println(consumerId +  " => " + message);
+                        //System.out.println(consumerId +  " => " + message);
                         receiveCount.incrementAndGet();
                     }
                 }
