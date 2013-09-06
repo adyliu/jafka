@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,23 +17,25 @@
 
 package com.sohu.jafka.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.Logger;
-
 /**
  * A scheduler for running jobs in the background
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 public class Scheduler {
 
-    final private Logger logger = Logger.getLogger(Scheduler.class);
+    final private Logger logger = LoggerFactory.getLogger(getClass());
 
     final AtomicLong threadId = new AtomicLong(0);
 
@@ -61,11 +63,11 @@ public class Scheduler {
 
     public void shutdownNow() {
         executor.shutdownNow();
-        logger.info("force shutdown scheduler " + baseThreadName);
+        logger.info("ShutdownNow scheduler {} with {} threads.", baseThreadName, threadId.get());
     }
 
     public void shutdown() {
         executor.shutdown();
-        logger.info("shutdown scheduler " + baseThreadName);
+        logger.info("Shutdown scheduler {} with {} threads.", baseThreadName, threadId.get());
     }
 }

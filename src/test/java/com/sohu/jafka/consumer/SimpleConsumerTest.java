@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -16,21 +16,6 @@
  */
 
 package com.sohu.jafka.consumer;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.sohu.jafka.BaseJafkaServer;
 import com.sohu.jafka.Jafka;
@@ -43,6 +28,21 @@ import com.sohu.jafka.producer.Producer;
 import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.StringProducerData;
 import com.sohu.jafka.producer.serializer.StringEncoder;
+import com.sohu.jafka.utils.Closer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -58,6 +58,8 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     }
 
     final int partitions = 3;
+    final int INIT_MESSAGE_COUNT = 755;
+    final int MESSAGE_BATCH_SIZE = 50;
 
     @Before
     public void init() {
@@ -70,9 +72,10 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             props.put("log.file.size", "5120");//5k for rolling
             props.put("num.partitions", "" + partitions);//default divided three partitions
             jafka = createJafka(props);
-            sendSomeMessages(1000,"demo","test");
-            flush(jafka);
-            
+            sendSomeMessages(INIT_MESSAGE_COUNT, "demo", "test");
+
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//waiting to receive all message
+            flush(jafka);//force flush all logs to the disk
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         }
         if (consumer == null) {
@@ -80,7 +83,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
         }
     }
 
-    private void sendSomeMessages(int count,final String ...topics) {
+    private void sendSomeMessages(int count, final String... topics) {
         Properties producerConfig = new Properties();
         producerConfig.setProperty("broker.list", "0:localhost:" + jafka.getPort());
         producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
@@ -89,24 +92,24 @@ public class SimpleConsumerTest extends BaseJafkaServer {
         boolean over = false;
         while (!over) {
             StringProducerData[] data = new StringProducerData[topics.length];
-            for(int x=0;x<data.length;x++) {
+            for (int x = 0; x < data.length; x++) {
                 data[x] = new StringProducerData(topics[x]);
             }
             int batch = 50;
             while (batch-- > 0 && !over) {
-                for(StringProducerData sd:data) {
-                    sd.add(sd.getTopic()+"#message#"+(index++));
+                for (StringProducerData sd : data) {
+                    sd.add(sd.getTopic() + "#message#" + (index++));
                 }
                 over = index >= count;
             }
-            for(StringProducerData sd:data) {
+            for (StringProducerData sd : data) {
                 producer.send(sd);
             }
         }
-        producer.close();
-        System.out.println("send " + index + " messages");
+        Closer.closeQuietly(producer);
+        logger.info("SEND_MESSAGE_COUNT {}", index);
     }
-    
+
     @After
     public void destroy() throws Throwable {
         close(jafka);
@@ -117,7 +120,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
         }
     }
 
-    
+
 //    @Test
 //    public void testCreatePartitions() throws IOException{
 //        int size = consumer.createPartitions("demo", partitions-1, false);
@@ -132,6 +135,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
 //        assertEquals(partitions+5, size);
 //        sendSomeMessages(1000, largePartitionTopic);
 //    }
+
     /**
      * Test method for
      * {@link com.sohu.jafka.consumer.SimpleConsumer#close()}.
@@ -148,7 +152,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
      * Test method for
      * {@link com.sohu.jafka.consumer.SimpleConsumer#fetch(com.sohu.jafka.api.FetchRequest)}
      * .
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -199,13 +203,15 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     public void testMultifetch() throws IOException {
 
         long bigestOffset = -1;
-        int cnt = 0;
-        for (int i = 0; i < partitions; i++) {
+        int total = 0, democnt = 0, testcnt = 0;
+        //
+        int loop = 10;
+        while (loop-- > 0 && total < INIT_MESSAGE_COUNT) {
+            for (int i = 0; i < partitions && total < INIT_MESSAGE_COUNT; i++) {
 
-            long demoOffset = 0;
-            long testOffset = 0;
-            boolean over = false;
-            while (!over) {
+                long demoOffset = 0;
+                long testOffset = 0;
+
                 FetchRequest request1 = new FetchRequest("demo", i, demoOffset, 1000 * 1000);
                 FetchRequest request2 = new FetchRequest("test", i, testOffset, 1000 * 1000);
                 MultiFetchResponse responses = consumer.multifetch(Arrays.asList(request1, request2));
@@ -216,26 +222,29 @@ public class SimpleConsumerTest extends BaseJafkaServer {
                 assertTrue(iter.hasNext());
                 ByteBufferMessageSet testMessages = iter.next();
                 assertFalse(iter.hasNext());
-                over = true;
+                //
                 for (MessageAndOffset msg : demoMessages) {
                     //System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
                     bigestOffset = Math.max(bigestOffset, msg.offset);
-                    cnt++;
+                    total++;
+                    democnt++;
                     demoOffset = msg.offset;
-                    over = false;
                 }
                 for (MessageAndOffset msg : testMessages) {
                     //System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
                     bigestOffset = Math.max(bigestOffset, msg.offset);
-                    cnt++;
+                    total++;
+                    testcnt++;
                     testOffset = msg.offset;
-                    over = false;
                 }
+
             }
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(100));
         }
-        System.out.println("multifetch receive message count: " + cnt);
+        consumer.close();
+        logger.info("multifetch receive message count: {}, demo={}, test={}", total, democnt, testcnt);
         assertTrue(bigestOffset > 0);
-        assertTrue(cnt > 0);
+        assertTrue("some messages left",total >= INIT_MESSAGE_COUNT);
     }
 
 }

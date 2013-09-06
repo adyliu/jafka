@@ -17,6 +17,9 @@
 
 package com.sohu.jafka;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.Properties;
 
@@ -29,6 +32,8 @@ public abstract class BaseJafkaServer {
     static {
         System.setProperty("jafka_mx4jenable", "true");
     }
+
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
     public Jafka createJafka() {
         Properties mainProperties = new Properties();
