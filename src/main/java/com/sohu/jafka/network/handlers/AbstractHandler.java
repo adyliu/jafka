@@ -17,10 +17,11 @@
 
 package com.sohu.jafka.network.handlers;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.network.RequestHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * the base request handler
@@ -30,7 +31,7 @@ import com.sohu.jafka.network.RequestHandler;
  */
 public abstract class AbstractHandler implements RequestHandler {
 
-    protected final Logger logger = Logger.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final LogManager logManager;
 

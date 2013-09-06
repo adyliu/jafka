@@ -25,7 +25,8 @@ import com.sohu.jafka.mx.SyncProducerStats;
 import com.sohu.jafka.network.BlockingChannel;
 import com.sohu.jafka.network.BoundedByteBufferSend;
 import com.sohu.jafka.network.Request;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -42,7 +43,7 @@ import static java.lang.String.format;
 @ThreadSafe
 public class SyncProducer implements Closeable {
 
-    private final Logger logger = Logger.getLogger(SyncProducer.class);
+    private final Logger logger = LoggerFactory.getLogger(SyncProducer.class);
 
     //private static final RequestKeys RequestKey = RequestKeys.Produce;//0
 

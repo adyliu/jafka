@@ -23,8 +23,9 @@ import com.github.zkclient.ZkClient;
 import com.sohu.jafka.common.ConsumerRebalanceFailedException;
 import com.sohu.jafka.server.ServerStartable;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
-import org.apache.log4j.Logger;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class ZookeeperTopicEventWatcher implements Closeable {
 
     private ZkClient zkClient;
 
-    private static final Logger logger = Logger.getLogger(ZookeeperTopicEventWatcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperTopicEventWatcher.class);
 
 
     public ZookeeperTopicEventWatcher(ConsumerConfig consumerConfig, TopicEventHandler<String> eventHandler, ServerStartable serverStartable) {
@@ -104,7 +105,7 @@ public class ZookeeperTopicEventWatcher implements Closeable {
                     logger.debug("all Topics: " + latestTopics);
                     eventHandler.handleTopicEvent(latestTopics);
                 } catch (ConsumerRebalanceFailedException e) {
-                    logger.fatal("can't rebalance in embedded consumer); proceed to shutdown", e);
+                    logger.error("can't rebalance in embedded consumer); proceed to shutdown", e);
                     serverStartable.close();
                 } catch (Exception e) {
                     logger.error("error in handling child changes in embedded consumer", e);

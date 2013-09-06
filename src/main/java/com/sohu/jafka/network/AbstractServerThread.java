@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -18,28 +18,29 @@
 package com.sohu.jafka.network;
 
 
+import com.sohu.jafka.utils.Closer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.Selector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.log4j.Logger;
-
-import com.sohu.jafka.utils.Closer;
-
 /**
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public abstract class AbstractServerThread implements Runnable,Closeable {
+public abstract class AbstractServerThread implements Runnable, Closeable {
 
     private Selector selector;
     protected final CountDownLatch startupLatch = new CountDownLatch(1);
     protected final CountDownLatch shutdownLatch = new CountDownLatch(1);
     protected final AtomicBoolean alive = new AtomicBoolean(false);
-    
-    final protected Logger logger = Logger.getLogger(getClass());
+
+    final protected Logger logger = LoggerFactory.getLogger(getClass());
+
     /**
      * @return the selector
      */
@@ -53,26 +54,26 @@ public abstract class AbstractServerThread implements Runnable,Closeable {
         }
         return selector;
     }
-    
+
     protected void closeSelector() {
-        Closer.closeQuietly(selector,logger);
+        Closer.closeQuietly(selector, logger);
     }
-    
+
     public void close() {
         alive.set(false);
         selector.wakeup();
         try {
             shutdownLatch.await();
         } catch (InterruptedException e) {
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
         }
     }
-    
+
     protected void startupComplete() {
         alive.set(true);
         startupLatch.countDown();
     }
-    
+
     protected void shutdownComplete() {
         shutdownLatch.countDown();
     }
@@ -80,7 +81,7 @@ public abstract class AbstractServerThread implements Runnable,Closeable {
     protected boolean isRunning() {
         return alive.get();
     }
-    
+
     public void awaitStartup() throws InterruptedException {
         startupLatch.await();
     }

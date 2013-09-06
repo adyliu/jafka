@@ -17,12 +17,14 @@
 
 package com.sohu.jafka.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.Selector;
 
-import org.apache.log4j.Logger;
 
 /**
  * an useful tools to close some streams or file descriptions
@@ -32,7 +34,7 @@ import org.apache.log4j.Logger;
  */
 public final class Closer {
 
-    private static final Logger closerLogger = Logger.getLogger(Closer.class);
+    private static final Logger closerLogger = LoggerFactory.getLogger(Closer.class);
 
     public static void close(java.io.Closeable closeable) throws IOException {
         close(closeable, closerLogger);

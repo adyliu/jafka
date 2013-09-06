@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,29 +17,29 @@
 
 package com.sohu.jafka.server;
 
-import java.io.Closeable;
-
-import org.apache.log4j.Logger;
-
 import com.sohu.jafka.consumer.ConsumerConfig;
 import com.sohu.jafka.producer.ProducerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 
 
 /**
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
-public class ServerStartable implements Closeable{
+public class ServerStartable implements Closeable {
 
-    
-    private final Logger logger = Logger.getLogger(ServerStartable.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ServerStartable.class);
     final ServerConfig config;
     final ConsumerConfig consumerConfig;
     final ProducerConfig producerConfig;
     //
     private final Server server;
     private EmbeddedConsumer embeddedConsumer;
+
     public ServerStartable(ServerConfig config, ConsumerConfig consumerConfig, ProducerConfig producerConfig) {
         super();
         this.config = config;
@@ -48,47 +48,51 @@ public class ServerStartable implements Closeable{
         this.server = new Server(config);
         init();
     }
+
     public ServerStartable(ServerConfig config) {
-        this(config,null,null);
+        this(config, null, null);
     }
-    
+
     private void init() {
-        if(consumerConfig!=null) {
-            embeddedConsumer = new EmbeddedConsumer(consumerConfig,producerConfig,this);
+        if (consumerConfig != null) {
+            embeddedConsumer = new EmbeddedConsumer(consumerConfig, producerConfig, this);
         }
     }
+
     public void flush() {
         logger.info("force flush all messages to disk");
         this.server.getLogManager().flushAllLogs(true);
     }
+
     public void startup() {
         try {
             server.startup();
-            if(embeddedConsumer!=null) {
+            if (embeddedConsumer != null) {
                 embeddedConsumer.startup();
             }
         } catch (Exception e) {
-           logger.fatal("Fatal error during ServerStable startup. Prepare to shutdown",e);
-           close();
+            logger.error("Fatal error during ServerStable startup. Prepare to shutdown", e);
+            close();
         }
     }
+
     public void close() {
         try {
-            if(embeddedConsumer!=null) {
+            if (embeddedConsumer != null) {
                 embeddedConsumer.shutdown();
             }
             server.close();
         } catch (Exception e) {
-            logger.fatal("Fatal error during ServerStable shutdown. Prepare to halt", e);
+            logger.error("Fatal error during ServerStable shutdown. Prepare to halt", e);
             Runtime.getRuntime().halt(1);
         }
     }
-    
+
     public void awaitShutdown() {
         try {
             server.awaitShutdown();
         } catch (InterruptedException e) {
-            logger.warn(e.getMessage(),e);
+            logger.warn(e.getMessage(), e);
         }
     }
 }

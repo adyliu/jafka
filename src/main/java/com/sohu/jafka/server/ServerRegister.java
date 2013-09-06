@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,16 +17,6 @@
 
 package com.sohu.jafka.server;
 
-import java.io.Closeable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.apache.zookeeper.Watcher.Event.KeeperState;
-
 import com.github.zkclient.IZkStateListener;
 import com.github.zkclient.ZkClient;
 import com.github.zkclient.exception.ZkNodeExistsException;
@@ -34,16 +24,26 @@ import com.sohu.jafka.cluster.Broker;
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.server.TopicTask.TaskType;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Handles the server's interaction with zookeeper. The server needs to register the following
  * paths:
- * 
+ * <p/>
  * <pre>
  *   /topics/[topic]/[node_id-partition_num]
  *   /brokers/[0...N] --> host:port
  * </pre>
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -53,7 +53,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
 
     private final LogManager logManager;
 
-    private static final Logger logger = Logger.getLogger(ServerRegister.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerRegister.class);
 
     private final String brokerIdPath;
 
@@ -141,7 +141,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
     }
 
     /**
-     * 
+     *
      */
     public void close() {
         if (zkClient != null) {

@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -16,14 +16,6 @@
  */
 
 package com.sohu.jafka.server;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.consumer.Consumer;
 import com.sohu.jafka.consumer.ConsumerConfig;
@@ -36,6 +28,14 @@ import com.sohu.jafka.producer.Producer;
 import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.serializer.MessageEncoders;
 import com.sohu.jafka.utils.Closer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -61,13 +61,13 @@ public class EmbeddedConsumer implements TopicEventHandler<String> {
 
     private List<MirroringThread> threadList = new ArrayList<MirroringThread>();
 
-    private static final Logger logger = Logger.getLogger(EmbeddedConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(EmbeddedConsumer.class);
 
     private List<String> mirrorTopics = new ArrayList<String>();
 
     /**
-     * @param consumerConfig the inner consumer config
-     * @param producerConfig the producer config
+     * @param consumerConfig  the inner consumer config
+     * @param producerConfig  the producer config
      * @param serverStartable server instance
      */
     public EmbeddedConsumer(ConsumerConfig consumerConfig, ProducerConfig producerConfig, ServerStartable serverStartable) {
@@ -80,7 +80,7 @@ public class EmbeddedConsumer implements TopicEventHandler<String> {
     }
 
     /**
-     * 
+     *
      */
     public void startup() {
         logger.info("staring up embedded consumer");
@@ -88,7 +88,7 @@ public class EmbeddedConsumer implements TopicEventHandler<String> {
     }
 
     /**
-     * 
+     *
      */
     public void shutdown() {
         if (topicEventWatcher != null) {

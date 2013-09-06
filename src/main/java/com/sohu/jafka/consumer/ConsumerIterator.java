@@ -22,7 +22,8 @@ import com.sohu.jafka.message.MessageAndOffset;
 import com.sohu.jafka.mx.ConsumerTopicStat;
 import com.sohu.jafka.producer.serializer.Decoder;
 import com.sohu.jafka.utils.IteratorTemplate;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
@@ -37,7 +38,7 @@ import static java.lang.String.format;
  */
 public class ConsumerIterator<T> extends IteratorTemplate<T> {
 
-    private final Logger logger = Logger.getLogger(ConsumerIterator.class);
+    private final Logger logger = LoggerFactory.getLogger(ConsumerIterator.class);
 
     final String topic;
 

@@ -17,7 +17,9 @@
 
 package com.sohu.jafka.utils;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * If mx4j-tools is in the classpath call maybeLoad to load the HTTP interface of mx4j.
@@ -36,7 +38,7 @@ import org.apache.log4j.Logger;
  */
 public class Mx4jLoader {
 
-    private static final Logger logger = Logger.getLogger(Mx4jLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(Mx4jLoader.class);
 
     private static Object httpAdaptor;
 

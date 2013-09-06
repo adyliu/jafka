@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,19 +17,6 @@
 
 package com.sohu.jafka.producer;
 
-
-import static com.sohu.jafka.utils.Closer.closeQuietly;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.cluster.Broker;
@@ -43,15 +30,28 @@ import com.sohu.jafka.producer.async.EventHandler;
 import com.sohu.jafka.producer.serializer.Encoder;
 import com.sohu.jafka.utils.Utils;
 import com.sohu.jafka.utils.ZKConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.sohu.jafka.utils.Closer.closeQuietly;
 
 /**
  * Message producer
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
 @ClientSide
-public class Producer<K, V> implements Callback,IProducer<K, V> {
+public class Producer<K, V> implements Callback, IProducer<K, V> {
 
     ProducerConfig config;
 
@@ -63,7 +63,7 @@ public class Producer<K, V> implements Callback,IProducer<K, V> {
 
     BrokerPartitionInfo brokerPartitionInfo;
 
-    private final Logger logger = Logger.getLogger(Producer.class);
+    private final Logger logger = LoggerFactory.getLogger(Producer.class);
 
     /////////////////////////////////////////////////////////////////////////
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
@@ -74,12 +74,12 @@ public class Producer<K, V> implements Callback,IProducer<K, V> {
     private Encoder<V> encoder;
 
     public Producer(ProducerConfig config, Partitioner<K> partitioner, ProducerPool<V> producerPool, boolean populateProducerPool,
-            BrokerPartitionInfo brokerPartitionInfo) {
+                    BrokerPartitionInfo brokerPartitionInfo) {
         super();
         this.config = config;
         this.partitioner = partitioner;
-        if(producerPool == null) {
-            producerPool =  new ProducerPool<V>(config, getEncoder());
+        if (producerPool == null) {
+            producerPool = new ProducerPool<V>(config, getEncoder());
         }
         this.producerPool = producerPool;
         this.populateProducerPool = populateProducerPool;
@@ -111,12 +111,12 @@ public class Producer<K, V> implements Callback,IProducer<K, V> {
     /**
      * This constructor can be used when all config parameters will be
      * specified through the ProducerConfig object
-     * 
+     *
      * @param config Producer Configuration object
      */
     public Producer(ProducerConfig config) {
         this(config, //
-               null,//
+                null,//
                 null, //
                 true, //
                 null);
@@ -129,27 +129,27 @@ public class Producer<K, V> implements Callback,IProducer<K, V> {
      * handler. If you use this constructor, encoder, eventHandler,
      * callback handler and partitioner will not be picked up from the
      * config.
-     * 
-     * @param config Producer Configuration object
-     * @param encoder Encoder used to convert an object of type V to a
-     *        jafka.message.Message. If this is null it throws an
-     *        InvalidConfigException
+     *
+     * @param config       Producer Configuration object
+     * @param encoder      Encoder used to convert an object of type V to a
+     *                     jafka.message.Message. If this is null it throws an
+     *                     InvalidConfigException
      * @param eventHandler the class that implements
-     *        jafka.producer.async.IEventHandler[T] used to dispatch a
-     *        batch of produce requests, using an instance of
-     *        jafka.producer.SyncProducer. If this is null, it uses the
-     *        DefaultEventHandler
-     * @param cbkHandler the class that implements
-     *        jafka.producer.async.CallbackHandler[T] used to inject
-     *        callbacks at various stages of the
-     *        jafka.producer.AsyncProducer pipeline. If this is null, the
-     *        producer does not use the callback handler and hence does not
-     *        invoke any callbacks
-     * @param partitioner class that implements the
-     *        jafka.producer.Partitioner[K], used to supply a custom
-     *        partitioning strategy on the message key (of type K) that is
-     *        specified through the ProducerData[K, T] object in the send
-     *        API. If this is null, producer uses DefaultPartitioner
+     *                     jafka.producer.async.IEventHandler[T] used to dispatch a
+     *                     batch of produce requests, using an instance of
+     *                     jafka.producer.SyncProducer. If this is null, it uses the
+     *                     DefaultEventHandler
+     * @param cbkHandler   the class that implements
+     *                     jafka.producer.async.CallbackHandler[T] used to inject
+     *                     callbacks at various stages of the
+     *                     jafka.producer.AsyncProducer pipeline. If this is null, the
+     *                     producer does not use the callback handler and hence does not
+     *                     invoke any callbacks
+     * @param partitioner  class that implements the
+     *                     jafka.producer.Partitioner[K], used to supply a custom
+     *                     partitioning strategy on the message key (of type K) that is
+     *                     specified through the ProducerData[K, T] object in the send
+     *                     API. If this is null, producer uses DefaultPartitioner
      */
     public Producer(ProducerConfig config, Encoder<V> encoder, EventHandler<V> eventHandler, CallbackHandler<V> cbkHandler, Partitioner<K> partitioner) {
         this(config, //
@@ -162,7 +162,7 @@ public class Producer<K, V> implements Callback,IProducer<K, V> {
     @SuppressWarnings("unchecked")
     @Override
     public Encoder<V> getEncoder() {
-        return encoder == null ?(Encoder<V>) Utils.getObject(config.getSerializerClass()):encoder;
+        return encoder == null ? (Encoder<V>) Utils.getObject(config.getSerializerClass()) : encoder;
     }
 
     public void send(ProducerData<K, V> data) throws NoBrokersForPartitionException, InvalidPartitionException {
@@ -174,12 +174,12 @@ public class Producer<K, V> implements Callback,IProducer<K, V> {
         }
     }
 
-  
+
     private void configSend(ProducerData<K, V> data) {
         producerPool.send(create(data));
     }
 
-    
+
     private void zkSend(ProducerData<K, V> data) {
         int numRetries = 0;
         Broker brokerInfoOpt = null;
@@ -250,16 +250,16 @@ public class Producer<K, V> implements Callback,IProducer<K, V> {
             closeQuietly(brokerPartitionInfo);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public Partitioner<K> getPartitioner() {
-        if(partitioner == null) {
-            partitioner =  (Partitioner<K>) Utils.getObject(config.getPartitionerClass());
+        if (partitioner == null) {
+            partitioner = (Partitioner<K>) Utils.getObject(config.getPartitionerClass());
         }
         return partitioner;
     }
-    
+
     public void setPartitioner(Partitioner<K> partitioner) {
         this.partitioner = partitioner;
     }

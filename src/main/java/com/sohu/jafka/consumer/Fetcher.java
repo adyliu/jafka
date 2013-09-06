@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,19 +17,18 @@
 
 package com.sohu.jafka.consumer;
 
+import com.github.zkclient.ZkClient;
+import com.sohu.jafka.cluster.Cluster;
+import com.sohu.jafka.common.annotations.ClientSide;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-
-import org.apache.log4j.Logger;
-
-import com.github.zkclient.ZkClient;
-import com.sohu.jafka.cluster.Cluster;
-import com.sohu.jafka.common.annotations.ClientSide;
-
 
 
 /**
@@ -41,16 +40,17 @@ public class Fetcher {
 
     private final ConsumerConfig config;
     private final ZkClient zkClient;
-    
-    private final Logger logger = Logger.getLogger(Fetcher.class);
+
+    private final Logger logger = LoggerFactory.getLogger(Fetcher.class);
 
     private volatile List<FetcherRunnable> fetcherThreads = new ArrayList<FetcherRunnable>(0);
+
     public Fetcher(ConsumerConfig config, ZkClient zkClient) {
         super();
         this.config = config;
         this.zkClient = zkClient;
     }
-    
+
     public void stopConnectionsToAllBrokers() {
         // shutdown the old fetcher threads, if any
         List<FetcherRunnable> threads = this.fetcherThreads;
@@ -58,19 +58,19 @@ public class Fetcher {
             try {
                 fetcherThread.shutdown();
             } catch (InterruptedException e) {
-                logger.warn(e.getMessage(),e);
+                logger.warn(e.getMessage(), e);
             }
         }
         this.fetcherThreads = new ArrayList<FetcherRunnable>(0);
     }
 
-    
-    public <T> void startConnections(Iterable<PartitionTopicInfo> topicInfos,Cluster cluster,//
-            Map<String,List<MessageStream<T>>> messageStreams){
-        if(topicInfos == null) {
+
+    public <T> void startConnections(Iterable<PartitionTopicInfo> topicInfos, Cluster cluster,//
+                                     Map<String, List<MessageStream<T>>> messageStreams) {
+        if (topicInfos == null) {
             return;
         }
-        
+
         //re-arrange by broker id
         Map<Integer, List<PartitionTopicInfo>> m = new HashMap<Integer, List<PartitionTopicInfo>>();
         for (PartitionTopicInfo info : topicInfos) {
@@ -86,8 +86,8 @@ public class Fetcher {
         }
         //
         final List<FetcherRunnable> fetcherThreads = new ArrayList<FetcherRunnable>();
-        for(Map.Entry<Integer, List<PartitionTopicInfo>> e:m.entrySet()) {
-            FetcherRunnable fetcherThread = new FetcherRunnable("FetchRunnable-"+e.getKey(), //
+        for (Map.Entry<Integer, List<PartitionTopicInfo>> e : m.entrySet()) {
+            FetcherRunnable fetcherThread = new FetcherRunnable("FetchRunnable-" + e.getKey(), //
                     zkClient, //
                     config, //
                     cluster.getBroker(e.getKey()), //
@@ -98,7 +98,7 @@ public class Fetcher {
         //
         this.fetcherThreads = fetcherThreads;
     }
-    
+
     public <T> void clearFetcherQueues(Collection<BlockingQueue<FetchedDataChunk>> queuesToBeCleared, Collection<List<MessageStream<T>>> messageStreamsList) {
         for (BlockingQueue<FetchedDataChunk> q : queuesToBeCleared) {
             q.clear();

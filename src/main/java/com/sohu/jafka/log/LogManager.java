@@ -31,7 +31,8 @@ import com.sohu.jafka.utils.Pool;
 import com.sohu.jafka.utils.Scheduler;
 import com.sohu.jafka.utils.TopicNameValidator;
 import com.sohu.jafka.utils.Utils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
@@ -66,7 +67,7 @@ public class LogManager implements PartitionChooser, Closeable {
 
     final boolean needRecovery;
 
-    private final Logger logger = Logger.getLogger(LogManager.class);
+    private final Logger logger = LoggerFactory.getLogger(LogManager.class);
 
     ///////////////////////////////////////////////////////////////////////
     final int numPartitions;
@@ -377,7 +378,7 @@ public class LogManager implements PartitionChooser, Closeable {
                 }
             } catch (IOException ioe) {
                 logger.error("Error flushing topic " + log.getTopicName(), ioe);
-                logger.fatal("Halting due to unrecoverable I/O error while flushing logs: " + ioe.getMessage(), ioe);
+                logger.error("Halting due to unrecoverable I/O error while flushing logs: " + ioe.getMessage(), ioe);
                 Runtime.getRuntime().halt(1);
             } catch (Exception e) {
                 logger.error("Error flushing topic " + log.getTopicName(), e);

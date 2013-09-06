@@ -20,7 +20,8 @@ package com.sohu.jafka.message;
 import com.sohu.jafka.mx.LogFlushStats;
 import com.sohu.jafka.utils.IteratorTemplate;
 import com.sohu.jafka.utils.Utils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class FileMessageSet extends MessageSet {
 
-    private final Logger logger = Logger.getLogger(FileMessageSet.class);
+    private final Logger logger = LoggerFactory.getLogger(FileMessageSet.class);
 
     private final FileChannel channel;
 

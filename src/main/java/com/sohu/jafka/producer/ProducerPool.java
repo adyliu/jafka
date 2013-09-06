@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.cluster.Broker;
@@ -43,6 +42,8 @@ import com.sohu.jafka.producer.async.DefaultEventHandler;
 import com.sohu.jafka.producer.async.EventHandler;
 import com.sohu.jafka.producer.serializer.Encoder;
 import com.sohu.jafka.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -65,7 +66,7 @@ public class ProducerPool<V> implements Closeable {
 
     private boolean sync = true;
 
-    private final Logger logger = Logger.getLogger(ProducerPool.class);
+    private final Logger logger = LoggerFactory.getLogger(ProducerPool.class);
 
     public ProducerPool(ProducerConfig config,//
             Encoder<V> serializer, //

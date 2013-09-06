@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.ProducerRequest;
 import com.sohu.jafka.message.ByteBufferMessageSet;
@@ -34,6 +33,8 @@ import com.sohu.jafka.message.Message;
 import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.SyncProducer;
 import com.sohu.jafka.producer.serializer.Encoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -47,7 +48,7 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
 
     private final CompressionCodec codec;
 
-    private final Logger logger = Logger.getLogger(DefaultEventHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultEventHandler.class);
 
     private final int numRetries;
 

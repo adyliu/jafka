@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,9 +17,6 @@
 
 package com.sohu.jafka.network.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.sohu.jafka.api.FetchRequest;
 import com.sohu.jafka.api.MultiFetchRequest;
 import com.sohu.jafka.api.RequestKeys;
@@ -28,9 +25,13 @@ import com.sohu.jafka.network.MessageSetSend;
 import com.sohu.jafka.network.MultiMessageSetSend;
 import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Send;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * handler for multi fetch request
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -46,7 +47,7 @@ public class MultiFetchHandler extends FetchHandler {
         if (logger.isDebugEnabled()) {
             logger.debug("Multifetch request objects size: " + fetches.size());
             for (FetchRequest fetch : fetches) {
-                logger.debug(fetch);
+                logger.debug(fetch.toString());
             }
         }
         List<MessageSetSend> responses = new ArrayList<MessageSetSend>(fetches.size());

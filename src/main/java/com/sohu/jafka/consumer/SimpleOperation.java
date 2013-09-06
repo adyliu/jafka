@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.FetchRequest;
 import com.sohu.jafka.common.ErrorMapping;
@@ -35,6 +34,8 @@ import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Request;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.KV;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple operation with jafka broker
@@ -46,7 +47,7 @@ import com.sohu.jafka.utils.KV;
 @ClientSide
 public class SimpleOperation implements Closeable {
 
-    private final Logger logger = Logger.getLogger(SimpleOperation.class);
+    private final Logger logger = LoggerFactory.getLogger(SimpleOperation.class);
 
     private final String host;
 

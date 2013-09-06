@@ -18,14 +18,14 @@
 package com.sohu.jafka.server;
 
 import com.sohu.jafka.log.LogManager;
-import com.sohu.jafka.mx.Log4jController;
 import com.sohu.jafka.mx.ServerInfo;
 import com.sohu.jafka.mx.SocketServerStats;
 import com.sohu.jafka.network.SocketServer;
 import com.sohu.jafka.utils.Mx4jLoader;
 import com.sohu.jafka.utils.Scheduler;
 import com.sohu.jafka.utils.Utils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
@@ -42,7 +42,7 @@ public class Server implements Closeable {
 
     final String CLEAN_SHUTDOWN_FILE = ".jafka_cleanshutdown";
 
-    final private Logger logger = Logger.getLogger(Server.class);
+    final private Logger logger = LoggerFactory.getLogger(Server.class);
 
     final ServerConfig config;
 
@@ -59,7 +59,6 @@ public class Server implements Closeable {
     private final File logDir;
 
     private final ServerInfo serverInfo = new ServerInfo();
-    private final Log4jController log4jController = new Log4jController();
 
     //
     public Server(ServerConfig config) {
@@ -74,7 +73,6 @@ public class Server implements Closeable {
         try {
             logger.info("Starting Jafka server " + serverInfo.getVersion());
             Utils.registerMBean(serverInfo);
-            Utils.registerMBean(log4jController);
             boolean needRecovery = true;
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
             if (cleanShutDownFile.exists()) {
@@ -102,9 +100,9 @@ public class Server implements Closeable {
             logger.info("Server started.");
             serverInfo.started();
         } catch (Exception ex) {
-            logger.fatal("========================================");
-            logger.fatal("Fatal error during startup.", ex);
-            logger.fatal("========================================");
+            logger.error("========================================");
+            logger.error("Fatal error during startup.", ex);
+            logger.error("========================================");
             close();
         }
     }
@@ -127,11 +125,10 @@ public class Server implements Closeable {
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
             cleanShutDownFile.createNewFile();
         } catch (Exception ex) {
-            logger.fatal(ex.getMessage(), ex);
+            logger.error(ex.getMessage(), ex);
         }
         shutdownLatch.countDown();
         logger.info("shutdown Jafka server completed");
-        Utils.unregisterMBean(log4jController);
 
     }
 

@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import com.github.zkclient.IZkChildListener;
@@ -37,6 +36,8 @@ import com.sohu.jafka.cluster.Partition;
 import com.sohu.jafka.common.NoBrokersForPartitionException;
 import com.sohu.jafka.utils.ZKConfig;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -44,7 +45,7 @@ import com.sohu.jafka.utils.zookeeper.ZkUtils;
  */
 public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
 
-    private final Logger logger = Logger.getLogger(ZKBrokerPartitionInfo.class);
+    private final Logger logger = LoggerFactory.getLogger(ZKBrokerPartitionInfo.class);
 
     final ZKConfig zkConfig;
 

@@ -22,11 +22,12 @@ import static java.lang.String.format;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.cluster.Partition;
 import com.sohu.jafka.common.ErrorMapping;
 import com.sohu.jafka.message.ByteBufferMessageSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -34,7 +35,7 @@ import com.sohu.jafka.message.ByteBufferMessageSet;
  */
 public class PartitionTopicInfo {
 
-    private static final Logger logger = Logger.getLogger(PartitionTopicInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(PartitionTopicInfo.class);
 
     public final String topic;
 

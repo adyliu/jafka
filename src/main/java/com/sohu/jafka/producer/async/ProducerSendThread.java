@@ -25,11 +25,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.common.IllegalQueueStateException;
 import com.sohu.jafka.producer.SyncProducer;
 import com.sohu.jafka.producer.serializer.Encoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -53,7 +54,7 @@ public class ProducerSendThread<T> extends Thread {
 
     final int batchSize;
 
-    private final Logger logger = Logger.getLogger(ProducerSendThread.class);
+    private final Logger logger = LoggerFactory.getLogger(ProducerSendThread.class);
 
     /////////////////////////////////////////////////////////////////////
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);

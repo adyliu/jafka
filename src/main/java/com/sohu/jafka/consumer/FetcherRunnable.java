@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -16,17 +16,6 @@
  */
 
 package com.sohu.jafka.consumer;
-
-import static java.lang.String.format;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.log4j.Logger;
 
 import com.github.zkclient.ZkClient;
 import com.sohu.jafka.api.FetchRequest;
@@ -40,6 +29,17 @@ import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.zookeeper.ZkGroupTopicDirs;
 import com.sohu.jafka.utils.zookeeper.ZkUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.lang.String.format;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -62,15 +62,15 @@ public class FetcherRunnable extends Thread {
 
     private final List<PartitionTopicInfo> partitionTopicInfos;
 
-    private final Logger logger = Logger.getLogger(FetcherRunnable.class);
+    private final Logger logger = LoggerFactory.getLogger(FetcherRunnable.class);
 
     private final static AtomicInteger threadIndex = new AtomicInteger(0);
 
     public FetcherRunnable(String name,//
-            ZkClient zkClient,//
-            ConsumerConfig config,//
-            Broker broker,//
-            List<PartitionTopicInfo> partitionTopicInfos) {
+                           ZkClient zkClient,//
+                           ConsumerConfig config,//
+                           Broker broker,//
+                           List<PartitionTopicInfo> partitionTopicInfos) {
         super(name + "-" + threadIndex.getAndIncrement());
         this.zkClient = zkClient;
         this.config = config;
@@ -81,17 +81,17 @@ public class FetcherRunnable extends Thread {
     }
 
     public void shutdown() throws InterruptedException {
-        logger.debug("shutdown the fetcher "+getName());
+        logger.debug("shutdown the fetcher " + getName());
         stopped = true;
         interrupt();
-        shutdownLatch.await(5,TimeUnit.SECONDS);
+        shutdownLatch.await(5, TimeUnit.SECONDS);
     }
 
     @Override
     public void run() {
         StringBuilder buf = new StringBuilder("[");
         for (PartitionTopicInfo pti : partitionTopicInfos) {
-            buf.append(format("%s-%d-%d,", pti.topic,pti.partition.brokerId,pti.partition.partId));
+            buf.append(format("%s-%d-%d,", pti.topic, pti.partition.brokerId, pti.partition.partId));
         }
         buf.append(']');
         logger.info(String.format("%s comsume at %s:%d with %s", getName(), broker.host, broker.port, buf.toString()));
@@ -147,7 +147,7 @@ public class FetcherRunnable extends Thread {
                     info.enqueueError(e, info.getFetchedOffset());
                 }
                 throw e;
-            }catch (RuntimeException e) {
+            } catch (RuntimeException e) {
                 if (!stopped) {
                     logger.error("error in FetcherRunnable for " + info, e);
                     info.enqueueError(e, info.getFetchedOffset());

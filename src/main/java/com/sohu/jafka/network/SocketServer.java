@@ -19,13 +19,14 @@ package com.sohu.jafka.network;
 
 import java.io.Closeable;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.mx.SocketServerStats;
 import com.sohu.jafka.server.Server;
 import com.sohu.jafka.server.ServerConfig;
 import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -33,7 +34,7 @@ import com.sohu.jafka.utils.Utils;
  */
 public class SocketServer implements Closeable {
 
-    private final Logger logger = Logger.getLogger(Server.class);
+    private final Logger logger = LoggerFactory.getLogger(Server.class);
 
     private final RequestHandlerFactory handlerFactory;
 

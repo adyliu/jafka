@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.Logger;
 
 import com.sohu.jafka.api.OffsetRequest;
 import com.sohu.jafka.common.InvalidMessageSizeException;
@@ -48,6 +47,8 @@ import com.sohu.jafka.mx.LogStats;
 import com.sohu.jafka.utils.KV;
 import com.sohu.jafka.utils.Range;
 import com.sohu.jafka.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * a log is message sets with more than one files.
@@ -57,7 +58,7 @@ import com.sohu.jafka.utils.Utils;
  */
 public class Log implements ILog {
 
-    private final Logger logger = Logger.getLogger(Log.class);
+    private final Logger logger = LoggerFactory.getLogger(Log.class);
 
     private static final String FileSuffix = ".jafka";
 
@@ -247,7 +248,7 @@ public class Log implements ILog {
                 maybeRoll(lastSegment);
 
             } catch (IOException e) {
-                logger.fatal("Halting due to unrecoverable I/O error while handling producer request", e);
+                logger.error("Halting due to unrecoverable I/O error while handling producer request", e);
                 Runtime.getRuntime().halt(1);
             } catch (RuntimeException re) {
                 throw re;

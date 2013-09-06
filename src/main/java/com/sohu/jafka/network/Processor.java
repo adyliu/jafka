@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,7 +17,11 @@
 
 package com.sohu.jafka.network;
 
-import static java.lang.String.format;
+import com.sohu.jafka.api.RequestKeys;
+import com.sohu.jafka.mx.SocketServerStats;
+import com.sohu.jafka.utils.Closer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -30,16 +34,12 @@ import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.apache.log4j.Logger;
-
-import com.sohu.jafka.api.RequestKeys;
-import com.sohu.jafka.mx.SocketServerStats;
-import com.sohu.jafka.utils.Closer;
+import static java.lang.String.format;
 
 /**
  * Thread that processes all requests from a single connection. There are N
  * of these running in parallel each of which has its own selectors
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -47,7 +47,7 @@ public class Processor extends AbstractServerThread {
 
     private final BlockingQueue<SocketChannel> newConnections;
 
-    private final Logger requestLogger = Logger.getLogger("jafka.request.logger");
+    private final Logger requestLogger = LoggerFactory.getLogger("jafka.request.logger");
 
     private RequestHandlerFactory requesthandlerFactory;
 
@@ -57,15 +57,15 @@ public class Processor extends AbstractServerThread {
 
     /**
      * creaet a new thread processor
-     * 
+     *
      * @param requesthandlerFactory request handler factory
-     * @param stats jmx state statics
-     * @param maxRequestSize max request package size
-     * @param maxCacheConnections max cache connections for self-protected
+     * @param stats                 jmx state statics
+     * @param maxRequestSize        max request package size
+     * @param maxCacheConnections   max cache connections for self-protected
      */
     public Processor(RequestHandlerFactory requesthandlerFactory, //
-            SocketServerStats stats, int maxRequestSize,//
-            int maxCacheConnections) {
+                     SocketServerStats stats, int maxRequestSize,//
+                     int maxCacheConnections) {
         this.requesthandlerFactory = requesthandlerFactory;
         this.stats = stats;
         this.maxRequestSize = maxRequestSize;

@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,16 +17,16 @@
 
 package com.sohu.jafka.server;
 
-import java.io.Closeable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.log4j.Logger;
-
 import com.sohu.jafka.consumer.MessageStream;
 import com.sohu.jafka.message.Message;
 import com.sohu.jafka.producer.Producer;
 import com.sohu.jafka.producer.ProducerData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -34,7 +34,7 @@ import com.sohu.jafka.producer.ProducerData;
  */
 public class MirroringThread extends Thread implements Closeable {
 
-    private static final Logger logger = Logger.getLogger(MirroringThread.class);
+    private static final Logger logger = LoggerFactory.getLogger(MirroringThread.class);
 
     private final MessageStream<Message> stream;
 
@@ -68,7 +68,7 @@ public class MirroringThread extends Thread implements Closeable {
                 producer.send(pd);
             }
         } catch (Exception e) {
-            logger.fatal(topic + " stream " + threadId + " unexpectedly existed", e);
+            logger.error(topic + " stream " + threadId + " unexpectedly existed", e);
 
         } finally {
             shutdownComplete.countDown();
@@ -78,9 +78,9 @@ public class MirroringThread extends Thread implements Closeable {
 
     public void close() {
         try {
-            shutdownComplete.await(10,TimeUnit.SECONDS);
+            shutdownComplete.await(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            logger.fatal("Shutdown of thread " + getName() + " interrupted.  Mirroring thread might leak data!");
+            logger.error("Shutdown of thread " + getName() + " interrupted.  Mirroring thread might leak data!");
         }
     }
 

@@ -28,7 +28,8 @@ import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.SyncProducer;
 import com.sohu.jafka.producer.serializer.Encoder;
 import com.sohu.jafka.utils.Utils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.Properties;
@@ -43,20 +44,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class AsyncProducer<T> implements Closeable {
 
-    private final Logger logger = Logger.getLogger(AsyncProducer.class);
+    private final Logger logger = LoggerFactory.getLogger(AsyncProducer.class);
     private static final Random random = new Random();
     private static final String ProducerQueueSizeMBeanName = "jafka.producer.Producer:type=AsyncProducerQueueSizeStats";
     /////////////////////////////////////////////////////////////////////
-    private final AsyncProducerConfig config;
-
     private final SyncProducer producer;
 
-    private final Encoder<T> serializer;
 
-    private final EventHandler<T> eventHandler;
-    private final Properties eventHandlerProperties;
     private final CallbackHandler<T> callbackHandler;
-    private final Properties callbackHandlerProperties;
     /////////////////////////////////////////////////////////////////////
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final LinkedBlockingQueue<QueueItem<T>> queue;
@@ -73,13 +68,8 @@ public class AsyncProducer<T> implements Closeable {
                          CallbackHandler<T> callbackHandler, //
                          Properties callbackHandlerProperties) {
         super();
-        this.config = config;
         this.producer = producer;
-        this.serializer = serializer;
-        this.eventHandler = eventHandler;
-        this.eventHandlerProperties = eventHandlerProperties;
         this.callbackHandler = callbackHandler;
-        this.callbackHandlerProperties = callbackHandlerProperties;
         this.enqueueTimeoutMs = config.getEnqueueTimeoutMs();
         //
         this.queue = new LinkedBlockingQueue<QueueItem<T>>(config.getQueueSize());

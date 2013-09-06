@@ -17,7 +17,8 @@
 
 package com.sohu.jafka.network;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -27,7 +28,7 @@ public class AbstractTransmission implements Transmission {
 
     private boolean done = false;
 
-    final protected Logger logger = Logger.getLogger(getClass());
+    final protected Logger logger = LoggerFactory.getLogger(getClass());
 
     public void expectIncomplete() {
         if (complete()) {
