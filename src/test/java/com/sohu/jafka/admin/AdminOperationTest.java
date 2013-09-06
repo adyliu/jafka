@@ -18,6 +18,7 @@
 package com.sohu.jafka.admin;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -96,7 +97,6 @@ public class AdminOperationTest extends BaseJafkaServer {
             }
         }
         producer.close();
-        System.out.println("send " + index + " messages");
     }
 
     @After
@@ -132,8 +132,9 @@ public class AdminOperationTest extends BaseJafkaServer {
      */
     @Test
     public void testDeleteTopic() throws IOException {
+        int currentPartitions = admin.createPartitions("demo",partitions-1,false);
         int count = admin.deleteTopic("demo", password);
-        assertEquals(partitions, count);
+        assertTrue(count > 0 && count == currentPartitions);
     }
 
 }
