@@ -23,7 +23,6 @@ import com.sohu.jafka.common.annotations.ThreadSafe;
 import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.mx.SyncProducerStats;
 import com.sohu.jafka.network.BlockingChannel;
-import com.sohu.jafka.network.BoundedByteBufferSend;
 import com.sohu.jafka.network.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +65,7 @@ public class SyncProducer implements Closeable {
         this.host = config.getHost();
         this.port = config.getPort();
         //
-        this.blockingChannel = new BlockingChannel(host, port, -1, config.socketTimeoutMs, config.bufferSize);
+        this.blockingChannel = new BlockingChannel(host, port, BlockingChannel.DEFAULT_BUFFER_SIZE, config.bufferSize, config.socketTimeoutMs);
     }
 
     public void send(String topic, ByteBufferMessageSet message) {
@@ -79,12 +78,11 @@ public class SyncProducer implements Closeable {
     }
 
     private void send(Request request) {
-        BoundedByteBufferSend send = new BoundedByteBufferSend(request);
         synchronized (lock) {
             long startTime = System.nanoTime();
             int written = -1;
             try {
-                written = connect().send(send);
+                written = connect().send(request);
             } catch (IOException e) {
                 // no way to tell if write succeeded. Disconnect and re-throw exception to let client handle retry
                 disconnect();

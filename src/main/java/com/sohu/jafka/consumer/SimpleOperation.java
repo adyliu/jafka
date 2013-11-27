@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,29 +17,25 @@
 
 package com.sohu.jafka.consumer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
-
-
 import com.sohu.jafka.api.FetchRequest;
 import com.sohu.jafka.common.ErrorMapping;
 import com.sohu.jafka.common.annotations.ClientSide;
 import com.sohu.jafka.common.annotations.ThreadSafe;
 import com.sohu.jafka.message.ByteBufferMessageSet;
-import com.sohu.jafka.network.BoundedByteBufferReceive;
-import com.sohu.jafka.network.BoundedByteBufferSend;
+import com.sohu.jafka.network.BlockingChannel;
 import com.sohu.jafka.network.Receive;
 import com.sohu.jafka.network.Request;
-import com.sohu.jafka.utils.Closer;
 import com.sohu.jafka.utils.KV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
+
 /**
  * Simple operation with jafka broker
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.2
  */
@@ -49,16 +45,9 @@ public class SimpleOperation implements Closeable {
 
     private final Logger logger = LoggerFactory.getLogger(SimpleOperation.class);
 
-    private final String host;
-
-    private final int port;
-
-    private final int soTimeout;
-
-    private final int bufferSize;
-
     ////////////////////////////////
-    private SocketChannel channel = null;
+    private final BlockingChannel blockingChannel;
+    private volatile boolean closed = false;
 
     private final Object lock = new Object();
 
@@ -67,85 +56,62 @@ public class SimpleOperation implements Closeable {
     }
 
     public SimpleOperation(String host, int port, int soTimeout, int bufferSize) {
-        super();
-        this.host = host;
-        this.port = port;
-        this.soTimeout = soTimeout;
-        this.bufferSize = bufferSize;
+        blockingChannel = new BlockingChannel(host, port, bufferSize, BlockingChannel.DEFAULT_BUFFER_SIZE, soTimeout);
     }
 
-    private SocketChannel connect() throws IOException {
+    private BlockingChannel connect() throws IOException {
         close();
-        InetSocketAddress address = new InetSocketAddress(host, port);
-        SocketChannel ch = SocketChannel.open();
-        logger.debug("Connected to " + address + " for fetching");
-        ch.configureBlocking(true);
-        ch.socket().setReceiveBufferSize(bufferSize);
-        ch.socket().setSoTimeout(soTimeout);
-        ch.socket().setKeepAlive(true);
-        ch.socket().setTcpNoDelay(true);
-        ch.connect(address);
-        return ch;
+        blockingChannel.connect();
+        return blockingChannel;
+    }
+
+    private void disconnect() {
+        if (blockingChannel.isConnected()) {
+            blockingChannel.disconnect();
+        }
     }
 
     public void close() {
         synchronized (lock) {
-            if (channel != null) {
-                close(channel);
-                channel = null;
-            }
+            blockingChannel.disconnect();
+            closed = true;
         }
     }
 
-    private void close(SocketChannel socketChannel) {
-        logger.debug("Disconnecting consumer from " + channel.socket().getRemoteSocketAddress());
-        Closer.closeQuietly(socketChannel);
-        Closer.closeQuietly(socketChannel.socket());
+    private void reconnect() throws IOException {
+        disconnect();
+        connect();
     }
+
 
     private void getOrMakeConnection() throws IOException {
-        if (channel == null) {
-            channel = connect();
+        if (!closed && !blockingChannel.isConnected()) {
+            connect();
         }
     }
 
-    public static interface Command<T> {
-
-        T run() throws IOException;
-    }
-
-    private class SimpleCommand implements Command<KV<Receive, ErrorMapping>> {
-
-        private Request request;
-
-        public SimpleCommand(Request request) {
-            this.request = request;
-        }
-
-        public KV<Receive, ErrorMapping> run() throws IOException {
-            synchronized (lock) {
-                getOrMakeConnection();
-                try {
-                    sendRequest(request);
-                    return getResponse();
-                } catch (IOException e) {
-                    logger.info("Reconnect in fetch request due to socket error:", e);
-                    //retry once
-                    try {
-                        channel = connect();
-                        sendRequest(request);
-                        return getResponse();
-                    } catch (IOException e2) {
-                        throw e2;
-                    }
-                }
-                //
-            }
-        }
-    }
 
     public KV<Receive, ErrorMapping> send(Request request) throws IOException {
-        return new SimpleCommand(request).run();
+        synchronized (lock) {
+            getOrMakeConnection();
+            try {
+                blockingChannel.send(request);
+                return blockingChannel.receive();
+            } catch (ClosedByInterruptException cbie) {
+                logger.info("receive interrupted");
+                throw cbie;
+            } catch (IOException e) {
+                logger.info("Reconnect in fetch request due to socket error:", e);
+                //retry once
+                try {
+                    reconnect();
+                    blockingChannel.send(request);
+                    return blockingChannel.receive();
+                } catch (IOException e2) {
+                    throw e2;
+                }
+            }
+        }
     }
 
     public ByteBufferMessageSet fetch(FetchRequest request) throws IOException {
@@ -153,14 +119,5 @@ public class SimpleOperation implements Closeable {
         return new ByteBufferMessageSet(response.k.buffer(), request.offset, response.v);
     }
 
-    protected void sendRequest(Request request) throws IOException {
-        new BoundedByteBufferSend(request).writeCompletely(channel);
-    }
-
-    protected KV<Receive, ErrorMapping> getResponse() throws IOException {
-        BoundedByteBufferReceive response = new BoundedByteBufferReceive();
-        response.readCompletely(channel);
-        return new KV<Receive, ErrorMapping>(response, ErrorMapping.valueOf(response.buffer().getShort()));
-    }
 
 }

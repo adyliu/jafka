@@ -54,6 +54,7 @@ public class Fetcher {
     public void stopConnectionsToAllBrokers() {
         // shutdown the old fetcher threads, if any
         List<FetcherRunnable> threads = this.fetcherThreads;
+        this.fetcherThreads = new ArrayList<FetcherRunnable>(0);
         for (FetcherRunnable fetcherThread : threads) {
             try {
                 fetcherThread.shutdown();
@@ -61,7 +62,6 @@ public class Fetcher {
                 logger.warn(e.getMessage(), e);
             }
         }
-        this.fetcherThreads = new ArrayList<FetcherRunnable>(0);
     }
 
 

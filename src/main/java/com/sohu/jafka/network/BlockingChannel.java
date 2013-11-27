@@ -1,7 +1,9 @@
 package com.sohu.jafka.network;
 
+import com.sohu.jafka.common.ErrorMapping;
 import com.sohu.jafka.common.annotations.NotThreadSafe;
 import com.sohu.jafka.utils.Closer;
+import com.sohu.jafka.utils.KV;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @NotThreadSafe
 public class BlockingChannel {
 
+    public static final int DEFAULT_BUFFER_SIZE = -1;
     private final String host;
     private final int port;
     private final int readBufferSize;
@@ -85,10 +88,16 @@ public class BlockingChannel {
         return connected;
     }
 
-    public int send(BoundedByteBufferSend bufferSend) throws IOException {
+    public int send(Request request) throws IOException {
         if (!isConnected()) {
             throw new ClosedChannelException();
         }
-        return bufferSend.writeCompletely(writeChannel);
+        return new BoundedByteBufferSend(request).writeCompletely(writeChannel);
+    }
+
+    public KV<Receive, ErrorMapping> receive() throws IOException{
+        BoundedByteBufferReceive response = new BoundedByteBufferReceive();
+        response.readCompletely(readChannel);
+        return new KV<Receive, ErrorMapping>(response, ErrorMapping.valueOf(response.buffer().getShort()));
     }
 }
