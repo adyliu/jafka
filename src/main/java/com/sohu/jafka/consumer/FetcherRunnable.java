@@ -20,6 +20,7 @@ package com.sohu.jafka.consumer;
 import static java.lang.String.format;
 
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -112,7 +113,10 @@ public class FetcherRunnable extends Thread {
                     fetchBackoffMs = config.getFetchBackoffMs();
                 }
             }
-        } catch (Exception e) {
+        }catch (ClosedByInterruptException cbie){
+            logger.info("FetcherRunnable " + this + " interrupted");
+        }
+        catch (Exception e) {
             if (stopped) {
                 logger.info("FetcherRunnable " + this + " interrupted");
             } else {

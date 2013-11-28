@@ -48,7 +48,7 @@ public class ServerInfo implements ServerInfoMBean,IMBeanName {
         try {
             version = ServerInfo.class.getPackage().getImplementationVersion();
         } catch (Exception e) {}
-        return version != null ? version : "1.3";
+        return version != null ? version : "1.2";
     }
 
     @Override

@@ -20,6 +20,7 @@ package com.sohu.jafka.consumer;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SocketChannel;
 
 import org.apache.log4j.Logger;
@@ -127,7 +128,10 @@ public class SimpleOperation implements Closeable {
                 try {
                     sendRequest(request);
                     return getResponse();
-                } catch (IOException e) {
+                }catch (ClosedByInterruptException cbie){
+                    throw cbie;
+                }
+                catch (IOException e) {
                     logger.info("Reconnect in fetch request due to socket error:", e);
                     //retry once
                     try {
