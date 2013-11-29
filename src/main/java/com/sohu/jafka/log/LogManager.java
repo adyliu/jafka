@@ -485,7 +485,11 @@ public class LogManager implements PartitionChooser, Closeable {
                 Closer.closeQuietly(log, logger);
                 log = found;
             } else {
-                logger.info(format("Created log for [%s-%d]", topic, partition));
+                logger.info(format("Created log for [%s-%d], now create other logs if necessary", topic, partition));
+                final int configPartitions = getPartition(topic);
+                for(int i=0;i<configPartitions;i++){
+                    getOrCreateLog(topic, i);
+                }
             }
         }
         if (hasNewTopic && config.getEnableZookeeper()) {
