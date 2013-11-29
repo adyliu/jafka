@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,18 +17,18 @@
 
 package com.sohu.jafka;
 
-import java.io.Closeable;
-import java.util.Properties;
-
 import com.sohu.jafka.consumer.ConsumerConfig;
 import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.server.ServerConfig;
 import com.sohu.jafka.server.ServerStartable;
 import com.sohu.jafka.utils.Utils;
 
+import java.io.Closeable;
+import java.util.Properties;
+
 /**
  * Jafka Main point
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -82,9 +82,13 @@ public class Jafka implements Closeable {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         if (shutdownHook != null) {
-            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+            try {
+                Runtime.getRuntime().removeShutdownHook(shutdownHook);
+            } catch (IllegalStateException ex) {
+                //ignore shutting down status
+            }
             shutdownHook.run();
             shutdownHook = null;
             port = -1;
@@ -93,9 +97,10 @@ public class Jafka implements Closeable {
 
     /**
      * get the server listening port
+     *
      * @return listening port
      */
-    public int getPort(){
+    public int getPort() {
         return this.port;
     }
 
@@ -103,7 +108,7 @@ public class Jafka implements Closeable {
      * flush all messages to disk(this method is used for test)
      */
     void flush() {
-        if(serverStartable != null) {
+        if (serverStartable != null) {
             serverStartable.flush();
         }
     }
