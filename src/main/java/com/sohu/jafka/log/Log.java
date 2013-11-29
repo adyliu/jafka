@@ -332,7 +332,8 @@ public class Log implements ILog {
         T last = ranges.get(arraySize - 1);
         // check out of bounds
         if (value < first.start() || value > last.start() + last.size()) {
-            throw new OffsetOutOfRangeException("offset " + value + " is out of range");
+            throw new OffsetOutOfRangeException(format("offset %s is out of range (%s, %s)",//
+                    value,first.start(),last.start()+last.size()));
         }
 
         // check at the end
