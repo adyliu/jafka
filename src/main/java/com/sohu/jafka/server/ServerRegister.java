@@ -133,8 +133,13 @@ public class ServerRegister implements IZkStateListener, Closeable {
         try {
             ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerIdPath, broker.getZKString());
         } catch (ZkNodeExistsException e) {
-            throw new RuntimeException(
-                    "A broker is already registered on the path " + brokerIdPath + ". This probably " + "indicates that you either have configured a brokerid that is already in use, or " + "else you have shutdown this broker and restarted it faster than the zookeeper " + "timeout so it appears to be re-registering.");
+            String oldServerInfo = ZkUtils.readDataMaybeNull(zkClient, brokerIdPath);
+            String message = "A broker (%s) is already registered on the path %s." //
+                    + " This probably indicates that you either have configured a brokerid that is already in use, or "//
+                    + "else you have shutdown this broker and restarted it faster than the zookeeper " ///
+                    + "timeout so it appears to be re-registering.";
+            message = String.format(message, oldServerInfo, brokerIdPath);
+            throw new RuntimeException(message);
         }
         //
         logger.info("Registering broker " + brokerIdPath + " succeeded with " + broker);
