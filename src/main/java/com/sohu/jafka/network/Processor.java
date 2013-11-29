@@ -108,11 +108,11 @@ public class Processor extends AbstractServerThread {
                         close(key);
                     } catch (Throwable t) {
                         Socket socket = channelFor(key).socket();
-                        final String msg = "Closing socket for %s:%d becaulse of error";
+                        final String msg = "Closing socket for %s:%d becaulse of error %s";
                         if (logger.isDebugEnabled()) {
-                            logger.error(format(msg, socket.getInetAddress(), socket.getPort()), t);
+                            logger.error(format(msg, socket.getInetAddress(), socket.getPort(), t.getMessage()), t);
                         } else {
-                            logger.error(format(msg, socket.getInetAddress(), socket.getPort()));
+                            logger.info(format(msg, socket.getInetAddress(), socket.getPort(), t.getMessage()));
                         }
                         close(key);
                     }
