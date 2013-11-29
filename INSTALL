@@ -6,8 +6,8 @@ The package can be builded on any Java enviroment.
 Require
 ====
 
-* JDK 1.6+(maybe useable at JDK 1.5+ after changing the pom)
-* Maven 2.2+(3.0+ better)
+* JDK 1.6+ (maybe works on JDK 1.5+ after changing the pom)
+* Maven 2.2+ (3.0+ better)
 
 Build
 ====
@@ -18,7 +18,7 @@ We recomment you to run the unit test.
 
     mvn clean package assembly:single
 
-Copy and unpack the package 'target/jafka-1.x.x-tgz' while 1.x.x is the version.
+Copy and unpack the package 'target/jafka-1.x.x-all.tar.gz' while 1.x.x is the version.
 
 ----
 Full install guide: https://github.com/adyliu/jafka/wiki/install
