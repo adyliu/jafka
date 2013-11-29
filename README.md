@@ -17,9 +17,16 @@ If you are interesting in [scala](http://www.scala-lang.org/), please using the 
 
 [2013-11-28] [released](https://github.com/adyliu/jafka/wiki/history) [v1.2.3](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/)
 
-##Document & Wiki
+## Document & Wiki
 
 Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wiki)
+
+## Download
+
+You can download the full package from Dropbox/Google Drive:
+
+* Dropbox   [https://www.dropbox.com/sh/832ul0nduwdsit4/weEg6FiSUS/jafka](https://www.dropbox.com/sh/832ul0nduwdsit4/weEg6FiSUS/jafka)
+* Google Drive [https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/](https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/)
 
 ----
 [Keywords: jafka, kafka, messaging system, mq, jafka mq, sohu]
