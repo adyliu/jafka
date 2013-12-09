@@ -273,10 +273,17 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                     System.currentTimeMillis(),//
                     Long.toHexString(uuid.getMostSignificantBits()).substring(0, 8));
         } catch (UnknownHostException e) {
-            throw new IllegalArgumentException(
-                    "can not generate consume id by auto, set the 'consumerid' parameter to fix this");
+            try {
+                return format("%s-%d-%s", InetAddress.getLocalHost().getHostAddress(), //
+                        System.currentTimeMillis(),//
+                        Long.toHexString(uuid.getMostSignificantBits()).substring(0, 8));
+            } catch (UnknownHostException ex) {
+                throw new IllegalArgumentException(
+                        "can not generate consume id by auto, set the 'consumerid' parameter to fix this");
+            }
         }
     }
+
 
     public void commitOffsets() {
         if (zkClient == null) {
@@ -673,7 +680,6 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 simpleConsumer = new SimpleConsumer(broker.host, broker.port, config.getSocketTimeoutMs(),
                         config.getSocketBufferSize());
                 long[] offsets = simpleConsumer.getOffsetsBefore(topic, partitionId, earliestOrLatest, 1);
-                //FIXME: what's this!!!
                 if (offsets.length > 0) {
                     producedOffset = offsets[0];
                 }
