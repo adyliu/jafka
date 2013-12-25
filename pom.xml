@@ -13,6 +13,10 @@
     <name>jafka</name>
     <url>https://github.com/adyliu/jafka</url>
     <description>A fast distributed publish-subscribe messaging system.</description>
+    <properties>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+    </properties>
     <scm>
         <connection>scm:git:git@github.com:adyliu/jafka.git</connection>
         <developerConnection>scm:git:git@github.com:adyliu/jafka.git</developerConnection>
@@ -141,9 +145,8 @@
                             <Specification-Title>${project.artifactId}</Specification-Title>
                             <Specification-Version>${project.version}</Specification-Version>
                             <Specification-Vendor>Ady Liu</Specification-Vendor>
-                            <Specification-Vendor>${project.artifactId}</Specification-Vendor>
-                            <Implementation-Version>${project.version}</Implementation-Version>
-                            <Implementation-Title>Ady Liu</Implementation-Title>
+                            <Implementation-Title>${project.artifactId}</Implementation-Title>
+                            <Implementation-Version>${timestamp}</Implementation-Version>
                             <Url>${project.url}</Url>
                         </manifestEntries>
                     </archive>
