@@ -137,7 +137,15 @@
                 <version>2.4</version>
                 <configuration>
                     <archive>
-                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestEntries>
+                            <Specification-Title>${project.artifactId}</Specification-Title>
+                            <Specification-Version>${project.version}</Specification-Version>
+                            <Specification-Vendor>Ady Liu</Specification-Vendor>
+                            <Specification-Vendor>${project.artifactId}</Specification-Vendor>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Title>Ady Liu</Implementation-Title>
+                            <Url>${project.url}</Url>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

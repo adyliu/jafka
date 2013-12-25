@@ -60,7 +60,7 @@ class Acceptor extends AbstractServerThread {
             throw new RuntimeException(e);
         }
         //
-        logger.info("Awaiting connection on port "+port);
+        logger.debug("Awaiting connection on port "+port);
         startupComplete();
         //
         int currentProcessor = 0;

@@ -80,7 +80,7 @@ public class SocketServer implements Closeable {
      */
     public void startup() throws InterruptedException {
         final int maxCacheConnectionPerThread = serverConfig.getMaxConnections() / processors.length;
-        logger.info("start " + processors.length + " Processor threads");
+        logger.debug("start {} Processor threads",processors.length);
         for (int i = 0; i < processors.length; i++) {
             processors[i] = new Processor(handlerFactory, stats, maxRequestSize, maxCacheConnectionPerThread);
             Utils.newThread("jafka-processor-" + i, processors[i], false).start();

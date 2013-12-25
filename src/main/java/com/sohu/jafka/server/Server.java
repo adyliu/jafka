@@ -71,6 +71,7 @@ public class Server implements Closeable {
 
     public void startup() {
         try {
+            final long start = System.currentTimeMillis();
             logger.info("Starting Jafka server " + serverInfo.getVersion());
             Utils.registerMBean(serverInfo);
             boolean needRecovery = true;
@@ -97,7 +98,8 @@ public class Server implements Closeable {
              * this should happen after socket server start.
              */
             logManager.startup();
-            logger.info("Server started.");
+            final long cost = (System.currentTimeMillis() - start) / 1000;
+            logger.info("Jafka started at *:{}, cost {} seconds", config.getPort(), cost);
             serverInfo.started();
         } catch (Exception ex) {
             logger.error("========================================");
@@ -128,7 +130,7 @@ public class Server implements Closeable {
             logger.error(ex.getMessage(), ex);
         }
         shutdownLatch.countDown();
-        logger.info("shutdown Jafka server completed");
+        logger.info("Shutdown Jafka server completed");
 
     }
 

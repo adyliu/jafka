@@ -177,7 +177,7 @@ public class LogManager implements PartitionChooser, Closeable {
 
         /* Schedule the cleanup task to delete old logs */
         if (this.scheduler != null) {
-            logger.info("starting log cleaner every " + logCleanupIntervalMs + " ms");
+            logger.debug("starting log cleaner every " + logCleanupIntervalMs + " ms");
             this.scheduler.scheduleWithRate(new Runnable() {
 
                 public void run() {
@@ -342,7 +342,7 @@ public class LogManager implements PartitionChooser, Closeable {
             }
             startupLatch.countDown();
         }
-        logger.info("Starting log flusher every " + config.getFlushSchedulerThreadRate() + " ms with the following overrides " + logFlushIntervalMap);
+        logger.debug("Starting log flusher every {} ms with the following overrides {}", config.getFlushSchedulerThreadRate(), logFlushIntervalMap);
         logFlusherScheduler.scheduleWithRate(new Runnable() {
 
             public void run() {
@@ -460,7 +460,7 @@ public class LogManager implements PartitionChooser, Closeable {
      * @param topic     the topic name
      * @param partition the partition id
      * @return read or create a log
-     * @throws IOException          any IOException
+     * @throws IOException any IOException
      */
     public ILog getOrCreateLog(String topic, int partition) throws IOException {
         final int configPartitionNumber = getPartition(topic);
@@ -487,7 +487,7 @@ public class LogManager implements PartitionChooser, Closeable {
             } else {
                 logger.info(format("Created log for [%s-%d], now create other logs if necessary", topic, partition));
                 final int configPartitions = getPartition(topic);
-                for(int i=0;i<configPartitions;i++){
+                for (int i = 0; i < configPartitions; i++) {
                     getOrCreateLog(topic, i);
                 }
             }

@@ -49,7 +49,7 @@ public class ServerInfo implements ServerInfoMBean, IMBeanName {
             version = ServerInfo.class.getPackage().getImplementationVersion();
         } catch (Exception e) {
         }
-        return version != null ? version : "1.4";
+        return version != null ? version : "1.x";
     }
 
     @Override

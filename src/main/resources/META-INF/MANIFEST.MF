@@ -1,6 +1,0 @@
-Specification-Title: jafka
-Specification-Version: 1.4
-Specification-Vendor: Ady Liu
-Implementation-Version: 1.4.0
-Implementation-Vendor: Ady Liu
-Implementation-Title: jafka
