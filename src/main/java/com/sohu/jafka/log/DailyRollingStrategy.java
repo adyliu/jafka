@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,14 +17,14 @@
 
 package com.sohu.jafka.log;
 
+import com.sohu.jafka.utils.Utils;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.sohu.jafka.utils.Utils;
 
 /**
  * Rolling file every day
@@ -90,19 +90,19 @@ public class DailyRollingStrategy implements RollingStrategy, Runnable {
         while (running) {
             Calendar today = today();
             today.add(Calendar.DAY_OF_MONTH, 1);
+            lock.lock();
             try {
-                lock.lock();
-                try {
-                    waitCondition.awaitUntil(new Date(today.getTimeInMillis()));
-                    if (System.currentTimeMillis() - lastRollingTime >= ONE_DAY) {
-                        needRolling.compareAndSet(false, true);
-                    }
-                } finally {
-                    lock.unlock();
+                waitCondition.awaitUntil(new Date(today.getTimeInMillis()));
+                if (System.currentTimeMillis() - lastRollingTime >= ONE_DAY) {
+                    needRolling.compareAndSet(false, true);
                 }
             } catch (InterruptedException e) {
+                running = false;
                 break;
+            } finally {
+                lock.unlock();
             }
+
         }
     }
 

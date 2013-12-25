@@ -1,16 +1,18 @@
 Simple Install Guide
-====
+======
 
 The package can be builded on any Java enviroment.
 
 Require
-====
+======
 
 * JDK 1.6+ (maybe works on JDK 1.5+ after changing the pom)
 * Maven 2.2+ (3.0+ better)
 
 Build
-====
+======
+
+Build the source with maven:
 
     mvn clean package assembly:single -Dmaven.test.skip=true
 
@@ -20,5 +22,23 @@ We recomment you to run the unit test.
 
 Copy and unpack the package 'target/jafka-1.x.x-all.tar.gz' while 1.x.x is the version.
 
+Install & Upgrade
+======
+
+copy 'server.properties' and 'log4j.properties' from sample or previous installation:
+
+    cp conf/server.properties.sample conf/server.properties
+    cp conf/log4j.properties.sample conf/log4j.properties
+
+
+Run
+======
+
+Start the service with wrapper script:
+
+    chmod +x bin/run.sh
+    bin/run.sh console
+
 ----
+
 Full install guide: https://github.com/adyliu/jafka/wiki/install

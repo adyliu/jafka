@@ -22,8 +22,11 @@ import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.server.ServerConfig;
 import com.sohu.jafka.server.ServerStartable;
 import com.sohu.jafka.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -40,9 +43,15 @@ public class Jafka implements Closeable {
     private ServerStartable serverStartable;
     // server listening port
     private int port = -1;
+    private final Logger logger = LoggerFactory.getLogger(Jafka.class);
 
-    public void start(String mainFile, String consumerFile, String producerFile) {
-        start(Utils.loadProps(mainFile),//
+    public void start(String mainFileName, String consumerFile, String producerFile) {
+        File mainFile = Utils.getCanonicalFile(new File(mainFileName));
+        if (!mainFile.isFile() || !mainFile.exists()) {
+            System.err.println(String.format("ERROR: Main config file not exist => '%s', copy one from 'conf/server.properties.sample' first.", mainFile.getAbsolutePath()));
+            System.exit(2);
+        }
+        start(Utils.loadProps(mainFileName),//
                 consumerFile == null ? null : Utils.loadProps(consumerFile),//
                 producerFile == null ? null : Utils.loadProps(producerFile));
     }

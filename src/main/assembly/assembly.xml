@@ -14,12 +14,7 @@
     <file>
         <source>VERSION</source>
         <outputDirectory>/</outputDirectory>
-    </file>    
-	<file>
-		<source>conf/log4j.properties.in</source>
-		<outputDirectory>/bin</outputDirectory>
-		<destName>log4j.properties</destName>
-	</file>
+    </file>
   </files>
   <fileSets>
 	<fileSet>
@@ -33,13 +28,6 @@
 	<fileSet>
 	  <directory>src/main/assembly</directory>
 	  <outputDirectory>/logs</outputDirectory>
-	  <excludes>
-		<exclude>*</exclude>
-	  </excludes>
-	</fileSet>
-	<fileSet>
-	  <directory>src/main/assembly</directory>
-	  <outputDirectory>/data</outputDirectory>
 	  <excludes>
 		<exclude>*</exclude>
 	  </excludes>

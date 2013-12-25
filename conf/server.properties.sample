@@ -38,7 +38,7 @@ port=9092
 
 # The directory under which to store log files.
 # The directory must be empty or only contains jafka files.
-log.dir=./data
+log.dir=/tmp/jafka-data
 
 # The number of logical partitions per topic per server. More partitions allow greater parallelism
 # for consumption, but also mean more files.

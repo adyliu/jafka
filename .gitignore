@@ -17,3 +17,4 @@ __pycache__
 /.idea
 *.iml
 pom-*.xml
+dist
