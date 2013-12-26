@@ -47,7 +47,6 @@ public class SimpleOperation implements Closeable {
 
     ////////////////////////////////
     private final BlockingChannel blockingChannel;
-    private volatile boolean closed = false;
 
     private final Object lock = new Object();
 
@@ -74,7 +73,6 @@ public class SimpleOperation implements Closeable {
     public void close() {
         synchronized (lock) {
             blockingChannel.disconnect();
-            closed = true;
         }
     }
 
@@ -85,7 +83,7 @@ public class SimpleOperation implements Closeable {
 
 
     private void getOrMakeConnection() throws IOException {
-        if (!closed && !blockingChannel.isConnected()) {
+        if (!blockingChannel.isConnected()) {
             connect();
         }
     }
@@ -101,7 +99,7 @@ public class SimpleOperation implements Closeable {
                 logger.info("receive interrupted");
                 throw cbie;
             } catch (IOException e) {
-                logger.info("Reconnect in fetch request due to socket error:", e);
+                logger.info("Reconnect in fetch request due to socket error: {}", e.getMessage());
                 //retry once
                 try {
                     reconnect();

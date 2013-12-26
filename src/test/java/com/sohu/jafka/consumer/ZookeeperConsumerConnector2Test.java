@@ -36,6 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -76,6 +77,8 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
     @Test
     public void testCreateMessageStreams() throws Exception {
 
+        final int MAX_MESSAGE_SIZE = 1024;
+        final BitSet bitSet = new BitSet(MAX_MESSAGE_SIZE);
         //create some jafka
         final int jafkaCount = 2;
         final int partition = 5;
@@ -102,12 +105,11 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
         ProducerConfig producerConfig = new ProducerConfig(props);
         Producer<String, String> producer = new Producer<String, String>(producerConfig);
         //send some message
-        final int messageCount = 100;
-        for (int i = 0; i < messageCount; i++) {
-            String msg = "message#" + i + "#" + System.currentTimeMillis();
+        final AtomicInteger messageIndex = new AtomicInteger(0);
+        while (messageIndex.get() < 100) {
             StringProducerData data = new StringProducerData("demo");
             data.setKey("0");
-            data.add(msg);
+            data.add("" + messageIndex.incrementAndGet());
             producer.send(data);
         }
         Thread.sleep(1000L);
@@ -123,15 +125,14 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
         props.setProperty("groupid", "group1");
         //
         final AtomicInteger receiveCount = new AtomicInteger();
-        final String[] consumerIds = {"consumer1","consumer2","consumer3","consumer4"};
-        KV<ExecutorService, ConsumerConnector> kv1 = createConsumer(props, 2, consumerIds[0], receiveCount);
-        KV<ExecutorService, ConsumerConnector> kv2 = createConsumer(props, 2, consumerIds[1], receiveCount);
+        final String[] consumerIds = {"consumer1", "consumer2", "consumer3", "consumer4"};
+        KV<ExecutorService, ConsumerConnector> kv1 = createConsumer(props, 2, consumerIds[0], receiveCount, bitSet);
+        KV<ExecutorService, ConsumerConnector> kv2 = createConsumer(props, 2, consumerIds[1], receiveCount, bitSet);
 
         Thread.sleep(1000L);
-        KV<ExecutorService, ConsumerConnector> kv3 = createConsumer(props, 2, consumerIds[2], receiveCount);
+        KV<ExecutorService, ConsumerConnector> kv3 = createConsumer(props, 2, consumerIds[2], receiveCount, bitSet);
 
         // loop forever
-        int mesageIndex = 1;
         final AtomicBoolean stop = new AtomicBoolean(false);
         new Thread() {
             @Override
@@ -139,7 +140,7 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
                 final String consumerId4 = consumerIds[3];
                 while (!stop.get()) {
                     try {
-                        KV<ExecutorService, ConsumerConnector> kv4 = createConsumer(props, 2, consumerId4, receiveCount);
+                        KV<ExecutorService, ConsumerConnector> kv4 = createConsumer(props, 2, consumerId4, receiveCount, bitSet);
                         Thread.sleep(1000L);
                         kv4.v.close();
                         kv4.k.shutdown();
@@ -152,27 +153,33 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
             }
         }.start();
         Producer<String, String> producer2 = new Producer<String, String>(producerConfig);
-        int totalMessageCount = messageCount;
-        while (mesageIndex++ < 10000) {
-            StringProducerData data = new StringProducerData("demo");
-            data.add("message#" + mesageIndex);
-            data.add("message#" + mesageIndex);
-            data.add("message#" + mesageIndex);
-            producer.send(data);
-            producer2.send(data);
+        while (messageIndex.get() < MAX_MESSAGE_SIZE) {
+            if (messageIndex.get() < MAX_MESSAGE_SIZE) {
+                StringProducerData data = new StringProducerData("demo");
+                for (int i = 0; i < 3 && messageIndex.get() < MAX_MESSAGE_SIZE; i++) {
+                    data.add("" + messageIndex.incrementAndGet());
+                }
+                producer.send(data);
+            }
+            if (messageIndex.get() < MAX_MESSAGE_SIZE) {
+                StringProducerData data = new StringProducerData("demo");
+                for (int i = 0; i < 3 && messageIndex.get() < MAX_MESSAGE_SIZE; i++) {
+                    data.add("" + messageIndex.incrementAndGet());
+                }
+                producer2.send(data);
+            }
             Thread.sleep(5L);
-            totalMessageCount += 2* data.getData().size();
         }
         stop.set(true);
         //
-        TestUtil.waitUntil(totalMessageCount,new Callable<Integer>() {
+        TestUtil.waitUntil(messageIndex.get(), new Callable<Integer>() {
             public Integer call() throws Exception {
                 return receiveCount.get();
             }
-        },TimeUnit.MINUTES,5);
+        }, TimeUnit.MINUTES, 5);
         producer.close();
         producer2.close();
-        System.out.println(String.format("message sent/received %s =? %s",totalMessageCount,receiveCount.get()));
+        System.out.println(String.format("message sent/received %s =? %s", messageIndex.get(), receiveCount.get()));
         kv1.v.close();
         kv1.k.shutdown();
         kv2.v.close();
@@ -188,11 +195,23 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
         //
         //assertEquals(messageCount, receiveCount.get());
         //
-        assertEquals(totalMessageCount,receiveCount.get());
+        assertEquals(messageIndex.get(), receiveCount.get());
+    }
+
+    private synchronized boolean setBit(BitSet bitSet, int i) {
+        i--;
+        if (!bitSet.get(i)) {
+            bitSet.set(i);
+            return i < bitSet.size();
+        }
+        return false;
     }
 
     private KV<ExecutorService, ConsumerConnector> createConsumer(Properties oldProps, int topicCount,
-                                                                  final String consumerId, final AtomicInteger receiveCount) throws Exception {
+                                                                  final String consumerId,
+                                                                  final AtomicInteger receiveCount,
+                                                                  final BitSet bitSet
+    ) throws Exception {
         Properties props = new Properties();
         props.putAll(oldProps);
         props.setProperty("consumerid", consumerId);
@@ -208,10 +227,11 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
             service.submit(new Runnable() {
                 public void run() {
                     for (String message : stream) {
-                        if (receiveCount.get()%10000==0){
-                            System.out.println(consumerId + " => " + message);
-                        }
                         receiveCount.incrementAndGet();
+                        int i = Integer.parseInt(message);
+                        if (!setBit(bitSet, i)) {
+                            System.err.println(i + " NOT IN (1," + bitSet.size()+") OR DUPLICATION");
+                        }
                     }
                 }
             });
