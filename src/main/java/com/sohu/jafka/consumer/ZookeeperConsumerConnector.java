@@ -41,10 +41,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,6 +262,22 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         //explicitly grigger load balancing for this consumer
         loadBalancerListener.syncedRebalance();
         return ret;
+    }
+
+    private String getLocalHost() throws UnknownHostException {
+        try {
+            for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                if (!networkInterface.isLoopback()) {
+                    for (InetAddress addr : Collections.list(networkInterface.getInetAddresses())) {
+                        if (addr instanceof Inet4Address) {
+                            return addr.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+        }
+        throw new UnknownHostException();
     }
 
     /**
