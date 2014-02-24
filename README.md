@@ -23,10 +23,13 @@ Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wik
 
 ## Download
 
-You can download the full package from Dropbox/Google Drive:
+You can download the full package from Google Drive:
 
-* Dropbox   [https://www.dropbox.com/sh/832ul0nduwdsit4/weEg6FiSUS/jafka](https://www.dropbox.com/sh/832ul0nduwdsit4/weEg6FiSUS/jafka)
 * Google Drive [https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/](https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/)
+
+## License
+
+Apache License 2.0 => [https://github.com/adyliu/jafka/blob/master/LICENSE](https://github.com/adyliu/jafka/blob/master/LICENSE)
 
 ----
 [Keywords: jafka, kafka, messaging system, mq, jafka mq, sohu]
