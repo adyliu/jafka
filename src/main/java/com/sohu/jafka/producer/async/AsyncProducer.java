@@ -123,22 +123,26 @@ public class AsyncProducer<T> implements Closeable {
         if (this.callbackHandler != null) {
             data = this.callbackHandler.beforeEnqueue(data);
         }
+
         boolean added = false;
-        try {
-            if (enqueueTimeoutMs == 0) {
-                added = queue.offer(data);
-            } else if (enqueueTimeoutMs < 0) {
-                queue.put(data);
-                added = true;
-            } else {
-                added = queue.offer(data, enqueueTimeoutMs, TimeUnit.MILLISECONDS);
+        if (data != null) {
+            try {
+                if (enqueueTimeoutMs == 0) {
+                    added = queue.offer(data);
+                } else if (enqueueTimeoutMs < 0) {
+                    queue.put(data);
+                    added = true;
+                } else {
+                    added = queue.offer(data, enqueueTimeoutMs, TimeUnit.MILLISECONDS);
+                }
+            } catch (InterruptedException e) {
+                throw new AsyncProducerInterruptedException(e);
             }
-        } catch (InterruptedException e) {
-            throw new AsyncProducerInterruptedException(e);
         }
-        if (this.callbackHandler != null && this.callbackHandler.beforeEnqueue(data) != null) {
+        if (this.callbackHandler != null) {
             this.callbackHandler.afterEnqueue(data, added);
         }
+
         if (!added) {
             AsyncProducerStats.recordDroppedEvents();
             throw new QueueFullException("Event queue is full of unsent messages, could not send event: " + event);

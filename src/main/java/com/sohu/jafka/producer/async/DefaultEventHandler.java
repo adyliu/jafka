@@ -18,6 +18,7 @@
 package com.sohu.jafka.producer.async;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,7 +65,7 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
 
     public void handle(List<QueueItem<T>> events, SyncProducer producer, Encoder<T> encoder) {
         List<QueueItem<T>> processedEvents = events;
-        if (this.callbackHandler != null && this.callbackHandler.beforeSendingData(events) != null) {
+        if (this.callbackHandler != null) {
             processedEvents = this.callbackHandler.beforeSendingData(events);
         }
         send(collate(processedEvents, encoder), producer);
@@ -89,7 +90,9 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
     }
 
     private List<ProducerRequest> collate(List<QueueItem<T>> events, Encoder<T> encoder) {
-        //TODO: to be continue
+        if(events == null || events.isEmpty()){
+            return Collections.emptyList();
+        }
         final Map<String, Map<Integer, List<Message>>> topicPartitionData = new HashMap<String, Map<Integer, List<Message>>>();
         for (QueueItem<T> event : events) {
             Map<Integer, List<Message>> partitionData = topicPartitionData.get(event.topic);

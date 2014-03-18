@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,7 +17,11 @@
 
 package com.sohu.jafka.producer.async;
 
-import static java.lang.String.format;
+import com.sohu.jafka.common.IllegalQueueStateException;
+import com.sohu.jafka.producer.SyncProducer;
+import com.sohu.jafka.producer.serializer.Encoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +29,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-
-import com.sohu.jafka.common.IllegalQueueStateException;
-import com.sohu.jafka.producer.SyncProducer;
-import com.sohu.jafka.producer.serializer.Encoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.String.format;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -62,13 +61,13 @@ public class ProducerSendThread<T> extends Thread {
     private volatile boolean shutdown = false;
 
     public ProducerSendThread(String threadName, //
-            BlockingQueue<QueueItem<T>> queue, //
-            Encoder<T> serializer, //
-            SyncProducer underlyingProducer,//
-            EventHandler<T> eventHandler, //
-            CallbackHandler<T> callbackHandler, //
-            long queueTime, //
-            int batchSize) {
+                              BlockingQueue<QueueItem<T>> queue, //
+                              Encoder<T> serializer, //
+                              SyncProducer underlyingProducer,//
+                              EventHandler<T> eventHandler, //
+                              CallbackHandler<T> callbackHandler, //
+                              long queueTime, //
+                              int batchSize) {
         super();
         this.threadName = threadName;
         this.queue = queue;
@@ -117,11 +116,14 @@ public class ProducerSendThread<T> extends Thread {
         while (!shutdown) {
             try {
                 QueueItem<T> item = queue.poll(Math.max(0, (lastSend + queueTime) - System.currentTimeMillis()), TimeUnit.MILLISECONDS);
-                long elapsed =  System.currentTimeMillis()- lastSend;
+                long elapsed = System.currentTimeMillis() - lastSend;
                 boolean expired = item == null;
                 if (item != null) {
-                    if (callbackHandler != null && callbackHandler.afterDequeuingExistingData(item) != null) {
-                        events.addAll(callbackHandler.afterDequeuingExistingData(item));
+                    if (callbackHandler != null) {
+                        List<QueueItem<T>> items = callbackHandler.afterDequeuingExistingData(item);
+                        if (items != null) {
+                            events.addAll(items);
+                        }
                     } else {
                         events.add(item);
                     }
@@ -147,8 +149,11 @@ public class ProducerSendThread<T> extends Thread {
         if (queue.size() > 0) {
             throw new IllegalQueueStateException("Invalid queue state! After queue shutdown, " + queue.size() + " remaining items in the queue");
         }
-        if (this.callbackHandler != null && this.callbackHandler.lastBatchBeforeClose() != null) {
-            events.addAll(callbackHandler.lastBatchBeforeClose());
+        if (this.callbackHandler != null) {
+            List<QueueItem<T>> remainEvents = this.callbackHandler.lastBatchBeforeClose();
+            if (remainEvents != null) {
+                events.addAll(remainEvents);
+            }
         }
         return events;
     }

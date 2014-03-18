@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -25,7 +25,7 @@ import java.util.Properties;
  * give the user some callback handles to insert custom functionality at
  * various stages as the data flows through the pipeline of the async
  * producer
- * 
+ *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -33,7 +33,7 @@ public interface CallbackHandler<T> {
 
     /**
      * Initializes the callback handler using a Properties object
-     * 
+     *
      * @param properties properties used to initialize the callback handler
      */
     void init(Properties properties);
@@ -41,46 +41,46 @@ public interface CallbackHandler<T> {
     /**
      * Callback to process the data before it enters the batching queue of
      * the asynchronous producer
-     * 
+     *
      * @param data the data sent to the producer
-     * @return the processed data that enters the queue
+     * @return the processed data that enters the queue or null
      */
     QueueItem<T> beforeEnqueue(QueueItem<T> data);
 
     /**
      * Callback to process the data right after it enters the batching
      * queue of the asynchronous producer
-     * 
-     * @param data the data sent to the producer
+     *
+     * @param data  the data sent to the producer after {@link #beforeEnqueue(QueueItem)}
      * @param added flag that indicates if the data was successfully added
-     *        to the queue
+     *              to the queue
      */
     QueueItem<T> afterEnqueue(QueueItem<T> data, boolean added);
 
     /**
      * Callback to process the data item right after it has been dequeued
      * by the background sender thread of the asynchronous producer
-     * 
+     *
      * @param data the data item dequeued from the async producer queue
      * @return the processed list of data items that gets added to the data
-     *         handled by the event handler
+     * handled by the event handler
      */
     List<QueueItem<T>> afterDequeuingExistingData(QueueItem<T> data);
 
     /**
      * Callback to process the batched data right before it is being sent
      * by the handle API of the event handler
-     * 
+     *
      * @param data the batched data received by the event handler
      * @return the processed batched data that gets sent by the handle()
-     *         API of the event handler
+     * API of the event handler
      */
     List<QueueItem<T>> beforeSendingData(List<QueueItem<T>> data);
 
     /**
      * Callback to process the last batch of data right before the producer
      * send thread is shutdown
-     * 
+     *
      * @return the last batch of data that is sent to the EventHandler
      */
     List<QueueItem<T>> lastBatchBeforeClose();
