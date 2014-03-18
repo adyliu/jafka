@@ -136,7 +136,7 @@ public class AsyncProducer<T> implements Closeable {
         } catch (InterruptedException e) {
             throw new AsyncProducerInterruptedException(e);
         }
-        if (this.callbackHandler != null) {
+        if (this.callbackHandler != null && this.callbackHandler.beforeEnqueue(data) != null) {
             this.callbackHandler.afterEnqueue(data, added);
         }
         if (!added) {
