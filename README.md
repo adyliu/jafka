@@ -10,6 +10,7 @@ So it has following features:
 * High-throughput: even with very modest hardware single broker can support hundreds of thousands of messages per second.
 * Explicit support for partitioning messages over broker servers and distributing consumption over a cluster of consumer machines while maintaining per-partition ordering semantics.
 * Simple message format for many language clients.
+* Pure Java work
 
 If you are interesting in [scala](http://www.scala-lang.org/), please using the origin kafka at [apache](http://incubator.apache.org/kafka/). Also it has git repository at [github](https://github.com/apache/kafka/).
 
@@ -26,6 +27,11 @@ Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wik
 You can download the full package from Google Drive:
 
 * Google Drive [https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/](https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/)
+
+## Contributor
+
+* @rockybean
+* @tiny657
 
 ## License
 
