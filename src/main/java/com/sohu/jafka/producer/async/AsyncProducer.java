@@ -121,7 +121,10 @@ public class AsyncProducer<T> implements Closeable {
         }
         QueueItem<T> data = new QueueItem<T>(event, partition, topic);
         if (this.callbackHandler != null) {
-            data = this.callbackHandler.beforeEnqueue(data);
+            QueueItem<T> item = this.callbackHandler.beforeEnqueue(data);
+            if (item != null) {
+                data = this.callbackHandler.beforeEnqueue(data);
+            }
         }
 
         boolean added = false;
