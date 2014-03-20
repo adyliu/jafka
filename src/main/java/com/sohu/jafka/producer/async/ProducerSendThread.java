@@ -168,6 +168,13 @@ public class ProducerSendThread<T> extends Thread {
             } catch (RuntimeException e) {
                 logger.error("Error in handling batch of " + events.size() + " events", e);
             }
+            List<QueueItem<T>> unsentData = new ArrayList<QueueItem<T>>(events);
+            while (queue.size() > 0) {
+                unsentData.add(queue.poll());
+            }
+            if (this.callbackHandler != null) {
+                this.callbackHandler.connectionRefused(e.getMessage(), unsentData);
+            }
         }
     }
 }

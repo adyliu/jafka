@@ -41,6 +41,10 @@ public abstract class AbstractCallbackHandler<T> implements CallbackHandler<T> {
     }
 
     @Override
+    void connectionRefused(String broker, List<QueueItem<T>> unsentData) {
+    }
+
+    @Override
     public void close() {
     }
 }
