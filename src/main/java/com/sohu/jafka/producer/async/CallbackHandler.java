@@ -87,6 +87,14 @@ public interface CallbackHandler<T> {
     List<QueueItem<T>> lastBatchBeforeClose();
 
     /**
+     * Callback to process when the connection is refused
+     * 
+     * @param broker the refused broker info
+     * @param unsentData the batched data that didn't send to the broker
+     */
+    void connectionRefused(String broker, List<QueueItem<T>> unsentData);
+
+    /**
      * Cleans up and shuts down the callback handler
      */
     void close();
