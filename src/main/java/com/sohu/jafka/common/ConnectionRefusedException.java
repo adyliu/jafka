@@ -33,7 +33,7 @@ public class ConnectionRefusedException extends RuntimeException {
         super(message);
     }
 
-    public ConnectionRefusedExceptionn(Throwable cause) {
+    public ConnectionRefusedException(Throwable cause) {
         super(cause);
     }
 
