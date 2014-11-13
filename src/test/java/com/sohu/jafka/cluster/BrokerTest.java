@@ -53,7 +53,7 @@ public class BrokerTest {
      */
     @Test
     public void testGetZKString() {
-        assertEquals(creatorId + ":localhost:9022", broker.getZKString());
+        assertEquals(creatorId + ":localhost:9022:true", broker.getZKString());
     }
 
     /**

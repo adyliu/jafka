@@ -86,27 +86,27 @@ public class Broker {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + id;
-        result = prime * result + port;
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Broker broker = (Broker) o;
+
+        if (autocreated != broker.autocreated) return false;
+        if (id != broker.id) return false;
+        if (port != broker.port) return false;
+        if (host != null ? !host.equals(broker.host) : broker.host != null) return false;
+
+        return true;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        Broker other = (Broker) obj;
-        if (host == null) {
-            if (other.host != null) return false;
-        } else if (!host.equals(other.host)) return false;
-        if (id != other.id) return false;
-        if (port != other.port) return false;
-        return true;
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + (host != null ? host.hashCode() : 0);
+        result = 31 * result + port;
+        result = 31 * result + (autocreated ? 1 : 0);
+        return result;
     }
 
     /**
