@@ -16,7 +16,7 @@ If you are interesting in [scala](http://www.scala-lang.org/), please using the 
 
 ## News
 
-[2013-11-28] [released](https://github.com/adyliu/jafka/wiki/history) [v1.2.3](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/)
+[2014-11-13] [released](https://github.com/adyliu/jafka/wiki/history) [v1.4.0](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/)
 
 ## Document & Wiki
 
