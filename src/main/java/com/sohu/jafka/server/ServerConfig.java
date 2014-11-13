@@ -60,6 +60,14 @@ public class ServerConfig extends ZKConfig {
     }
 
     /**
+     * topic.autocreated create new topic after booted
+     * @return auto create new topic after booted, default true
+     */
+    public boolean isTopicAutoCreated(){
+        return getBoolean(props,"topic.autocreated",true);
+    }
+
+    /**
      * the broker id for this server
      */
     public int getBrokerId() {

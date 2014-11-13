@@ -129,7 +129,7 @@ public class ServerRegister implements IZkStateListener, Closeable {
         }
         //
         final String creatorId = hostname + "-" + System.currentTimeMillis();
-        final Broker broker = new Broker(config.getBrokerId(), creatorId, hostname, config.getPort());
+        final Broker broker = new Broker(config.getBrokerId(), creatorId, hostname, config.getPort(),config.isTopicAutoCreated());
         try {
             ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerIdPath, broker.getZKString());
         } catch (ZkNodeExistsException e) {

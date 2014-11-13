@@ -72,7 +72,7 @@ public class Server implements Closeable {
     public void startup() {
         try {
             final long start = System.currentTimeMillis();
-            logger.info("Starting Jafka server " + serverInfo.getVersion());
+            logger.info("Starting Jafka server(brokerid={}) {}" ,this.config.getBrokerId(),serverInfo.getVersion());
             Utils.registerMBean(serverInfo);
             boolean needRecovery = true;
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
@@ -99,7 +99,7 @@ public class Server implements Closeable {
              */
             logManager.startup();
             final long cost = (System.currentTimeMillis() - start) / 1000;
-            logger.info("Jafka started at *:{}, cost {} seconds", config.getPort(), cost);
+            logger.info("Jafka(brokerid={}) started at *:{}, cost {} seconds",config.getBrokerId(), config.getPort(), cost);
             serverInfo.started();
         } catch (Exception ex) {
             logger.error("========================================");
@@ -113,7 +113,7 @@ public class Server implements Closeable {
         boolean canShutdown = isShuttingDown.compareAndSet(false, true);
         if (!canShutdown) return;//CLOSED
 
-        logger.info("Shutting down Jafka server...");
+        logger.info("Shutting down Jafka server(brokerid={})...",this.config.getBrokerId());
         try {
             scheduler.shutdown();
             if (socketServer != null) {
@@ -130,7 +130,7 @@ public class Server implements Closeable {
             logger.error(ex.getMessage(), ex);
         }
         shutdownLatch.countDown();
-        logger.info("Shutdown Jafka server completed");
+        logger.info("Shutdown Jafka server(brokerid={}) completed",config.getBrokerId());
 
     }
 

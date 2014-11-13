@@ -49,6 +49,7 @@ public class Broker {
      */
     public final int port;
 
+    public final boolean autocreated;
     /**
      * create a broker
      *
@@ -56,13 +57,15 @@ public class Broker {
      * @param creatorId the creator id
      * @param host      broker hostname
      * @param port      broker port
+     * @param autocreated auto-create new topics
      */
-    public Broker(int id, String creatorId, String host, int port) {
+    public Broker(int id, String creatorId, String host, int port,boolean autocreated) {
         super();
         this.id = id;
         this.creatorId = creatorId;
         this.host = host;
         this.port = port;
+        this.autocreated = autocreated;
     }
 
     /**
@@ -74,18 +77,12 @@ public class Broker {
      * @return broker info saved in zookeeper
      */
     public String getZKString() {
-        StringBuilder buf = new StringBuilder(32);
-        buf.append(creatorId.replace(':','#'));
-        buf.append(':');
-        buf.append(host.replace(':','#'));
-        buf.append(':');
-        buf.append(port);
-        return buf.toString();
+        return String.format("%s:%s:%s:%s", creatorId.replace(':', '#'), host.replace(':', '#'), port, autocreated);
     }
 
     @Override
     public String toString() {
-        return "id:" + id + ",creatorId:" + creatorId + ",host:" + host + ",port:" + port;
+        return getZKString();
     }
 
     @Override
@@ -116,7 +113,7 @@ public class Broker {
      * create a broker with given broker info
      *
      * @param id               broker id
-     * @param brokerInfoString broker info format: <b>creatorId:host:port</b>
+     * @param brokerInfoString broker info format: <b>creatorId:host:port:autocreated</b>
      * @return broker instance with connection config
      * @see #getZKString()
      */
@@ -125,7 +122,8 @@ public class Broker {
         String creator = brokerInfo[0].replace('#', ':');
         String hostname = brokerInfo[1].replace('#', ':');
         String port = brokerInfo[2];
-        return new Broker(id, creator, hostname, Integer.parseInt(port));
+        boolean autocreated = Boolean.valueOf(brokerInfo.length > 3 ? brokerInfo[3] : "true");
+        return new Broker(id, creator, hostname, Integer.parseInt(port), autocreated);
     }
 
 }

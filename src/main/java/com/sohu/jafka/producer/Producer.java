@@ -103,7 +103,7 @@ public class Producer<K, V> implements Callback, IProducer<K, V> {
         if (this.populateProducerPool) {
             for (Map.Entry<Integer, Broker> e : this.brokerPartitionInfo.getAllBrokerInfo().entrySet()) {
                 Broker b = e.getValue();
-                producerPool.addProducer(new Broker(e.getKey(), b.host, b.host, b.port));
+                producerPool.addProducer(new Broker(e.getKey(), b.host, b.host, b.port,b.autocreated));
             }
         }
     }
@@ -219,9 +219,9 @@ public class Producer<K, V> implements Callback, IProducer<K, V> {
         return partition;
     }
 
-    public void producerCbk(int bid, String host, int port) {
+    public void producerCbk(int bid, String host, int port,boolean autocreated) {
         if (populateProducerPool) {
-            producerPool.addProducer(new Broker(bid, host, host, port));
+            producerPool.addProducer(new Broker(bid, host, host, port,autocreated));
         } else {
             logger.debug("Skipping the callback since populateProducerPool = false");
         }

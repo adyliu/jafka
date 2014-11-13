@@ -33,7 +33,7 @@ public class BrokerTest {
 
     @Before
     public void createBroker() {
-        broker = new Broker(1, creatorId, "localhost", 9022);
+        broker = new Broker(1, creatorId, "localhost", 9022,true);
     }
 
     /**
@@ -66,7 +66,7 @@ public class BrokerTest {
         Broker b = Broker.createBroker(broker.id, brokerInfoString);
         assertEquals(broker, b);
         //
-        b = new Broker(3, "f700:8000:12d:7306:c0c0:d08a:2315-1366893045642", "f700:8000:12d:7306:c0c0:d08a:2315", 8888);
+        b = new Broker(3, "f700:8000:12d:7306:c0c0:d08a:2315-1366893045642", "f700:8000:12d:7306:c0c0:d08a:2315", 8888,true);
         brokerInfoString = b.getZKString();
         Broker b2 = Broker.createBroker(3, brokerInfoString);
         assertEquals(b, b2);

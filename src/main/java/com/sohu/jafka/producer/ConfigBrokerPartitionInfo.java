@@ -77,8 +77,9 @@ public class ConfigBrokerPartitionInfo implements BrokerPartitionInfo {
             final int id = Integer.parseInt(idHostPort[0]);
             final String host = idHostPort[1];
             final int port = Integer.parseInt(idHostPort[2]);
-            final int partitions = idHostPort.length == 4 ? Integer.parseInt(idHostPort[3]) : 1;
-            allBrokers.put(id, new Broker(id, host, host, port));
+            final int partitions = idHostPort.length > 3 ? Integer.parseInt(idHostPort[3]) : 1;
+            final boolean autocreated = idHostPort.length>4?Boolean.valueOf(idHostPort[4]):true;
+            allBrokers.put(id, new Broker(id, host, host, port,autocreated));
             for (int i = 0; i < partitions; i++) {
                 this.brokerPartitions.add(new Partition(id, i));
             }

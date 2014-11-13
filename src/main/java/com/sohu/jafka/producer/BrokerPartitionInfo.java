@@ -73,6 +73,6 @@ public interface BrokerPartitionInfo extends Closeable{
 
     public interface Callback {
 
-        void producerCbk(int bid, String host, int port);
+        void producerCbk(int bid, String host, int port,boolean autocreated);
     }
 }
