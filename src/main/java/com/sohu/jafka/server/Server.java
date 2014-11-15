@@ -17,6 +17,8 @@
 
 package com.sohu.jafka.server;
 
+import com.sohu.jafka.http.HttpRequestHandler;
+import com.sohu.jafka.http.HttpServer;
 import com.sohu.jafka.log.LogManager;
 import com.sohu.jafka.mx.ServerInfo;
 import com.sohu.jafka.mx.SocketServerStats;
@@ -54,7 +56,8 @@ public class Server implements Closeable {
 
     final AtomicBoolean isShuttingDown = new AtomicBoolean(false);
 
-    SocketServer socketServer;
+    private SocketServer socketServer;
+    private HttpServer httpServer;
 
     private final File logDir;
 
@@ -92,6 +95,14 @@ public class Server implements Closeable {
             socketServer = new SocketServer(handlers, config);
             Utils.registerMBean(socketServer.getStats());
             socketServer.startup();
+            //
+            final int httpPort = config.getHttpPort();
+            if(httpPort>0){
+                HttpRequestHandler httpRequestHandler = new HttpRequestHandler(logManager);
+                httpServer = new HttpServer(httpPort,httpRequestHandler);
+                httpServer.start();
+            }
+
             Mx4jLoader.maybeLoad();
             /**
              * Registers this broker in ZK. After this, consumers can connect to broker. So
@@ -119,6 +130,9 @@ public class Server implements Closeable {
             if (socketServer != null) {
                 socketServer.close();
                 Utils.unregisterMBean(socketServer.getStats());
+            }
+            if(httpServer != null){
+                httpServer.close();
             }
             if (logManager != null) {
                 logManager.close();

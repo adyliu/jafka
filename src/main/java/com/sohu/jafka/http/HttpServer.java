@@ -24,51 +24,73 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * An HTTP server that sends back the content of the received HTTP request
  * in a pretty plaintext form.
  */
-public class HttpServer {
+public class HttpServer extends Thread implements Closeable{
 
     private final int port;
-
-    public HttpServer(int port) {
+    final EventLoopGroup bossGroup = new NioEventLoopGroup();
+    final EventLoopGroup workerGroup = new NioEventLoopGroup(10);
+    final HttpRequestHandler handler;
+    final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
+    //
+    public HttpServer(int port,HttpRequestHandler handler) {
+        super("jafka-httpserver");
         this.port = port;
+        this.handler = handler;
     }
 
-    public void run() throws Exception {
+    public void run() {
         // Configure the server.
-        BasicConfigurator.configure();
-        Logger.getRootLogger().setLevel(Level.INFO);
         //
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.option(ChannelOption.SO_BACKLOG, 1024);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new HttpServerInitializer());
+                    .childHandler(new HttpServerInitializer(this));
 
             Channel ch = b.bind(port).sync().channel();
-            System.err.println("Open your web browser and navigate to " + "http://127.0.0.1:" + port + '/');
+            //System.err.println("Open your web browser and navigate to " + "http://127.0.0.1:" + port + '/');
+           logger.info("Jafka HttpServer start at port {}",port);
             ch.closeFuture().sync();
-        } finally {
+        } catch (InterruptedException ie){
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(ie.getMessage(),ie);
+        }
+        finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+        logger.warn("Jafka HttpServer run over");
+    }
+
+    @Override
+    public void close() throws IOException {
+        logger.info("Jafka HttpServer stop port {}",port);
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
     }
 
     public static void main(String[] args) throws Exception {
+        BasicConfigurator.configure();
+        Logger.getRootLogger().setLevel(Level.INFO);
         int port;
         if (args.length > 0) {
             port = Integer.parseInt(args[0]);
         } else {
-            port = 8000;
+            port = 9093;
         }
         System.out.println("start server");
-        new HttpServer(port).run();
+        new HttpServer(port,null).run();
         System.out.println("server stop");
     }
 }

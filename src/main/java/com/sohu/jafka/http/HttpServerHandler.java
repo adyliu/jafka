@@ -15,6 +15,7 @@
  */
 package com.sohu.jafka.http;
 
+import com.sohu.jafka.api.RequestKeys;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -38,6 +39,8 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,10 +54,16 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private HttpRequest request;
+    final HttpServer server;
+    public HttpServerHandler(HttpServer server){
+        this.server = server;
+    }
     /**
      * Buffer that stores the response content
      */
-    private final StringBuilder body = new StringBuilder();
+    //private final StringBuilder body = new StringBuilder();
+    private ByteArrayOutputStream body;
+    private Map<String,String> args = null;
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -69,7 +78,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
             if (HttpHeaders.is100ContinueExpected(request)) {
                 send100Continue(ctx);
             }
-            body.setLength(0);
+            body = new ByteArrayOutputStream(64);
+            args = new HashMap<String, String>(4);
             //
             if (request.getMethod() != HttpMethod.POST) {
                 sendStatusMessage(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "POST METHOD REQUIRED");
@@ -78,6 +88,9 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
             HttpHeaders headers = request.headers();
             String contentType = headers.get("Content-Type");
             // 处理 text or octstream
+            args.put("request_key",headers.get("request_key"));
+            args.put("topic",headers.get("topic"));
+            args.put("partition",headers.get("partition"));
         }
 
         if (msg instanceof HttpContent) {
@@ -85,14 +98,22 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
             ByteBuf content = httpContent.content();
             if (content.isReadable()) {
-                body.append(content.toString(CharsetUtil.UTF_8));
+                //body.write(content.array());
+                content.readBytes(body,content.readableBytes());
+                //body.append(content.toString(CharsetUtil.UTF_8));
             }
 
             if (msg instanceof LastHttpContent) {
+                //process request
+                if(server.handler != null) {
+                    server.handler.handle(args, body.toByteArray());
+                }
                 if (!writeResponse(ctx)) {
                     // If keep-alive is off, close the connection once the content is fully written.
                     ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                 }
+                body = null;
+                args = null;
             }
         }
     }
@@ -104,7 +125,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         // Build the response object.
         FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, OK,
-                Unpooled.copiedBuffer(body.toString(), CharsetUtil.UTF_8));
+                Unpooled.copiedBuffer("OK", CharsetUtil.UTF_8));
 
         response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
 

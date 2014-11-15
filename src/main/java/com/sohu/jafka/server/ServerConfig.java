@@ -49,6 +49,7 @@ public class ServerConfig extends ZKConfig {
     public int getPort() {
         return getInt(props, "port", 9092);
     }
+    public int getHttpPort(){ return getInt(props,"http.port",0);}
 
     /**
      * hostname of broker. If not set, will pick up from the value returned

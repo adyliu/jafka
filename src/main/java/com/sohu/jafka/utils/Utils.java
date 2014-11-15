@@ -120,6 +120,16 @@ public class Utils {
         }
         throw new IllegalArgumentException(name + " has value " + v + " which is not in the range");
     }
+    public static int getIntInRange(Map<String,String> props, String name, int defaultValue, int min, int max) {
+        int v = defaultValue;
+        if (props.containsKey(name)) {
+            v = Integer.valueOf(props.get(name));
+        }
+        if (v >= min && v <= max) {
+            return v;
+        }
+        throw new IllegalArgumentException(name + " has value " + v + " which is not in the range");
+    }
 
     public static boolean getBoolean(Properties props, String name, boolean defaultValue) {
         if (!props.containsKey(name)) return defaultValue;
