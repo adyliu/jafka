@@ -19,6 +19,7 @@ package com.sohu.jafka.consumer;
 
 import com.sohu.jafka.BaseJafkaServer;
 import com.sohu.jafka.Jafka;
+import com.sohu.jafka.PortUtils;
 import com.sohu.jafka.api.FetchRequest;
 import com.sohu.jafka.api.MultiFetchResponse;
 import com.sohu.jafka.api.OffsetRequest;
@@ -29,11 +30,18 @@ import com.sohu.jafka.producer.ProducerConfig;
 import com.sohu.jafka.producer.StringProducerData;
 import com.sohu.jafka.producer.serializer.StringEncoder;
 import com.sohu.jafka.utils.Closer;
+import com.sohu.jafka.utils.Utils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import sun.net.www.http.HttpClient;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
@@ -60,10 +68,12 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     final int partitions = 3;
     final int INIT_MESSAGE_COUNT = 755;
     final int MESSAGE_BATCH_SIZE = 50;
+    final int httpPort = PortUtils.checkAvailablePort(9093);
 
     @Before
-    public void init() {
+    public void init() throws IOException{
         if (jafka == null) {
+
             Properties props = new Properties();
             //force flush message to disk
             //we will fetch nothing while messages have note been flushed to disk
@@ -71,6 +81,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             props.put("log.default.flush.scheduler.interval.ms", "100");//flush to disk every 100ms
             props.put("log.file.size", "5120");//5k for rolling
             props.put("num.partitions", "" + partitions);//default divided three partitions
+            props.put("http.port",""+httpPort);
             jafka = createJafka(props);
             sendSomeMessages(INIT_MESSAGE_COUNT, "demo", "test");
 
@@ -83,7 +94,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
         }
     }
 
-    private void sendSomeMessages(int count, final String... topics) {
+    private void sendSomeMessages(final int count, final String... topics) {
         Properties producerConfig = new Properties();
         producerConfig.setProperty("broker.list", "0:localhost:" + jafka.getPort());
         producerConfig.setProperty("serializer.class", StringEncoder.class.getName());
@@ -98,16 +109,18 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             int batch = 50;
             while (batch-- > 0 && !over) {
                 for (StringProducerData sd : data) {
-                    sd.add(sd.getTopic() + "#message#" + (index++));
+                    if(!(over = index >= count)) {
+                        sd.add(sd.getTopic() + "#message#" + (index++));
+                    }
                 }
-                over = index >= count;
             }
             for (StringProducerData sd : data) {
                 producer.send(sd);
             }
         }
         Closer.closeQuietly(producer);
-        logger.info("SEND_MESSAGE_COUNT {}", index);
+        logger.info("SEND_MESSAGE_COUNT {}/{}", index,count);
+        assertEquals(count,index);
     }
 
     @After
@@ -136,6 +149,26 @@ public class SimpleConsumerTest extends BaseJafkaServer {
 //        sendSomeMessages(1000, largePartitionTopic);
 //    }
 
+    private void sendMessageByHttp(int port,String topic,int partition,byte[] data) throws IOException{
+        URL url = new URL(String.format("http://127.0.0.1:%s/",port));
+        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("request_key","PRODUCE");
+        conn.setRequestProperty("topic",topic);
+        conn.setRequestProperty("partition",""+partition);
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        //
+        conn.getOutputStream().write(data);
+        conn.getOutputStream().flush();
+        conn.getOutputStream().close();
+        //
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"));
+        assertEquals("OK",reader.readLine());
+        reader.close();
+
+    }
+
     /**
      * Test method for
      * {@link com.sohu.jafka.consumer.SimpleConsumer#close()}.
@@ -163,7 +196,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             FetchRequest request = new FetchRequest("demo", i, 0, 1000 * 1000);
             ByteBufferMessageSet messages = consumer.fetch(request);
             for (MessageAndOffset msg : messages) {
-                //System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
+                System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
                 offset = Math.max(offset, msg.offset);
                 cnt++;
             }
@@ -171,6 +204,20 @@ public class SimpleConsumerTest extends BaseJafkaServer {
         System.out.println("receive message count: " + cnt);
         assertTrue(offset > 0);
         assertTrue(cnt > 0);
+    }
+
+    @Test
+    public void testFetchMessageCreatedByHttp() throws Exception{
+
+        sendMessageByHttp(httpPort,"httpdemo",0,"HTTPMESSAGE".getBytes());
+        sendMessageByHttp(httpPort,"httpdemo",0,"OVER".getBytes());
+        FetchRequest request = new FetchRequest("httpdemo",0,0,100*1000);
+        ByteBufferMessageSet messages = consumer.fetch(request);
+        String ret = "";
+        for(MessageAndOffset msg:messages){
+            ret+=Utils.toString(msg.message.payload(),"UTF-8");
+        }
+        assertEquals("HTTPMESSAGEOVER",ret);
     }
 
     /**
