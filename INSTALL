@@ -1,7 +1,7 @@
 Simple Install Guide
 ======
 
-The package can be builded on any Java enviroment.
+The package can be built on any Java enviroment.
 
 Require
 ======
@@ -16,7 +16,7 @@ Build the source with maven:
 
     mvn clean package assembly:single -Dmaven.test.skip=true
 
-We recomment you to run the unit test.
+We recommend you to run the unit test.
 
     mvn clean package assembly:single
 
