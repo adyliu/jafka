@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/adyliu/jafka.png?branch=master)](https://travis-ci.org/adyliu/jafka)
 
-Jafka mq is a distributed publish-subscribe messaging system cloning from [Apache Kafka](http://kafka.apache.org/).
+Jafka mq is a distributed publish-subscribe messaging system cloned from [Apache Kafka](http://kafka.apache.org/).
 
-So it has following features:
+So it has the following features:
 
 * Persistent messaging with O(1) disk structures that provide constant time performance even with many TB of stored messages.
 * High-throughput: even with very modest hardware single broker can support hundreds of thousands of messages per second.
@@ -12,7 +12,7 @@ So it has following features:
 * Simple message format for many language clients.
 * Pure Java work
 
-If you are interesting in [scala](http://www.scala-lang.org/), please using the origin kafka at [apache](http://kafka.apache.org/). Also it has git repository at [github](https://github.com/apache/kafka/).
+If you are interested in [scala](http://www.scala-lang.org/), please use the origin kafka at [apache](http://kafka.apache.org/). Also it has a git repository at [github](https://github.com/apache/kafka/).
 
 ## News
 
