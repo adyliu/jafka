@@ -100,10 +100,10 @@ public class Mx4jLoader {
     }
 
     private static String getAddress() {
-        return System.getProperty("mx4jaddress", "0.0.0.0");
+        return System.getProperty("jafka_mx4jaddress", "0.0.0.0");
     }
 
     private static int getPort() {
-        return Utils.getInt(System.getProperties(), "mx4jport", 9094);
+        return Utils.getInt(System.getProperties(), "jafka_mx4jport", 9094);
     }
 }
