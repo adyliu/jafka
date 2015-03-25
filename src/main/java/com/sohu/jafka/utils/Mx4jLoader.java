@@ -104,6 +104,6 @@ public class Mx4jLoader {
     }
 
     private static int getPort() {
-        return Utils.getInt(System.getProperties(), "mx4jport", 8082);
+        return Utils.getInt(System.getProperties(), "mx4jport", 9094);
     }
 }
