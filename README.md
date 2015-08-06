@@ -27,6 +27,7 @@ Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wik
 You can download the full package from Google Drive:
 
 * Google Drive [https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/](https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/)
+* Baidu Pan [http://pan.baidu.com/s/1c0CYw7I](http://pan.baidu.com/s/1c0CYw7I)
 
 ## Contributor
 
