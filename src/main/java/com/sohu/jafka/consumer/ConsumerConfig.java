@@ -31,7 +31,6 @@ import com.sohu.jafka.utils.ZKConfig;
  * <li>groupid: the consumer group name</li>
  * <li>zk.connect: the zookeeper connection string</li>
  * </ul>
- * </p>
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
@@ -79,7 +78,6 @@ public class ConsumerConfig extends ZKConfig {
      * <li>groupid: the consumer group name</li>
      * <li>zk.connect: the zookeeper connection string</li>
      * </ul>
-     * </p>
      * 
      * @param props config properties
      */

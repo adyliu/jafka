@@ -27,7 +27,7 @@ import java.util.Properties;
  * producer
  *
  * @author adyliu (imxylz@gmail.com)
- * @see {@link AbstractCallbackHandler}
+ * @see AbstractCallbackHandler
  * @since 1.0
  */
 public interface CallbackHandler<T> {

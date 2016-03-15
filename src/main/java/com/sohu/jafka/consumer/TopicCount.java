@@ -42,7 +42,7 @@ public class TopicCount {
 
     /**
      * @param consumerIdString groupid-consumerid
-     * @param topicCountMap map: topic->threadCount
+     * @param topicCountMap map: topic-&gt;threadCount
      */
     public TopicCount(String consumerIdString, Map<String, Integer> topicCountMap) {
         this.consumerIdString = consumerIdString;
@@ -50,7 +50,7 @@ public class TopicCount {
     }
     /**
      * 
-     * @return topic->(consumerIdString-0,consumerIdString-1..)
+     * @return topic-&gt;(consumerIdString-0,consumerIdString-1..)
      */
     public Map<String, Set<String>> getConsumerThreadIdsPerTopic() {
         Map<String, Set<String>> consumerThreadIdsPerTopicMap = new HashMap<String, Set<String>>();
@@ -89,7 +89,7 @@ public class TopicCount {
         return true;
     }
     /**
-     * topic->count map
+     * topic-&gt;count map
      * @return json map
      */
     public String toJsonString() {

@@ -38,8 +38,7 @@ import com.sohu.jafka.utils.Utils;
  * 3. 4 byte CRC32 of the payload
  * 4. N - 6 byte payload
  * </pre>
- * 
- * </p>
+ *
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0

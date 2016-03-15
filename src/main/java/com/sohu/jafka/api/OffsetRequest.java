@@ -31,7 +31,6 @@ import com.sohu.jafka.utils.Utils;
  * Jafka will returns all offsets earlier than given time with max number
  * limit. The fist offset of result is the biggest and the the last is the
  * smallest.
- * </p>
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
@@ -74,7 +73,6 @@ public class OffsetRequest implements Request {
      * <li>time&gt;0: the log file offset which lastmodified time earlier
      * than the time</li>
      * </ul>
-     * </p>
      */
     public long time;
 

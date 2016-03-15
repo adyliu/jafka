@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
  * <p>
  * see https://github.com/apache/cassandra/blob/trunk/src/java/org/apache/cassandra/utils/
  * Mx4jTool.java
- * </p>
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0

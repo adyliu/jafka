@@ -72,7 +72,6 @@ public class Broker {
      * the broker info saved in zookeeper
      * <p>
      * format: <b>creatorId:host:port</b>
-     * </p>
      *
      * @return broker info saved in zookeeper
      */

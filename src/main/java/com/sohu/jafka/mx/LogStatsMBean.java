@@ -23,7 +23,7 @@ package com.sohu.jafka.mx;
  * For the last writeable file:
  * <ul>
  * <li>size</li>
- * </p>
+ * </ul>
  * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0

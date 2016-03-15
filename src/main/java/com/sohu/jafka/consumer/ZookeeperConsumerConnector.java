@@ -67,72 +67,68 @@ import static java.lang.String.format;
 
 /**
  * This class handles the consumers interaction with zookeeper
- * <p/>
+ *
  * Directories:
  * <p>
  * <b>1. Consumer id registry:</b>
- * <p/>
+ *
  * <pre>
- * /consumers/[group_id]/ids[consumer_id] -> topic1,...topicN
+ * /consumers/[group_id]/ids[consumer_id] -- topic1,...topicN
  * </pre>
- * <p/>
+ *
  * A consumer has a unique consumer id within a consumer group. A consumer registers its id as
  * an ephemeral znode and puts all topics that it subscribes to as the value of the znode. The
  * znode is deleted when the client is gone. A consumer subscribes to event changes of the
  * consumer id registry within its group.
- * </p>
  * <p>
  * The consumer id is picked up from configuration, instead of the sequential id assigned by
  * ZK. Generated sequential ids are hard to recover during temporary connection loss to ZK,
  * since it's difficult for the client to figure out whether the creation of a sequential znode
  * has succeeded or not. More details can be found at
  * (http://wiki.apache.org/hadoop/ZooKeeper/ErrorHandling)
- * </p>
  * <p>
  * <b>2. Broker node registry:</b>
- * <p/>
  * <pre>
- * /brokers/[0...N] --> { "host" : "host:port",
+ * /brokers/[0...N] -- { "host" : "host:port",
  *                        "topics" : {"topic1": ["partition1" ... "partitionN"], ...,
  *                                    "topicN": ["partition1" ... "partitionN"] } }
  * </pre>
- * <p/>
  * This is a list of all present broker brokers. A unique logical node id is configured on each
  * broker node. A broker node registers itself on start-up and creates a znode with the logical
  * node id under /brokers.
- * <p/>
+ *
  * The value of the znode is a JSON String that contains
- * <p/>
+ *
  * <pre>
  * (1) the host name and the port the broker is listening to,
  * (2) a list of topics that the broker serves,
  * (3) a list of logical partitions assigned to each topic on the broker.
  * </pre>
- * <p/>
+ *
  * A consumer subscribes to event changes of the broker node registry.
- * </p>
- * <p/>
+ *
+ *
  * <p>
  * <b>3. Partition owner registry:</b>
- * <p/>
+ *
  * <pre>
- * /consumers/[group_id]/owner/[topic]/[broker_id-partition_id] --> consumer_node_id
+ * /consumers/[group_id]/owner/[topic]/[broker_id-partition_id] -- consumer_node_id
  * </pre>
- * <p/>
+ *
  * This stores the mapping before broker partitions and consumers. Each partition is owned by a
  * unique consumer within a consumer group. The mapping is reestablished after each
  * rebalancing.
- * </p>
- * <p/>
+ *
+ *
  * <p>
  * <b>4. Consumer offset tracking:</b>
- * <p/>
+ *
  * <pre>
- * /consumers/[group_id]/offsets/[topic]/[broker_id-partition_id] --> offset_counter_value
+ * /consumers/[group_id]/offsets/[topic]/[broker_id-partition_id] -- offset_counter_value
  * </pre>
- * <p/>
+ *
  * Each consumer tracks the offset of the latest message consumed for each partition.
- * </p>
+ *
  *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
@@ -816,9 +812,8 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
     /**
      * register consumer data in zookeeper
      * <p>
-     * register path: /consumers/groupid/ids/groupid-consumerid <br/>
+     * register path: /consumers/groupid/ids/groupid-consumerid <br>
      * data: {topic:count,topic:count}
-     * </p>
      *
      * @param zkGroupDirs      zookeeper group path
      * @param consumerIdString groupid-consumerid

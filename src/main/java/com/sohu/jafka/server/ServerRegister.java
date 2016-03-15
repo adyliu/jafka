@@ -38,10 +38,10 @@ import java.util.Set;
 /**
  * Handles the server's interaction with zookeeper. The server needs to register the following
  * paths:
- * <p/>
+ * <p>
  * <pre>
  *   /topics/[topic]/[node_id-partition_num]
- *   /brokers/[0...N] --> host:port
+ *   /brokers/[0...N] -- host:port
  * </pre>
  *
  * @author adyliu (imxylz@gmail.com)
@@ -113,9 +113,8 @@ public class ServerRegister implements IZkStateListener, Closeable {
     /**
      * register broker in the zookeeper
      * <p>
-     * path: /brokers/ids/<id> <br/>
+     * path: /brokers/ids/&lt;id&gt; <br>
      * data: creator:host:port
-     * </p>
      */
     public void registerBrokerInZk() {
         logger.info("Registering broker " + brokerIdPath);

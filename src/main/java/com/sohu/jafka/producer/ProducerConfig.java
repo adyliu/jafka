@@ -204,7 +204,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      * a VIP. If the zk.connect option is used instead, this will not have any effect because
      * with the zk-based producer, brokers are not re-selected upon retry. So retries would go
      * to the same (potentially still down) broker. (KAFKA-253 will help address this.)
-     * <br/><br/>
+     * <br>
      * see https://github.com/apache/kafka/commit/d6b1de35f6b9cd5370c7812790fea8e61618f461
      */
     public int getNumRetries() {

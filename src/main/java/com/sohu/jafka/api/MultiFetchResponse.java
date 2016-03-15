@@ -39,9 +39,8 @@ public class MultiFetchResponse implements Iterable<ByteBufferMessageSet> {
      * create a multi-response
      * <p>
      * buffer format: <b> size+errorCode(short)+payload+size+errorCode(short)+payload+... </b>
-     * <br/>
+     * <p>
      * size = 2(short)+length(payload)
-     * </p>
      * 
      * @param buffer the whole data buffer
      * @param numSets response count

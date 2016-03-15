@@ -39,8 +39,6 @@ import com.sohu.jafka.utils.Utils;
  *     message: bytes
  * </pre>
  * 
- * </p>
- * 
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */

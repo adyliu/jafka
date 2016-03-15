@@ -165,7 +165,8 @@ public class Log implements ILog {
         return segments.getView().size();
     }
     /**
-     * delete all log segments in this topic-partition <br/>
+     * delete all log segments in this topic-partition
+     * <p>
      * The log directory will be removed also.
      * @return segment counts deleted
      */

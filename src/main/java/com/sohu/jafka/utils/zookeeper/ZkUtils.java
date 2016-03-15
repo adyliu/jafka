@@ -119,7 +119,7 @@ public class ZkUtils {
      *
      * @param zkClient the zookeeper client
      * @param topics   topic names
-     * @return topic->(brokerid-0,brokerid-1...brokerid2-0,brokerid2-1...)
+     * @return topic-&gt;(brokerid-0,brokerid-1...brokerid2-0,brokerid2-1...)
      */
     public static Map<String, List<String>> getPartitionsForTopics(ZkClient zkClient, Collection<String> topics) {
         Map<String, List<String>> ret = new HashMap<String, List<String>>();
@@ -146,7 +146,7 @@ public class ZkUtils {
      *
      * @param zkClient the zookeeper client
      * @param group    the group name
-     * @return topic->(consumerIdStringA-0,consumerIdStringA-1...consumerIdStringB-0,consumerIdStringB-1)
+     * @return topic-&gt;(consumerIdStringA-0,consumerIdStringA-1...consumerIdStringB-0,consumerIdStringB-1)
      */
     public static Map<String, List<String>> getConsumersPerTopic(ZkClient zkClient, String group) {
         ZkGroupDirs dirs = new ZkGroupDirs(group);

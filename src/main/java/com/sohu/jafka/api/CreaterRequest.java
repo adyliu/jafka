@@ -28,7 +28,6 @@ import java.nio.ByteBuffer;
  * Create Operation
  * <p>
  * This operation creates topic in a broker or enlarge the partition number of topic.
- * </p>
  *
  * @author adyliu (imxylz@gmail.com)
  * @since 1.2
