@@ -88,7 +88,9 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
             HttpHeaders headers = request.headers();
             String contentType = headers.get("Content-Type");
             // 处理 text or octstream
-            args.put("request_key",headers.get("request_key"));
+            String key = headers.get("key");
+            key = key != null ? key : headers.get("request_key");
+            args.put("key",key);
             args.put("topic",headers.get("topic"));
             args.put("partition",headers.get("partition"));
         }

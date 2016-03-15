@@ -32,7 +32,7 @@ public class HttpRequestHandler {
         this.logManager = logManager;
     }
     public void handle(Map<String,String> args,byte[] data){
-        RequestKeys requestKey = RequestKeys.valueOf(args.get("request_key"));
+        RequestKeys requestKey = RequestKeys.valueOf(args.get("key"));
         ByteBufferMessageSet messageSet = new ByteBufferMessageSet(CompressionCodec.NoCompressionCodec,new Message(data));
         final String topic = args.get("topic");
         final int partition = getIntInRange(args, "partition", 0, 0, 1024);
