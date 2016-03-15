@@ -8,7 +8,7 @@
     </parent>
     <groupId>com.sohu.jafka</groupId>
     <artifactId>jafka</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.6.0</version>
     <packaging>jar</packaging>
     <name>jafka</name>
     <url>https://github.com/adyliu/jafka</url>

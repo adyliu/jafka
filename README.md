@@ -16,7 +16,7 @@ If you are interested in [scala](http://www.scala-lang.org/), please use the ori
 
 ## News
 
-[2014-11-13] [released](https://github.com/adyliu/jafka/wiki/history) [v1.4.0](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/)
+[2016-03-15] [released](https://github.com/adyliu/jafka/wiki/history) [v1.6.0](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/)
 
 ## Document & Wiki
 
