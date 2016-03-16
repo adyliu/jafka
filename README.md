@@ -29,16 +29,23 @@ You can download the full package from Google Drive:
 * Google Drive [https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/](https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/)
 * Baidu Pan [http://pan.baidu.com/s/1kU2LuwJ](http://pan.baidu.com/s/1kU2LuwJ)
 
-## Maven Dependencies
+## Maven & Gradle Dependencies
 
 * [http://central.maven.org/maven2/com/sohu/jafka/jafka/](http://central.maven.org/maven2/com/sohu/jafka/jafka/)
 * [http://mvnrepository.com/artifact/com.sohu.jafka/jafka](http://mvnrepository.com/artifact/com.sohu.jafka/jafka)
+
+Maven
 
     <dependency>
         <groupId>com.sohu.jafka</groupId>
         <artifactId>jafka</artifactId>
         <version>1.6.0</version>
     </dependency>
+
+Gradle
+
+    'com.sohu.jafka:jafka:1.6.0'
+
 
 ## Contributor
 
