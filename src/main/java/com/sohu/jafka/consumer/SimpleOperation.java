@@ -31,7 +31,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.nio.channels.ClosedByInterruptException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Simple operation with jafka broker
@@ -105,7 +109,17 @@ public class SimpleOperation implements Closeable {
                     reconnect();
                     blockingChannel.send(request);
                     return blockingChannel.receive();
-                } catch (IOException e2) {
+                } catch (SocketTimeoutException ste){
+                    logger.error("Reconnect fail and recur now: {}",ste.getMessage());
+                    LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+                    return send(request);
+                }
+                catch (ConnectException ce){
+                    logger.error("Reconnect fail and recur now: {}",ce.getMessage());
+                    LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+                    return send(request);
+                }
+                catch (IOException e2) {
                     throw e2;
                 }
             }
