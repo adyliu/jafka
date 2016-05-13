@@ -16,7 +16,7 @@ If you are interested in [scala](http://www.scala-lang.org/), please use the ori
 
 ## News
 
-[2016-03-15] [released](https://github.com/adyliu/jafka/wiki/history) [v1.6.0](http://repo1.maven.org/maven2/com/sohu/jafka/jafka/)
+[2016-05-13] [released](https://github.com/adyliu/jafka/wiki/history) [v1.6.1](http://central.maven.org/maven2/com/sohu/jafka/jafka/)
 
 ## Document & Wiki
 
@@ -39,12 +39,12 @@ Maven
     <dependency>
         <groupId>com.sohu.jafka</groupId>
         <artifactId>jafka</artifactId>
-        <version>1.6.0</version>
+        <version>1.6.1</version>
     </dependency>
 
 Gradle
 
-    'com.sohu.jafka:jafka:1.6.0'
+    'com.sohu.jafka:jafka:1.6.1'
 
 
 ## Contributor
