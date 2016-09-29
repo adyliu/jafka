@@ -19,6 +19,7 @@ package com.sohu.jafka.producer;
 
 import com.sohu.jafka.api.MultiProducerRequest;
 import com.sohu.jafka.api.ProducerRequest;
+import com.sohu.jafka.common.ConnectionRefusedException;
 import com.sohu.jafka.common.annotations.ThreadSafe;
 import com.sohu.jafka.message.ByteBufferMessageSet;
 import com.sohu.jafka.mx.SyncProducerStats;
@@ -102,7 +103,7 @@ public class SyncProducer implements Closeable {
             try {
                 blockingChannel.connect();
             } catch (IOException ioe) {
-                throw new RuntimeException(ioe.getMessage(), ioe);
+                throw new ConnectionRefusedException(host + ":" + port, ioe);
             } finally {
                 if (!blockingChannel.isConnected()) {
                     disconnect();
