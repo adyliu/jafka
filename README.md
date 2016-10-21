@@ -26,7 +26,7 @@ Wiki: [https://github.com/adyliu/jafka/wiki](https://github.com/adyliu/jafka/wik
 
 You can download the full package from Google Drive:
 
-* Google Drive [https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/](https://googledrive.com/host/0B4VObojKr49KeVNaTnc3bDlKNXM/)
+* Google Drive [https://drive.google.com/drive/folders/0B4VObojKr49KeVNaTnc3bDlKNXM](https://drive.google.com/drive/folders/0B4VObojKr49KeVNaTnc3bDlKNXM)
 * Baidu Pan [http://pan.baidu.com/s/1kU2LuwJ](http://pan.baidu.com/s/1kU2LuwJ)
 
 ## Maven & Gradle Dependencies
