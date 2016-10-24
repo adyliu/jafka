@@ -82,7 +82,7 @@ public abstract class Authentication {
      * </ul>
      * @param crypt password style
      * @return an authentication 
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException password error
      */
     public static Authentication build(String crypt) throws IllegalArgumentException {
         if(crypt == null) {

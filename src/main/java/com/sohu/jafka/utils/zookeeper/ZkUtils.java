@@ -189,6 +189,9 @@ public class ZkUtils {
 
     /**
      * Create an ephemeral node with the given path and data. Create parents if necessary.
+     * @param zkClient client of zookeeper
+     * @param path node path of zookeeper
+     * @param data node data
      */
     public static void createEphemeralPath(ZkClient zkClient, String path, String data) {
         try {

@@ -29,22 +29,32 @@ public interface SyncProducerConfigShared {
 
     Properties getProperties();
 
+    /**
+     * buffer size of producer
+     * @return buffer size
+     */
     int getBufferSize();
 
+    /**
+     * timeout of socket connection
+     * @return connection timeout
+     */
     int getConnectTimeoutMs();
 
+    /**
+     * timeout of socket data
+     * @return timeout of socket
+     */
     int getSocketTimeoutMs();
 
-    int getReconnectInterval();
 
-    int getReconnectTimeInterval();
-
-    int getMaxMessageSize();
+    //int getMaxMessageSize();
 
     /**
      * default serializer
      * 
      * @since 1.1
+     * @return serializer class
      */
     String getSerializerClass();
 }

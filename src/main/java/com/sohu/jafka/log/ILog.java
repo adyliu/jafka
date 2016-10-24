@@ -45,7 +45,7 @@ public interface ILog extends Closeable {
      * @param offset offset of messages
      * @param length the max messages size
      * @return message objects
-     * @throws IOException
+     * @throws IOException any Exception
      */
     MessageSet read(long offset, int length) throws IOException;
 

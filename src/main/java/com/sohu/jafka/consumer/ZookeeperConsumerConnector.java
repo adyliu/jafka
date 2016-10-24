@@ -272,6 +272,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 }
             }
         } catch (Exception ex) {
+            //ignore
         }
         throw new UnknownHostException();
     }
@@ -438,7 +439,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
 
         public void run() {
             logger.info("starting watcher executor thread for consumer " + consumerIdString);
-            boolean doRebalance = false;
+            boolean doRebalance;
             while (!isShuttingDown.get()) {
                 try {
                     lock.lock();
@@ -652,7 +653,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             final String znode = topicDirs.consumerOffsetDir + "/" + partition.getName();
             String offsetString = ZkUtils.readDataMaybeNull(zkClient, znode);
             // If first time starting a consumer, set the initial offset based on the config
-            long offset = 0L;
+            long offset;
             if (offsetString == null) {
                 if (OffsetRequest.SMALLES_TIME_STRING.equals(config.getAutoOffsetReset())) {
                     offset = earliestOrLatestOffset(topic, partition.brokerId, partition.partId,
@@ -729,11 +730,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             this.deletePartitionOwnershipFromZK(topic, partition.toString());
         }
 
-        /**
-         * @param cluster
-         * @param messagesStreams2
-         * @param myTopicThreadIdsMap
-         */
+
         private void closeFetchers(Cluster cluster, Map<String, List<MessageStream<T>>> messagesStreams2,
                                    Map<String, Set<String>> myTopicThreadIdsMap) {
             // topicRegistry.values()

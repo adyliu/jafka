@@ -55,6 +55,7 @@ public interface CallbackHandler<T> {
      * @param data  the data sent to the producer after {@link #beforeEnqueue(QueueItem)}
      * @param added flag that indicates if the data was successfully added
      *              to the queue
+     * @return the data
      */
     QueueItem<T> afterEnqueue(QueueItem<T> data, boolean added);
 

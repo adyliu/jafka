@@ -198,7 +198,7 @@ public class Log implements ILog {
      * @param length the max package size
      * @return a MessageSet object with length data or empty
      * @see MessageSet#Empty
-     * @throws IOException
+     * @throws IOException any exception
      */
     public MessageSet read(long offset, int length) throws IOException {
         List<LogSegment> views = segments.getView();
@@ -303,7 +303,7 @@ public class Log implements ILog {
     /**
      * Flush this log file to the physical disk
      * 
-     * @throws IOException
+     * @throws IOException file read error
      */
     public void flush() throws IOException {
         if (unflushed.get() == 0) return;
@@ -324,7 +324,11 @@ public class Log implements ILog {
      * Find a given range object in a list of ranges by a value in that range. Does a binary
      * search over the ranges but instead of checking for equality looks within the range.
      * Takes the array size as an option in case the array grows while searching happens
-     * 
+     * @param <T> Range type
+     * @param ranges data list
+     * @param value value in the list
+     * @param arraySize the max search index of the list
+     * @return search result of range
      * TODO: This should move into SegmentList.scala
      */
     public static <T extends Range> T findRange(List<T> ranges, long value, int arraySize) {
@@ -363,6 +367,8 @@ public class Log implements ILog {
     /**
      * Make log segment file name from offset bytes. All this does is pad out the offset number
      * with zeros so that ls sorts the files numerically
+     * @param offset offset value (padding with zero)
+     * @return filename with offset
      */
     public static String nameFromOffset(long offset) {
         NumberFormat nf = NumberFormat.getInstance();
@@ -395,6 +401,7 @@ public class Log implements ILog {
 
     /**
      * get the current high watermark of the log
+     * @return the offset of last message
      */
     public long getHighwaterMark() {
         return segments.getLastView().size();

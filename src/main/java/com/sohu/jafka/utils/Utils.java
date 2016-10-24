@@ -62,6 +62,10 @@ public class Utils {
     /**
      * Get a property of type java.util.Properties or return the default if
      * no such property is defined
+     * @param props properties
+     * @param name the key
+     * @param defaultProperties default property if empty
+     * @return value from the property
      */
     public static Properties getProps(Properties props, String name, Properties defaultProperties) {
         final String propString = props.getProperty(name);
@@ -183,7 +187,7 @@ public class Utils {
      * @param channel readable channel
      * @param buffer  bytebuffer
      * @return read size
-     * @throws IOException
+     * @throws IOException any io exception
      */
     public static int read(ReadableByteChannel channel, ByteBuffer buffer) throws IOException {
         int count = channel.read(buffer);
@@ -411,6 +415,7 @@ public class Utils {
      * @param file    file object
      * @param mutable writeable
      * @return open the FileChannel
+     * @throws IOException any io exception
      */
     @SuppressWarnings("resource")
     public static FileChannel openChannel(File file, boolean mutable) throws IOException {
@@ -435,7 +440,7 @@ public class Utils {
 
     /**
      * create an instance from the className
-     *
+     * @param <E> class of object
      * @param className full class name
      * @return an object or null if className is null
      */

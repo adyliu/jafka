@@ -76,7 +76,7 @@ public class SocketServer implements Closeable {
     /**
      * Start the socket server and waiting for finished
      * 
-     * @throws InterruptedException
+     * @throws InterruptedException thread interrupted
      */
     public void startup() throws InterruptedException {
         final int maxCacheConnectionPerThread = serverConfig.getMaxConnections() / processors.length;

@@ -70,6 +70,7 @@ public class Message implements ICalculable {
      * 
      * @param magic Specifies the magic byte value. Possible values are 1
      *        (compression)
+     * @return crc value
      */
     public static int crcOffset(byte magic) {
         switch (magic) {
@@ -87,6 +88,7 @@ public class Message implements ICalculable {
      * 
      * @param magic Specifies the magic byte value. Possible values are 0
      *        and 1 0 for no compression 1 for compression
+     * @return offset data
      */
     public static int payloadOffset(byte magic) {
         return crcOffset(magic) + CrcLength;
@@ -97,6 +99,7 @@ public class Message implements ICalculable {
      * 
      * @param magic Specifies the magic byte value. Possible values are 0
      *        and 1 0 for no compression 1 for compression
+     * @return size of header
      */
     public static int headerSize(byte magic) {
         return payloadOffset(magic);

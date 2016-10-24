@@ -46,6 +46,7 @@ public class SegmentList {
 
     /**
      * Append the given item to the end of the list
+     * @param segment segment to append
      */
     public void append(LogSegment segment) {
         while (true) {

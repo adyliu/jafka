@@ -66,7 +66,7 @@ public class OffsetRequest implements Request {
 
     /**
      * the earliest time of messages(unix milliseconds time)
-     * <p>
+     *
      * <ul>
      * <li>{@link #LATES_TTIME}: the latest(largest) offset</li>
      * <li>{@link #EARLIES_TTIME}: the earilest(smallest) offset</li>

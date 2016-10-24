@@ -23,6 +23,7 @@ import static com.sohu.jafka.utils.Utils.getString;
 import java.util.Properties;
 
 /**
+ * config of producer
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -83,13 +84,6 @@ public class SyncProducerConfig implements SyncProducerConfigShared {
         return socketTimeoutMs;
     }
 
-    public int getReconnectInterval() {
-        return reconnectInterval;
-    }
-
-    public int getReconnectTimeInterval() {
-        return reconnectTimeInterval;
-    }
 
     public int getMaxMessageSize() {
         return maxMessageSize;

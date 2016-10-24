@@ -87,6 +87,9 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * Create a file message set with no limit or offset
+     * @param channel file channel
+     * @param mutable file writeable
+     * @throws IOException any file exception
      */
     public FileMessageSet(FileChannel channel, boolean mutable) throws IOException {
         this(channel, 0, Long.MAX_VALUE, mutable, new AtomicBoolean(false));
@@ -94,6 +97,9 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * Create a file message set with no limit or offset
+     * @param file to store message
+     * @param mutable file writeable
+     * @throws IOException any file exception
      */
     public FileMessageSet(File file, boolean mutable) throws IOException {
         this(Utils.openChannel(file, mutable), mutable);
@@ -101,6 +107,10 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * Create a file message set with no limit or offset
+     * @param channel file channel
+     * @param mutable file writeable
+     * @param needRecover check the file on boost
+     * @throws IOException any file exception
      */
     public FileMessageSet(FileChannel channel, boolean mutable, AtomicBoolean needRecover) throws IOException {
         this(channel, 0, Long.MAX_VALUE, mutable, needRecover);
@@ -108,6 +118,10 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * Create a file message set with no limit or offset
+     * @param file file to write
+     * @param mutable file writeable
+     * @param needRecover check the file on boost
+     * @throws IOException any file exception
      */
     public FileMessageSet(File file, boolean mutable, AtomicBoolean needRecover) throws IOException {
         this(Utils.openChannel(file, mutable), mutable, needRecover);
@@ -177,9 +191,9 @@ public class FileMessageSet extends MessageSet {
 
     /**
      * Append this message to the message set
-     *
+     * @param messages message to append
      * @return the written size and first offset
-     * @throws IOException
+     * @throws IOException file write exception
      */
     public long[] append(MessageSet messages) throws IOException {
         checkMutable();
@@ -193,7 +207,7 @@ public class FileMessageSet extends MessageSet {
     /**
      * Commit all written data to the physical disk
      *
-     * @throws IOException
+     * @throws IOException any io exception
      */
     public void flush() throws IOException {
         checkMutable();
@@ -209,7 +223,7 @@ public class FileMessageSet extends MessageSet {
     /**
      * Close this message set
      *
-     * @throws IOException
+     * @throws IOException file close exception
      */
     public void close() throws IOException {
         if (mutable) flush();
@@ -220,7 +234,7 @@ public class FileMessageSet extends MessageSet {
      * Recover log up to the last complete entry. Truncate off any bytes from any incomplete
      * messages written
      *
-     * @throws IOException
+     * @throws IOException any exception
      */
     private long recover() throws IOException {
         checkMutable();
@@ -246,7 +260,7 @@ public class FileMessageSet extends MessageSet {
      * Read, validate, and discard a single message, returning the next valid offset, and the
      * message being validated
      *
-     * @throws IOException
+     * @throws IOException any exception
      */
     private long validateMessage(FileChannel channel, long start, long len, ByteBuffer buffer) throws IOException {
         buffer.rewind();

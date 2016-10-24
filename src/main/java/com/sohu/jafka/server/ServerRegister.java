@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * Handles the server's interaction with zookeeper. The server needs to register the following
  * paths:
- * <p>
+ *
  * <pre>
  *   /topics/[topic]/[node_id-partition_num]
  *   /brokers/[0...N] -- host:port

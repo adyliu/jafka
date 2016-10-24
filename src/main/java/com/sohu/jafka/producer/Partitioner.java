@@ -28,7 +28,8 @@ public interface Partitioner<T> {
     /**
      * Uses the key to calculate a partition bucket id for routing the data to the appropriate
      * broker partition
-     * 
+     * @param key key of partition name
+     * @param numPartitions number of paritition
      * @return an integer between 0 and numPartitions-1
      */
     int partition(T key, int numPartitions);

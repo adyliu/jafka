@@ -78,6 +78,7 @@ public abstract class MessageSet implements Iterable<MessageAndOffset> {
 
     /**
      * get the total size of this message set in bytes
+     * @return size of total message
      */
     public abstract long getSizeInBytes();
 
@@ -100,7 +101,11 @@ public abstract class MessageSet implements Iterable<MessageAndOffset> {
      * Write the messages in this set to the given channel starting at the
      * given offset byte. Less than the complete amount may be written, but
      * no more than maxSize can be. The number of bytes written is returned
-     * @throws IOException 
+     * @param channel IOChannel
+     * @param offset offset of message
+     * @param maxSize size of message
+     * @throws IOException any exception
+     * @return size of result
      */
     public abstract long writeTo(GatheringByteChannel channel, long offset, long maxSize) throws IOException;
 }

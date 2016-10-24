@@ -532,6 +532,7 @@ public class LogManager implements PartitionChooser, Closeable {
      * </p>
      *
      * @param topic topic name
+     * @param password auth password
      * @return number of deleted partitions or -1 if authentication failed
      */
     public int deleteLogs(String topic, String password) {

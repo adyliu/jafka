@@ -65,6 +65,10 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
         }
     }
 
+    /**
+     * the full properties
+     * @return property
+     */
     public Properties getProperties() {
         return props;
     }
@@ -81,17 +85,10 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
         return synchConfigShared.getSocketTimeoutMs();
     }
 
-    public int getReconnectInterval() {
-        return synchConfigShared.getReconnectInterval();
-    }
 
-    public int getReconnectTimeInterval() {
-        return synchConfigShared.getReconnectTimeInterval();
-    }
-
-    public int getMaxMessageSize() {
-        return synchConfigShared.getMaxMessageSize();
-    }
+    //public int getMaxMessageSize() {
+    //    return synchConfigShared.getMaxMessageSize();
+    //}
 
     public int getQueueTime() {
         return asyncProducerConfigShared.getQueueTime();
@@ -136,12 +133,15 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      * <pre>
      *      brokerid1:host1:port1[:partitions[:autocreatetopic]], brokerid2:host2:port2[:partitions[:autocreatetopic]]
      * </pre>
+     * @return broker list
      */
     public String getBrokerList() {
         return Utils.getString(props, "broker.list", null);
     }
 
-    /** the partitioner class for partitioning events amongst sub-topics */
+    /** the partitioner class for partitioning events amongst sub-topics
+     * @return class of partition rule
+     */
     public String getPartitionerClass() {
         return Utils.getString(props, "partitioner.class", DefaultPartitioner.class.getName());
     }
@@ -151,6 +151,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      * this producer. The default is {@link CompressionCodec#NoCompressionCodec}
      * 
      * @see CompressionCodec#NoCompressionCodec
+     * @return default compress code
      */
     public CompressionCodec getCompressionCodec() {
         return CompressionCodec.valueOf(Utils.getInt(props, "compression.codec", 0));
@@ -168,6 +169,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      * for all topics
      * 
      * If the compression codec is NoCompressionCodec, compression is disabled for all topics
+     * @return topic list of compressed
      */
     public List<String> getCompressedTopics() {
         return Utils.getCSVList(Utils.getString(props, "compressed.topics", null));
@@ -181,6 +183,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      *   async: for asynchronous send 
      *    sync: for synchronous send
      * </pre>
+     * @return producer type
      */
     public String getProducerType() {
         return Utils.getString(props, "producer.type", "sync");
@@ -193,6 +196,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      * time period, it could end up picking a broker partition that is unavailable. When this
      * happens, the ZK cache needs to be updated. This parameter specifies the number of times
      * the producer attempts to refresh this ZK cache.
+     * @return times of zookeeper retry
      */
     public int getZkReadRetries() {
         return Utils.getInt(props, "zk.read.num.retries", 3);
@@ -206,6 +210,7 @@ public class ProducerConfig extends ZKConfig implements SyncProducerConfigShared
      * to the same (potentially still down) broker. (KAFKA-253 will help address this.)
      * <br>
      * see https://github.com/apache/kafka/commit/d6b1de35f6b9cd5370c7812790fea8e61618f461
+     * @return times of producer retry
      */
     public int getNumRetries() {
         return Utils.getInt(props, "num.retries", 0);

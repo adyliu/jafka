@@ -35,7 +35,7 @@ public interface ConsumerConnector extends Closeable{
 
     /**
      * Create a list of {@link MessageStream} for each topic
-     * 
+     * @param <T> message type
      * @param topicCountMap a map of (topic,#streams) pair
      * @param decoder message decoder
      * @return a map of (topic,list of MessageStream) pair. The number of

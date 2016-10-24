@@ -105,6 +105,7 @@ public class ConsumerConfig extends ZKConfig {
 
     /**
      * a string that uniquely identifies a set of consumers within the same consumer group
+     * @return groupId of consumer
      */
     public String getGroupId() {
         return groupId;
@@ -113,22 +114,29 @@ public class ConsumerConfig extends ZKConfig {
     /**
      * consumer id: generated automatically if not set. Set this explicitly for only testing
      * purpose.
+     * @return consumerId of consumer
      */
     public String getConsumerId() {
         return consumerId;
     }
 
-    /** the socket timeout for network requests */
+    /** the socket timeout for network requests
+     * @return timeout of socket in milliseconds
+     */
     public int getSocketTimeoutMs() {
         return socketTimeoutMs;
     }
 
-    /** the socket receive buffer for network requests */
+    /** the socket receive buffer for network requests
+     * @return buffer size of socket
+     */
     public int getSocketBufferSize() {
         return socketBufferSize;
     }
 
-    /** the number of byes of messages to attempt to fetch */
+    /** the number of bytes of messages to attempt to fetch
+     * @return size of message per socket
+     */
     public int getFetchSize() {
         return fetchSize;
     }
@@ -136,6 +144,7 @@ public class ConsumerConfig extends ZKConfig {
     /**
      * to avoid repeatedly polling a broker node which has no new data we will backoff every
      * time we get an empty set from the broker
+     * @return sleep time between two delay
      */
     public long getFetchBackoffMs() {
         return fetchBackoffMs;
@@ -144,6 +153,7 @@ public class ConsumerConfig extends ZKConfig {
     /**
      * if true, periodically commit to zookeeper the offset of messages already fetched by the
      * consumer
+     * @return check autocommit status
      */
     public boolean isAutoCommit() {
         return autoCommit;
@@ -151,22 +161,29 @@ public class ConsumerConfig extends ZKConfig {
 
     /**
      * the frequency in ms that the consumer offsets are committed to zookeeper
+     * @return sleep time between two commit
      */
     public int getAutoCommitIntervalMs() {
         return autoCommitIntervalMs;
     }
 
-    /** max number of messages buffered for consumption */
+    /** max number of messages buffered for consumption
+     * @return max number of messages buffered
+     */
     public int getMaxQueuedChunks() {
         return maxQueuedChunks;
     }
 
-    /** max number of retries during rebalance */
+    /** max number of retries during rebalance
+     * @return max number of retries
+     */
     public int getMaxRebalanceRetries() {
         return maxRebalanceRetries;
     }
 
-    /** backoff time between retries during rebalance */
+    /** backoff time between retries during rebalance
+     * @return backoff time between retries
+     */
     public int getRebalanceBackoffMs() {
         return rebalanceBackoffMs;
     }
@@ -179,6 +196,7 @@ public class ConsumerConfig extends ZKConfig {
      *     largest : automatically reset the offset to the largest offset
      *     anything else: throw exception to the consumer
      * </pre>
+     * @return policy with error range
      */
     public String getAutoOffsetReset() {
         return autoOffsetReset;
@@ -187,6 +205,7 @@ public class ConsumerConfig extends ZKConfig {
     /**
      * throw a timeout exception to the consumer if no message is available for consumption
      * after the specified interval
+     * @return timeout without message
      */
     public int getConsumerTimeoutMs() {
         return consumerTimeoutMs;
@@ -195,6 +214,7 @@ public class ConsumerConfig extends ZKConfig {
     /**
      * Whitelist of topics for this mirror's embedded consumer to consume. At most one of
      * whitelist/blacklist may be specified.
+     * @return whitelist of topic
      */
     public String getMirrorTopicsWhitelist() {
         return mirrorTopicsWhitelist;
@@ -202,15 +222,24 @@ public class ConsumerConfig extends ZKConfig {
 
     /**
      * Topics to skip mirroring. At most one of whitelist/blacklist may be specified
+     * @return blacklist of topic
      */
     public String getMirrorTopicsBlackList() {
         return mirrorTopicsBlackList;
     }
 
+    /**
+     * thread number of consumer for mirroring
+     * @return thread numbers
+     */
     public int getMirrorConsumerNumThreads() {
         return mirrorConsumerNumThreads;
     }
 
+    /**
+     * backoff time for fetch message
+     * @return backoff time
+     */
     public long getMaxFetchBackoffMs() {
         return maxFetchBackoffMs;
     }

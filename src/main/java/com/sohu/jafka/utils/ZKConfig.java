@@ -36,12 +36,16 @@ public class ZKConfig {
         this.props = props;
     }
 
-    /** ZK host string */
+    /** ZK host string
+     * @return zookeeper host
+     */
     public String getZkConnect() {
         return getString(props, "zk.connect", null);
     }
 
-    /** zookeeper session timeout */
+    /** zookeeper session timeout
+     * @return  timeout of zookeeper session
+     */
     public int getZkSessionTimeoutMs() {
         return getInt(props, "zk.sessiontimeout.ms", 6000);
     }
@@ -49,12 +53,15 @@ public class ZKConfig {
     /**
      * the max time that the client waits to establish a connection to
      * zookeeper
+     * @return timeout of zookeeper connection
      */
     public int getZkConnectionTimeoutMs() {
         return getInt(props, "zk.connectiontimeout.ms", 6000);
     }
 
-    /** how far a ZK follower can be behind a ZK leader */
+    /** how far a ZK follower can be behind a ZK leader
+     * @return sync time
+     */
     public int getZkSyncTimeMs() {
         return getInt(props, "zk.synctime.ms", 2000);
     }

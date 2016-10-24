@@ -45,16 +45,23 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the port to listen and accept connections on (default 9092)
+     * @return server port
      */
     public int getPort() {
         return getInt(props, "port", 9092);
     }
+
+    /**
+     * http port
+     * @return http port
+     */
     public int getHttpPort(){ return getInt(props,"http.port",0);}
 
     /**
      * hostname of broker. If not set, will pick up from the value returned
      * from getLocalHost. If there are multiple interfaces getLocalHost may
      * not be what you want.
+     * @return host name
      */
     public String getHostName() {
         return getString(props, "hostname", null);
@@ -70,6 +77,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the broker id for this server
+     * @return broker id
      */
     public int getBrokerId() {
         return getIntInRange(props, "brokerid", -1, 0, Integer.MAX_VALUE);
@@ -77,6 +85,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * max connection for one jvm (default 10000)
+     * @return max connections
      */
     public int getMaxConnections() {
         return getInt(props, "max.connections", 10000);
@@ -84,6 +93,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the SO_SNDBUFF buffer of the socket sever sockets
+     * @return buffer size of socket sender
      */
     public int getSocketSendBuffer() {
         return getInt(props, "socket.send.buffer", 100 * 1024);
@@ -91,6 +101,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the SO_RCVBUFF buffer of the socket sever sockets
+     * @return buffer size of sockert receiver
      */
     public int getSocketReceiveBuffer() {
         return getInt(props, "socket.receive.buffer", 100 * 1024);
@@ -98,6 +109,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the maximum number of bytes in a socket request
+     * @return size of socket request
      */
     public int getMaxSocketRequestSize() {
         return getIntInRange(props, "max.socket.request.bytes", 100 * 1024 * 1024, 1, Integer.MAX_VALUE);
@@ -106,6 +118,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the number of worker threads that the server uses for handling all
      * client requests
+     * @return threads of worker
      */
     public int getNumThreads() {
         return getIntInRange(props, "num.threads", Runtime.getRuntime().availableProcessors(), 1, Integer.MAX_VALUE);
@@ -114,6 +127,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the interpublic String get in which to measure performance
      * statistics
+     * @return monitor period
      */
     public int getMonitoringPeriodSecs() {
         return getIntInRange(props, "monitoring.period.secs", 600, 1, Integer.MAX_VALUE);
@@ -121,6 +135,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the default number of log partitions per topic
+     * @return default partition number
      */
     public int getNumPartitions() {
         return getIntInRange(props, "num.partitions", 1, 1, Integer.MAX_VALUE);
@@ -128,6 +143,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the directory in which the log data is kept
+     * @return log directory
      */
     public String getLogDir() {
         return getString(props, "log.dir");
@@ -135,6 +151,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the maximum size of a single log file
+     * @return maximun size of single file
      */
     public int getLogFileSize() {
         return getIntInRange(props, "log.file.size", 1 * 1024 * 1024 * 1024, Message.MinHeaderSize, Integer.MAX_VALUE);
@@ -143,6 +160,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the number of messages accumulated on a log partition before
      * messages are flushed to disk
+     * @return flush interval
      */
     public int getFlushInterval() {
         return getIntInRange(props, "log.flush.interval", 500, 1, Integer.MAX_VALUE);
@@ -150,6 +168,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the number of hours to keep a log file before deleting it
+     * @return hours for file kept
      */
     public int getLogRetentionHours() {
         return getIntInRange(props, "log.retention.hours", 24 * 7, 1, Integer.MAX_VALUE);
@@ -157,6 +176,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * the maximum size of the log before deleting it
+     * @return file size
      */
     public int getLogRetentionSize() {
         return getInt(props, "log.retention.size", -1);
@@ -165,6 +185,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the number of hours to keep a log file before deleting it for some
      * specific topic
+     * @return special config of file retention
      */
     public Map<String, Integer> getLogRetentionHoursMap() {
         return getTopicRentionHours(getString(props, "topic.log.retention.hours", ""));
@@ -173,6 +194,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the frequency in minutes that the log cleaner checks whether any log
      * is eligible for deletion
+     * @return interval of file cleaner
      */
     public int getLogCleanupIntervalMinutes() {
         return getIntInRange(props, "log.cleanup.interval.mins", 10, 1, Integer.MAX_VALUE);
@@ -180,6 +202,7 @@ public class ServerConfig extends ZKConfig {
 
     /**
      * enable zookeeper registration in the server
+     * @return zookeeper status
      */
     public boolean getEnableZookeeper() {
         return getBoolean(props, "enable.zookeeper", false);
@@ -188,6 +211,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the maximum time in ms that a message in selected topics is kept in
      * memory before flushed to disk, e.g., topic1:3000,topic2: 6000
+     * @return flush rule of file
      */
     public Map<String, Integer> getFlushIntervalMap() {
         return getTopicFlushIntervals(getString(props, "topic.flush.intervals.ms", ""));
@@ -196,6 +220,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the frequency in ms that the log flusher checks whether any log
      * needs to be flushed to disk
+     * @return flush rule of file
      */
     public int getFlushSchedulerThreadRate() {
         return getInt(props, "log.default.flush.scheduler.interval.ms", 3000);
@@ -204,6 +229,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the maximum time in ms that a message in any topic is kept in memory
      * before flushed to disk
+     * @return flush rule of file
      */
     public int getDefaultFlushIntervalMs() {
         return getInt(props, "log.default.flush.interval.ms", getFlushSchedulerThreadRate());
@@ -212,6 +238,7 @@ public class ServerConfig extends ZKConfig {
     /**
      * the number of partitions for selected topics, e.g.,
      * topic1:8,topic2:16
+     * @return partition rule of some topics
      */
     public Map<String, Integer> getTopicPartitionsMap() {
         return getTopicPartitions(getString(props, "topic.partition.count.map", ""));

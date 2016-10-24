@@ -243,6 +243,7 @@ public class ProducerPool<V> implements Closeable {
      * @param topic the topic to which the data should be published
      * @param bidPid the broker id and partition id
      * @param data the data to be published
+     * @return producer data of builder
      */
     public ProducerPoolData<V> getProducerPoolData(String topic, Partition bidPid, List<V> data) {
         return new ProducerPoolData<V>(topic, bidPid, data);

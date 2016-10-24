@@ -25,16 +25,25 @@ package com.sohu.jafka.utils;
  */
 public interface Range {
 
-    /** The first index in the range */
+    /** The first index in the range
+     * @return range of start
+     */
     long start();
 
-    /** The total number of indexes in the range */
+    /** The total number of indexes in the range
+     * @return size of range
+     */
     long size();
 
-    /** Return true iff the range is empty */
+    /** Return true iff the range is empty
+     * @return check the range is emtpy
+     */
     boolean isEmpty();
 
-    /** if value is in range */
+    /** if value is in range
+     * @param value value for check
+     * @return check the value in range
+     */
     boolean contains(long value);
 
     String toString();
