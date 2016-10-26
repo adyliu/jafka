@@ -98,7 +98,7 @@ public class AdminConsole {
     private static void printHelp(OptionParser parser, OptionSpec<?> arg) throws IOException {
         System.err.println("Create/Delete Topic");
         System.err.println("Usage: -c -h <host> -p <port> -t <topic> -P <partition> [-e]");
-        System.err.println("           -d -h <host> -p <port> -t <topic> --password <password>");
+        System.err.println("       -d -h <host> -p <port> -t <topic> --password <password>");
         if (arg != null) {
             System.err.println("Missing required argument " + arg);
         }
