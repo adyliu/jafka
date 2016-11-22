@@ -29,7 +29,7 @@ log4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %C
 
 #log4j.logger.jafka.request.logger=DEBUG
 log4j.logger.org.apache.zookeeper.ZooKeeper=WARN
-#log4j.logger.com.sohu.jafka.producer=DEBUG
-#log4j.logger.com.sohu.jafka.log.Log=DEBUG
-#log4j.logger.com.sohu.jafka=DEBUG
-#log4j.logger.com.sohu.jafka.log=DEBUG
+#log4j.logger.io.jafka.producer=DEBUG
+#log4j.logger.Log=DEBUG
+#log4j.logger.io.jafka=DEBUG
+#log4j.logger.io.jafka.log=DEBUG

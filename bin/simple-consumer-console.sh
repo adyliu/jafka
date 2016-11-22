@@ -27,4 +27,4 @@ export JAFKA_HOME
 
 . ${BIN_HOME}/env.sh
 
-java  com.sohu.jafka.console.SimipleConsoleConsumer $*
+java  SimipleConsoleConsumer $*
