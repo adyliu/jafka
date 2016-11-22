@@ -27,4 +27,4 @@ export JAFKA_HOME
 
 . ${BIN_HOME}/env.sh
 
-java  GetOffsetShell $*
+java io.jafka.console.GetOffsetShell $*

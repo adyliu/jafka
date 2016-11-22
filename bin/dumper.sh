@@ -27,4 +27,4 @@ export JAFKA_HOME
 
 . ${BIN_HOME}/env.sh
 
-java  Dumper $*
+java io.jafka.console.Dumper $*

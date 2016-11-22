@@ -27,4 +27,4 @@ export JAFKA_HOME
 
 . ${BIN_HOME}/env.sh
 
-java  AdminConsole $*
+java io.jafka.console.AdminConsole $*

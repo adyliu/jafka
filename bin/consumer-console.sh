@@ -27,4 +27,4 @@ export JAFKA_HOME
 
 . ${BIN_HOME}/env.sh
 
-java ConsoleConsumer $*
+java io.jafka.console.ConsoleConsumer $*
