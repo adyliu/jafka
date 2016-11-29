@@ -16,7 +16,7 @@ If you are interested in [scala](http://www.scala-lang.org/), please use the ori
 
 ## News
 
-[2016-10-26] [released](https://github.com/adyliu/jafka/wiki/history) [v1.6.2](http://central.maven.org/maven2/com/sohu/jafka/jafka/)
+[2016-11-29] [released](https://github.com/adyliu/jafka/wiki/history) [v3.0](http://central.maven.org/maven2/io/jafka/jafka/)
 
 ## Document & Wiki
 
@@ -32,20 +32,20 @@ You can download the full package from Google Drive:
 
 ## Maven & Gradle Dependencies
 
-* [http://central.maven.org/maven2/com/sohu/jafka/jafka/](http://central.maven.org/maven2/com/sohu/jafka/jafka/)
-* [http://mvnrepository.com/artifact/com.sohu.jafka/jafka](http://mvnrepository.com/artifact/com.sohu.jafka/jafka)
+* [http://central.maven.org/maven2/io/jafka/jafka/](http://central.maven.org/maven2/io/jafka/jafka/)
+* [http://mvnrepository.com/artifact/io.jafka/jafka](http://mvnrepository.com/artifact/io.jafka/jafka)
 
 Maven
 
     <dependency>
-        <groupId>com.sohu.jafka</groupId>
+        <groupId>io.jafka</groupId>
         <artifactId>jafka</artifactId>
-        <version>1.6.2</version>
+        <version>3.0</version>
     </dependency>
 
 Gradle
 
-    'com.sohu.jafka:jafka:1.6.2'
+    'io.jafka:jafka:3.0'
 
 
 ## Contributor
