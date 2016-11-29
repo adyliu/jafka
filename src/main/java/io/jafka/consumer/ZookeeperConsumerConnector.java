@@ -236,13 +236,14 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             ret.put(topic, streamList);
             logger.debug("adding topic " + topic + " and stream to map.");
         }
+        // register consumer first
+        registerConsumerInZK(dirs, consumerIdString, topicCount);
         //
         //listener to consumer and partition changes
         ZKRebalancerListener<T> loadBalancerListener = new ZKRebalancerListener<T>(config.getGroupId(),
                 consumerIdString, ret);
         this.rebalancerListeners.add(loadBalancerListener);
         loadBalancerListener.start();
-        registerConsumerInZK(dirs, consumerIdString, topicCount);
         //
         //register listener for session expired event
         zkClient.subscribeStateChanges(new ZKSessionExpireListener<T>(dirs, consumerIdString, topicCount,
