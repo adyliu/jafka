@@ -710,13 +710,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         }
 
         private void releasePartitionOwnership(Pool<String, Pool<Partition, PartitionTopicInfo>> localTopicRegistry) {
-            logger.info("Releasing partition ownership => " + localTopicRegistry.values());
-            for (Map.Entry<String, Pool<Partition, PartitionTopicInfo>> e : localTopicRegistry.entrySet()) {
-                for (Partition partition : e.getValue().keySet()) {
-                    deletePartitionOwnershipFromZK(e.getKey(), partition);
+            if (!localTopicRegistry.isEmpty()) {
+                logger.info("Releasing partition ownership => " + localTopicRegistry.values());
+                for (Map.Entry<String, Pool<Partition, PartitionTopicInfo>> e : localTopicRegistry.entrySet()) {
+                    for (Partition partition : e.getValue().keySet()) {
+                        deletePartitionOwnershipFromZK(e.getKey(), partition);
+                    }
                 }
+                localTopicRegistry.clear();//clear all
             }
-            localTopicRegistry.clear();//clear all
         }
 
         private void deletePartitionOwnershipFromZK(String topic, String partitionStr) {
