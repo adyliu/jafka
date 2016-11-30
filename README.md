@@ -1,6 +1,8 @@
 #A fast distributed messaging system (MQ)
 
+[![License](https://img.shields.io/github/license/adyliu/jafka.svg)](https://github.com/adyliu/jafka/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/adyliu/jafka.png?branch=master)](https://travis-ci.org/adyliu/jafka)
+[![Maven Central](https://img.shields.io/maven-central/v/io.jafka/jafka.svg)](http://search.maven.org/#search|ga|1|g%3A%22io.jafka%22%20a%3A%22jafka%22)
 
 Jafka mq is a distributed publish-subscribe messaging system cloned from [Apache Kafka](http://kafka.apache.org/).
 
