@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -75,7 +75,7 @@ public class Server implements Closeable {
     public void startup() {
         try {
             final long start = System.currentTimeMillis();
-            logger.info("Starting Jafka server(brokerid={}) {}" ,this.config.getBrokerId(),serverInfo.getVersion());
+            logger.info("Starting Jafka server {} (brokerid={})", serverInfo.getVersion(), this.config.getBrokerId());
             Utils.registerMBean(serverInfo);
             boolean needRecovery = true;
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
@@ -97,9 +97,9 @@ public class Server implements Closeable {
             socketServer.startup();
             //
             final int httpPort = config.getHttpPort();
-            if(httpPort>0){
+            if (httpPort > 0) {
                 HttpRequestHandler httpRequestHandler = new HttpRequestHandler(logManager);
-                httpServer = new HttpServer(httpPort,httpRequestHandler);
+                httpServer = new HttpServer(httpPort, httpRequestHandler);
                 httpServer.start();
             }
 
@@ -110,7 +110,7 @@ public class Server implements Closeable {
              */
             logManager.startup();
             final long cost = (System.currentTimeMillis() - start) / 1000;
-            logger.info("Jafka(brokerid={}) started at *:{}, cost {} seconds",config.getBrokerId(), config.getPort(), cost);
+            logger.info("Jafka(brokerid={}) started at *:{}, cost {} seconds", config.getBrokerId(), config.getPort(), cost);
             serverInfo.started();
         } catch (Exception ex) {
             logger.error("========================================");
@@ -124,14 +124,14 @@ public class Server implements Closeable {
         boolean canShutdown = isShuttingDown.compareAndSet(false, true);
         if (!canShutdown) return;//CLOSED
 
-        logger.info("Shutting down Jafka server(brokerid={})...",this.config.getBrokerId());
+        logger.info("Shutting down Jafka server(brokerid={})...", this.config.getBrokerId());
         try {
             scheduler.shutdown();
             if (socketServer != null) {
                 socketServer.close();
                 Utils.unregisterMBean(socketServer.getStats());
             }
-            if(httpServer != null){
+            if (httpServer != null) {
                 httpServer.close();
             }
             if (logManager != null) {
@@ -144,7 +144,7 @@ public class Server implements Closeable {
             logger.error(ex.getMessage(), ex);
         }
         shutdownLatch.countDown();
-        logger.info("Shutdown Jafka server(brokerid={}) completed",config.getBrokerId());
+        logger.info("Shutdown Jafka server {} (brokerid={}) completed", serverInfo.getVersion(), config.getBrokerId());
 
     }
 
