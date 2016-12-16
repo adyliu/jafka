@@ -20,6 +20,7 @@ package io.jafka.consumer;
 import com.github.zkclient.IZkChildListener;
 import com.github.zkclient.IZkStateListener;
 import com.github.zkclient.ZkClient;
+import com.github.zkclient.exception.ZkNoNodeException;
 import com.github.zkclient.exception.ZkNodeExistsException;
 import io.jafka.api.OffsetRequest;
 import io.jafka.cluster.Broker;
@@ -415,6 +416,8 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
             lock.lock();
             try {
+                logger.info("handle consumer changed: group={} consumerId={} parentPath={} currentChilds={}",
+                        group,consumerIdString,parentPath,currentChilds);
                 isWatcherTriggered = true;
                 cond.signalAll();
             } finally {
@@ -477,7 +480,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                     Cluster cluster = ZkUtils.getCluster(zkClient);
                     try {
                         done = rebalance(cluster);
-                    } catch (Exception e) {
+                    } catch (ZkNoNodeException znne){
+                        logger.info("some consumers dispeared during rebalancing: {}",znne.getMessage());
+                    }
+                    catch (Exception e) {
                         /**
                          * occasionally, we may hit a ZK exception because the ZK state is
                          * changing while we are iterating. For example, a ZK node can
