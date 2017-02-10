@@ -14,6 +14,8 @@ import datetime
 import json
 import jafka
 import os
+from collections import defaultdict
+from itertools import chain
 
 
 ZNODE_ACL = [{"perms":31,"scheme":"world","id":"anyone"}]
@@ -80,6 +82,21 @@ class _zk:
         except kazoo.exceptions.NoNodeError:
             return None
 
+class Record():
+    def __init__(self, topic=None, broker_id=None, partition_id=None, consumer_offset=None, total_offset=None, backlog=None, consumer_id=None, lastmtime=None):
+        self.topic=topic
+        self.broker_id=broker_id
+        self.partition_id=partition_id
+        self.consumer_offset=consumer_offset
+        self.total_offset=total_offset
+        self.backlog=backlog
+        self.consumer_id=consumer_id
+        self.lastmtime=lastmtime
+
+    def data(self, group):
+        #('groupid', 'topic', 'part', 'consumeoffset', 'totaloffset', 'backlog', 'consumerid', 'lastmtime')
+        return (group, self.topic, self.broker_id+'-'+self.partition_id, self.consumer_offset
+                ,self.total_offset, self.total_offset-self.consumer_offset, self.consumer_id, self.lastmtime)
 
 def main(zk):
     topics = zk.list('/brokers/topics')
@@ -87,7 +104,10 @@ def main(zk):
     brokers = dict((brokerid,zk.get('/brokers/ids/'+brokerid)) for brokerid in brokerids)
     #brokers: brokerid => (host,port)
     brokers = dict((brokerid,(v.split(':')[1],int(v.split(':')[2]))) for brokerid,v in brokers.items())
-
+    print('brokers:')
+    for broker_id,(host,port) in brokers.items():
+        print('  broker_id={} {}:{}'.format(broker_id, host, port))
+    print('='*120)
     #topic_broker_parts: topic=>((brokerid,parts),(brokerid,parts)...)
     topic_broker_parts = {}
     for topic in topics:
@@ -111,8 +131,8 @@ def main(zk):
         ctopics = zk.list('/consumers/%s/offsets'%group) or []
 
         #records: [(topic,broker,part,coffset,toffset,consumerid,lastmtime),...]
-        records = []
-        broker_records = {}
+        #records = []
+        broker_records = defaultdict(list)  #
         for ctopic in ctopics:
             cparts = zk.list('/consumers/%s/offsets/%s'%(group,ctopic))
             for cpart in cparts:
@@ -125,43 +145,38 @@ def main(zk):
                 lastmtime = coffsetstats.mtime if coffsetstats else -1
                 if lastmtime:
                     lastmtime = datetime.datetime.fromtimestamp(int(lastmtime)/1000).strftime('%Y-%m-%d %H:%M:%S')
-                record = [ctopic,cbroker,cpartition,coffset,-1,consumerid,lastmtime]
+                #record = [ctopic,cbroker,cpartition,coffset,-1,consumerid,lastmtime]
+                record = Record(topic=ctopic, broker_id=cbroker, partition_id=cpartition, consumer_offset=int(coffset),
+                                total_offset=0, backlog=-1, consumer_id=consumerid, lastmtime=lastmtime)
                 ######################
-                rds = broker_records.get(cbroker,[])
-                if not rds: broker_records[cbroker] = rds
-                rds.append(record)
-                records.append(record)
+                broker_records[cbroker].append(record)
 
-        for broker,rds in broker_records.items():
-            (host,port) = brokers[str(broker)]
-            consumer = jafka.Consumer(host,port)
+        for broker_id, record_list in broker_records.items():
+            (host,port) = brokers[str(broker_id)]
+            consumer = jafka.Consumer(host, port)
             try:
-                for record in rds:
-                    toffset = consumer.getoffsetsbefore(record[0],int(record[2]),-1,1)[0]
-                    record[4] = toffset
+                for record in record_list:
+                    record.total_offset = consumer.getoffsetsbefore(record.topic,int(record.partition_id), -1, 1)[0]
             finally:
                 consumer.close()
 
-        title=('groupid','topic','part','consumeoffset','totaloffset','backlog','consumerid','lastmtime')
+        title = ('groupid', 'topic', 'part', 'consumeoffset', 'totaloffset', 'backlog', 'consumerid', 'lastmtime')
+
+        all_records = list( chain(*broker_records.values()) )
+        all_record_data = list( x.data(group) for x in all_records)
+
         wid_sep = list(len(x) for x in title)
-        records=sorted(records,key=lambda r:r[0]+r[1]+r[2])
-        print_records=[]
-        for record in records:
-            (ctopic,cbroker,cpartition,coffset,toffset,consumerid,lastmtime) = record
-            left = int(toffset) - int(coffset)
-            pr = (group,ctopic,cbroker+'-'+cpartition,coffset,toffset,left,consumerid,lastmtime)
-            print_records.append(pr)
-            wid_sep_num = list(len(str(x)) for x in pr)
-            for i in range(len(wid_sep)):
-                if wid_sep[i] < wid_sep_num[i]:
-                    wid_sep[i] = wid_sep_num[i]
-        format_sep=' '.join(list('{:>'+str(x)+'}' for x in wid_sep))
-        ptitle = format_sep.format(*title)
-        print(ptitle)
-        print('-'*len(ptitle))
-        for record in print_records:
+        for data in all_record_data:
+            for i in range(len(data)):
+                wid_sep[i] = max(wid_sep[i], len(str(data[i])))
+
+        format_sep='  '.join(list('{:>'+str(x)+'}' for x in wid_sep))
+        ptr_title = format_sep.format(*title)
+        print(ptr_title)
+        print('-'*len(ptr_title))
+        for data in all_record_data:
             #print(format_sep,' -> ',record)
-            print(format_sep.format(*record))
+            print(format_sep.format(*data))
         print('\n')
 
 
