@@ -5,134 +5,126 @@
 #version:0.3
 #date:2012/7/19
 
-import zookeeper
+import kazoo
+import kazoo.client
+import kazoo.exceptions
 import threading
 import sys
 import datetime
 import json
 import jafka
+import os
 
 
-default_host="10.11.5.145:2181/suc/jafka"
 ZNODE_ACL = [{"perms":31,"scheme":"world","id":"anyone"}]
 
-init_flag = False
-handle = -1
-connected = False
 
-def init_client(host=default_host):
-    global init_flag
-    global handle
-    global connected
+class _zk:
+    def __init__(self, hosts: str = None, **kwargs):
+        self.hosts = hosts or os.getenv('ZK_HOSTS', '192.168.6.22:2181')+os.getenv('JAFKA_PATH', '/xpower/jafka')
+        self.client = kazoo.client.KazooClient(hosts=self.hosts, **kwargs)
+        self.started = False
 
-    if init_flag: return False
-    init_flag = True
+    def start(self):
+        if not self.started:
+            self.started = True
+            self.client.start()
 
-    connected = False
-    cond = threading.Condition()
-    def connection_watcher(handle,type,stat,path):
-        global connected
-        with cond:
-            connected = True
-            cond.notify()
-    with cond:
-        zookeeper.set_debug_level(2)
-        handle = zookeeper.init(host,connection_watcher)
-        cond.wait(30.0)
+    def __enter__(self):
+        self.start()
+        return self
 
-    if not connected:
-        raise Exception("Couldn't connect to host -",host)
-    return True
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.client.stop()
+        self.client.close()
+        self.started = False
 
-def normal_path(path,env=""):
-    if env: path = env+path
-    if path[-1] == '/':
-        path = path[0:-1]
-    return path
+    def ensure(self, path):
+        return self.client.ensure_path(path)
 
-def gets(path):
-    init_client()
-    global handle
-    try:
-        (data,stat) = zookeeper.get(handle,path,None)
-        return (data,stat)
-    except zookeeper.NoNodeException:
-        return None
+    def create(self, path, data):
+        data = data.encode('utf-8') if isinstance(data, str) else data
+        return self.client.create(path, data)
 
-def get(path):
-    r = gets(path)
-    return r[0] if r else None
+    def set(self, path, data):
+        data = data.encode('utf-8') if isinstance(data, str) else data
+        try:
+            return self.client.set(path, data)
+        except kazoo.exceptions.NoNodeError:
+            return None
 
-def close():
-    global handle
-    global init_flag
-    global connected
-    if not init_flag: return
-    zookeeper.close(handle)
-    init_flag = False
-    connected = False
+    def delete(self, path):
+        try:
+            return self.client.delete(path)
+        except kazoo.exceptions.NoNodeError:
+            return None
 
+    def rdelete(self, path):
+        if path == '/': raise Exception('delete / is forbidden')
+        return self.client.delete(path, recursive=True)
 
-def exists(path):
-    init_client()
-    global handle
-    try:
-        return zookeeper.exists(handle,path) is not None
-    except zookeeper.NoNodeException:
-        return False
+    def gets(self, path):
+        try:
+            data,stat = self.client.get(path)
+            data = data.decode('utf8')
+            return (data,stat)
+        except kazoo.exceptions.NoNodeError:
+            return None
+    def get(self, path):
+        r = self.gets(path)
+        return None if r is None else r[0]
 
-def get_children(path):
-    init_client()
-    global handle
-    return zookeeper.get_children(handle,path)
-
-def get_topics():
-    return get_children('/brokers/topics')
+    def list(self, path):
+        try:
+            return self.client.get_children(path)
+        except kazoo.exceptions.NoNodeError:
+            return None
 
 
-def main(host=default_host):
-    init_client(host)
-    topics = get_children('/brokers/topics')
-    brokerids = get_children('/brokers/ids')
-    brokers = dict((brokerid,get('/brokers/ids/'+brokerid)) for brokerid in brokerids)
+def main(zk):
+    topics = zk.list('/brokers/topics')
+    brokerids = zk.list('/brokers/ids')
+    brokers = dict((brokerid,zk.get('/brokers/ids/'+brokerid)) for brokerid in brokerids)
     #brokers: brokerid => (host,port)
     brokers = dict((brokerid,(v.split(':')[1],int(v.split(':')[2]))) for brokerid,v in brokers.items())
 
     #topic_broker_parts: topic=>((brokerid,parts),(brokerid,parts)...)
     topic_broker_parts = {}
     for topic in topics:
-        topicbrokers = get_children('/brokers/topics/'+topic)
+        topicbrokers = zk.list('/brokers/topics/'+topic)
         broker_parts = []
         for b in topicbrokers:
-            parts = get('/brokers/topics/'+topic+'/'+b)
+            parts = zk.get('/brokers/topics/'+topic+'/'+b)
             broker_parts.append((int(b),int(parts)))
         topic_broker_parts[topic] = broker_parts
 
-    groups = get_children('/consumers')
+    groups = zk.list('/consumers')
+    #print('groups=',groups)
 
     for group in groups:
-        cids = get_children('/consumers/%s/ids'%group)
+        cids = zk.list('/consumers/%s/ids'%group)
         ccounts = {}
         for cid in cids:
-            topic_counts = get('/consumers/%s/ids/%s'%(group,cid))
+            topic_counts = zk.get('/consumers/%s/ids/%s'%(group,cid))
             topic_count_map = json.loads(topic_counts)
             ccounts[cid] = topic_count_map
-        ctopics = get_children('/consumers/%s/offsets'%group)
+        ctopics = zk.list('/consumers/%s/offsets'%group) or []
 
         #records: [(topic,broker,part,coffset,toffset,consumerid,lastmtime),...]
         records = []
         broker_records = {}
         for ctopic in ctopics:
-            cparts = get_children('/consumers/%s/offsets/%s'%(group,ctopic))
+            cparts = zk.list('/consumers/%s/offsets/%s'%(group,ctopic))
             for cpart in cparts:
-                coffset,coffsetstats = gets('/consumers/%s/offsets/%s/%s'%(group,ctopic,cpart))
-                consumerid = get('/consumers/%s/owners/%s/%s'%(group,ctopic,cpart))
+                coffset,coffsetstats = zk.gets('/consumers/%s/offsets/%s/%s'%(group,ctopic,cpart))
+                #print('coffsetstats=',coffsetstats)
+                consumerid = zk.get('/consumers/%s/owners/%s/%s'%(group,ctopic,cpart))
                 consumerid = consumerid if consumerid else '-'
                 #print('%15s: %20s %s => %13s'%(group,ctopic,cpart,coffset))
                 cbroker,cpartition = cpart.split('-')
-                lastmtime = coffsetstats['mtime'] if coffsetstats else -1
+                lastmtime = coffsetstats.mtime if coffsetstats else -1
                 if lastmtime:
-                    lastmtime = datetime.datetime.fromtimestamp(int(lastmtime)/1000).strftime('%m-%d %H:%M:%S')
+                    lastmtime = datetime.datetime.fromtimestamp(int(lastmtime)/1000).strftime('%Y-%m-%d %H:%M:%S')
                 record = [ctopic,cbroker,cpartition,coffset,-1,consumerid,lastmtime]
                 ######################
                 rds = broker_records.get(cbroker,[])
@@ -167,18 +159,17 @@ def main(host=default_host):
         ptitle = format_sep.format(*title)
         print(ptitle)
         print('-'*len(ptitle))
-        for pr in print_records:
-            print(format_sep.format(*pr))
-        print()
-    
+        for record in print_records:
+            #print(format_sep,' -> ',record)
+            print(format_sep.format(*record))
+        print('\n')
+
 
 if __name__ == '__main__':
-    print('Jafka watcher v0.2')
+    print('Jafka watcher v0.3')
     print()
-    try:
-        main()
-    finally:
-        close()
-    
+    with _zk() as zk:
+        main(zk)
+
 
 
