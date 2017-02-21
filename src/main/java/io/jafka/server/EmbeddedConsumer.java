@@ -75,7 +75,7 @@ public class EmbeddedConsumer implements TopicEventHandler<String> {
         this.serverStartable = serverStartable;
         //
         this.whiteListTopics = Arrays.asList(consumerConfig.getMirrorTopicsWhitelist().split(","));
-        this.blackListTopics = Arrays.asList(consumerConfig.getMirrorTopicsWhitelist().split(","));
+        this.blackListTopics = Arrays.asList(consumerConfig.getMirrorTopicsBlackList().split(","));
         this.producer = new Producer<Void, Message>(producerConfig);
     }
 
