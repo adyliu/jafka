@@ -244,13 +244,14 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         ZKRebalancerListener<T> loadBalancerListener = new ZKRebalancerListener<T>(config.getGroupId(),
                 consumerIdString, ret);
         this.rebalancerListeners.add(loadBalancerListener);
-        loadBalancerListener.start();
         //
         //register listener for session expired event
         zkClient.subscribeStateChanges(new ZKSessionExpireListener<T>(dirs, consumerIdString, topicCount,
                 loadBalancerListener));
         zkClient.subscribeChildChanges(dirs.consumerRegistryDir, loadBalancerListener);
-        //
+        // start the thread after watcher prepared
+        loadBalancerListener.start();
+
         for (String topic : ret.keySet()) {
             //register on broker partition path changes
             final String partitionPath = ZkUtils.BrokerTopicsPath + "/" + topic;
@@ -374,10 +375,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
     }
 
     private void connectZk() {
-        logger.info("Connecting to zookeeper instance at " + config.getZkConnect());
+        logger.debug("Connecting to zookeeper instance at " + config.getZkConnect());
         this.zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(),
                 config.getZkConnectionTimeoutMs());
-        logger.info("Connected to zookeeper at " + config.getZkConnect());
+        logger.debug("Connected to zookeeper at " + config.getZkConnect());
     }
 
     class ZKRebalancerListener<T> implements IZkChildListener, Runnable, Closeable {
@@ -718,7 +719,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
 
         private void releasePartitionOwnership(Pool<String, Pool<Partition, PartitionTopicInfo>> localTopicRegistry) {
             if (!localTopicRegistry.isEmpty()) {
-                logger.info("Releasing partition ownership => " + localTopicRegistry.values());
+                logger.info("Releasing partition ownership => " + localTopicRegistry);
                 for (Map.Entry<String, Pool<Partition, PartitionTopicInfo>> e : localTopicRegistry.entrySet()) {
                     for (Partition partition : e.getValue().keySet()) {
                         deletePartitionOwnershipFromZK(e.getKey(), partition);
