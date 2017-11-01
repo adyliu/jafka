@@ -41,8 +41,7 @@ public class Jafka implements Closeable {
 
     //for test privacy
     private ServerStartable serverStartable;
-    // server listening port
-    private int port = -1;
+    //
     private final Logger logger = LoggerFactory.getLogger(Jafka.class);
 
     public void start(String mainFileName, String consumerFile, String producerFile) {
@@ -81,7 +80,6 @@ public class Jafka implements Closeable {
         Runtime.getRuntime().addShutdownHook(shutdownHook);
         //
         serverStartable.startup();
-        port = config.getPort();
     }
 
     public void awaitShutdown() {
@@ -100,7 +98,6 @@ public class Jafka implements Closeable {
             }
             shutdownHook.run();
             shutdownHook = null;
-            port = -1;
         }
     }
 
@@ -110,7 +107,11 @@ public class Jafka implements Closeable {
      * @return listening port
      */
     public int getPort() {
-        return this.port;
+        return serverStartable == null ? -1 : serverStartable.getServerConfig().getPort();
+    }
+
+    public int getHttpPort(){
+        return serverStartable == null ? -1 : serverStartable.getServerConfig().getHttpPort();
     }
 
     /**

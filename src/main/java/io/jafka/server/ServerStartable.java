@@ -26,6 +26,7 @@ import java.io.Closeable;
 
 
 /**
+ * The server task
  * @author adyliu (imxylz@gmail.com)
  * @since 1.0
  */
@@ -94,5 +95,9 @@ public class ServerStartable implements Closeable {
         } catch (InterruptedException e) {
             logger.warn(e.getMessage(), e);
         }
+    }
+
+    public ServerConfig getServerConfig() {
+        return config;
     }
 }
