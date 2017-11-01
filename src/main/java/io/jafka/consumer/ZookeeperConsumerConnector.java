@@ -133,7 +133,7 @@ import static java.lang.String.format;
  */
 public class ZookeeperConsumerConnector implements ConsumerConnector {
 
-    private static final FetchedDataChunk SHUTDOWN_COMMAND = new FetchedDataChunk(null, null, -1);
+    static final FetchedDataChunk SHUTDOWN_COMMAND = new FetchedDataChunk(null, null, -1);
 
     private final Logger logger = LoggerFactory.getLogger(ZookeeperConsumerConnector.class);
 
