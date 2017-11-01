@@ -46,9 +46,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -66,7 +64,6 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     final int partitions = 3;
     final int INIT_MESSAGE_COUNT = 755;
     final int MESSAGE_BATCH_SIZE = 50;
-    final int httpPort = PortUtils.checkAvailablePort(9093);
 
     @Before
     public void init() throws IOException{
@@ -79,7 +76,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             props.put("log.default.flush.scheduler.interval.ms", "100");//flush to disk every 100ms
             props.put("log.file.size", "5120");//5k for rolling
             props.put("num.partitions", "" + partitions);//default divided three partitions
-            props.put("http.port",""+httpPort);
+            props.put("http.port",""+PortUtils.checkAvailablePort(9193));
             jafka = createJafka(props);
             sendSomeMessages(INIT_MESSAGE_COUNT, "demo", "test");
 
@@ -194,7 +191,7 @@ public class SimpleConsumerTest extends BaseJafkaServer {
             FetchRequest request = new FetchRequest("demo", i, 0, 1000 * 1000);
             ByteBufferMessageSet messages = consumer.fetch(request);
             for (MessageAndOffset msg : messages) {
-                System.out.println("Receive message: " + Utils.toString(msg.message.payload(), "UTF-8"));
+                System.out.printf("%s ", Utils.toString(msg.message.payload(), "UTF-8"));
                 offset = Math.max(offset, msg.offset);
                 cnt++;
             }
@@ -207,8 +204,8 @@ public class SimpleConsumerTest extends BaseJafkaServer {
     @Test
     public void testFetchMessageCreatedByHttp() throws Exception{
 
-        sendMessageByHttp(httpPort,"httpdemo",0,"HTTPMESSAGE".getBytes());
-        sendMessageByHttp(httpPort,"httpdemo",0,"OVER".getBytes());
+        sendMessageByHttp(jafka.getHttpPort(),"httpdemo",0,"HTTPMESSAGE".getBytes());
+        sendMessageByHttp(jafka.getHttpPort(),"httpdemo",0,"OVER".getBytes());
         FetchRequest request = new FetchRequest("httpdemo",0,0,100*1000);
         ByteBufferMessageSet messages = consumer.fetch(request);
         String ret = "";
