@@ -30,7 +30,7 @@ import java.util.Properties;
 public abstract class BaseJafkaServer {
 
     static {
-        System.setProperty("jafka_mx4jenable", "true");
+        //System.setProperty("jafka_mx4jenable", "true");
     }
 
     protected Logger logger = LoggerFactory.getLogger(getClass());

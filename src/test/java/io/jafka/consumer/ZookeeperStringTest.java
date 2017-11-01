@@ -121,8 +121,8 @@ public class ZookeeperStringTest extends BaseJafkaServer {
             public void onMessage(String message) {
                 //System.out.println(count.getAndIncrement()+" -> "+message);
                 //Assert.assertEquals(message,"message#"+count.getAndIncrement());
-                count.getAndIncrement();
                 messages.remove(message);
+                count.getAndIncrement();
             }
         });
         TestUtil.waitUntil(messageCount, new Callable<Integer>() {
@@ -130,10 +130,22 @@ public class ZookeeperStringTest extends BaseJafkaServer {
             public Integer call() throws Exception {
                 return count.get();
             }
-        },TimeUnit.SECONDS,1000);
-        Assert.assertEquals(messageCount,count.get());
-        Assert.assertEquals(0, messages.size());
-        sc.close();
+        },TimeUnit.SECONDS,10);
+        try {
+            Assert.assertEquals(messageCount, count.get());
+            if (messages.size() > 0) {
+                for(String m: messages){
+                    logger.error("message=>"+m.length()+":"+m);
+                }
+                logger.error("what's this? =="+messages+"== size="+messages.size());
+            }
+            Assert.assertEquals(0, messages.size());
+        }finally {
+            sc.close();
+            for(Jafka jafka: jafkas){
+                close(jafka);
+            }
+        }
     }
 
 }

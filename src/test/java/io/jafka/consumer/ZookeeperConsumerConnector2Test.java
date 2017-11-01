@@ -113,14 +113,14 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
             data.add("" + messageIndex.incrementAndGet());
             producer.send(data);
         }
-        Thread.sleep(1000L);
+        Thread.sleep(200L);
         //
         //flush all servers
         for (Jafka jafka : jafkas) {
             flush(jafka);
         }
         //waiting for sending over
-        Thread.sleep(1000L);
+        Thread.sleep(200L);
 
         //
         props.setProperty("groupid", "group1");
@@ -130,7 +130,7 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
         KV<ExecutorService, ConsumerConnector> kv1 = createConsumer(props, 2, consumerIds[0], receiveCount, bitSet);
         KV<ExecutorService, ConsumerConnector> kv2 = createConsumer(props, 2, consumerIds[1], receiveCount, bitSet);
 
-        Thread.sleep(1000L);
+        Thread.sleep(200L);
         KV<ExecutorService, ConsumerConnector> kv3 = createConsumer(props, 2, consumerIds[2], receiveCount, bitSet);
 
         // loop forever
@@ -142,10 +142,10 @@ public class ZookeeperConsumerConnector2Test extends BaseJafkaServer {
                 while (!stop.get()) {
                     try {
                         KV<ExecutorService, ConsumerConnector> kv4 = createConsumer(props, 2, consumerId4, receiveCount, bitSet);
-                        Thread.sleep(1000L);
+                        Thread.sleep(200L);
                         kv4.v.close();
                         kv4.k.shutdown();
-                        Thread.sleep(1000L);
+                        Thread.sleep(200L);
 
                     } catch (Exception ex) {
                         ex.printStackTrace();
