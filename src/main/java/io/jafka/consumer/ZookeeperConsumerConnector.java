@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,13 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +133,7 @@ import static java.lang.String.format;
  */
 public class ZookeeperConsumerConnector implements ConsumerConnector {
 
-    public static final FetchedDataChunk SHUTDOWN_COMMAND = new FetchedDataChunk(null, null, -1);
+    private static final FetchedDataChunk SHUTDOWN_COMMAND = new FetchedDataChunk(null, null, -1);
 
     private final Logger logger = LoggerFactory.getLogger(ZookeeperConsumerConnector.class);
 
@@ -155,9 +152,9 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
 
     private final Scheduler scheduler = new Scheduler(1, "consumer-autocommit-", false);
 
-    final ConsumerConfig config;
+    private final ConsumerConfig config;
 
-    final boolean enableFetcher;
+    private final boolean enableFetcher;
 
     //cache for shutdown
     private List<ZKRebalancerListener<?>> rebalancerListeners = new ArrayList<ZKRebalancerListener<?>>();
@@ -237,17 +234,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             ret.put(topic, streamList);
             logger.debug("adding topic " + topic + " and stream to map.");
         }
-        // register consumer first
-        registerConsumerInZK(dirs, consumerIdString, topicCount);
-        //
+
         //listener to consumer and partition changes
-        ZKRebalancerListener<T> loadBalancerListener = new ZKRebalancerListener<T>(config.getGroupId(),
-                consumerIdString, ret);
+        ZKRebalancerListener<T> loadBalancerListener = new ZKRebalancerListener<T>(config.getGroupId(),dirs,topicCount, consumerIdString, ret);
         this.rebalancerListeners.add(loadBalancerListener);
+        // register consumer first
+        loadBalancerListener.registerConsumer();
         //
         //register listener for session expired event
-        zkClient.subscribeStateChanges(new ZKSessionExpireListener<T>(dirs, consumerIdString, topicCount,
-                loadBalancerListener));
+        zkClient.subscribeStateChanges(loadBalancerListener);
         zkClient.subscribeChildChanges(dirs.consumerRegistryDir, loadBalancerListener);
         // start the thread after watcher prepared
         loadBalancerListener.start();
@@ -261,23 +256,6 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         //explicitly grigger load balancing for this consumer
         loadBalancerListener.syncedRebalance();
         return ret;
-    }
-
-    private String getLocalHost() throws UnknownHostException {
-        try {
-            for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-                if (!networkInterface.isLoopback()) {
-                    for (InetAddress addr : Collections.list(networkInterface.getInetAddresses())) {
-                        if (addr instanceof Inet4Address) {
-                            return addr.getHostAddress();
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            //ignore
-        }
-        throw new UnknownHostException();
     }
 
     /**
@@ -381,9 +359,11 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         logger.debug("Connected to zookeeper at " + config.getZkConnect());
     }
 
-    class ZKRebalancerListener<T> implements IZkChildListener, Runnable, Closeable {
+    class ZKRebalancerListener<T> implements IZkChildListener, IZkStateListener , Runnable, Closeable {
 
         final String group;
+        final TopicCount topicCount;
+        final ZkGroupDirs zkGroupDirs;
 
         final String consumerIdString;
 
@@ -400,10 +380,11 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
 
         private CountDownLatch shutDownLatch = new CountDownLatch(1);
 
-        public ZKRebalancerListener(String group, String consumerIdString,
+        public ZKRebalancerListener(String group, ZkGroupDirs zkGroupDirs, TopicCount topicCount, String consumerIdString,
                                     Map<String, List<MessageStream<T>>> messagesStreams) {
-            super();
             this.group = group;
+            this.zkGroupDirs = zkGroupDirs;
+            this.topicCount = topicCount;
             this.consumerIdString = consumerIdString;
             this.messagesStreams = messagesStreams;
             //
@@ -469,7 +450,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
             shutDownLatch.countDown();
         }
 
-        public void syncedRebalance() {
+        private void syncedRebalance() {
             synchronized (rebalanceLock) {
                 for (int i = 0; i < config.getMaxRebalanceRetries(); i++) {
                     if (isShuttingDown.get()) {//do nothing while shutting down
@@ -483,9 +464,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                         done = rebalance(cluster);
                     } catch (ZkNoNodeException znne){
                         logger.info("some consumers dispeared during rebalancing: {}",znne.getMessage());
+                        registerConsumer();
                     }
                     catch (Exception e) {
-                        /**
+                        /*
                          * occasionally, we may hit a ZK exception because the ZK state is
                          * changing while we are iterating. For example, a ZK node can
                          * disappear between the time we get all children and the time we try
@@ -495,8 +477,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                         logger.info("exception during rebalance ", e);
                     }
                     logger.info(format("[%s] rebalanced %s. try #%d, cost %d ms",//
-                            consumerIdString, done ? "OK" : "FAILED",//
-                            i, System.currentTimeMillis() - start));
+                            consumerIdString, done ? "OK" : "FAILED", i, System.currentTimeMillis() - start));
                     //
                     if (done) {
                         return;
@@ -506,7 +487,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                         logger.warn("Rebalancing attempt failed. Clearing the cache before the next rebalancing operation is triggered");
                     }
                     //
-                    closeFetchersForQueues(cluster, messagesStreams, queues.values());
+                    closeFetchersForQueues( messagesStreams, queues.values());
                     try {
                         Thread.sleep(config.getRebalanceBackoffMs());
                     } catch (InterruptedException e) {
@@ -519,22 +500,21 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         }
 
         private boolean rebalance(Cluster cluster) {
-            // map for current consumer: topic->[groupid-consumer-0,groupid-consumer-1,...,groupid-consumer-N]
-            Map<String, Set<String>> myTopicThreadIdsMap = ZkUtils.getTopicCount(zkClient, group, consumerIdString)
-                    .getConsumerThreadIdsPerTopic();
+            // map for current consumer: topic->[ groupid-consumer-0, groupid-consumer-1 ,..., groupid-consumer-N]
+            Map<String, Set<String>> myTopicThreadIdsMap = ZkUtils.getTopicCount(zkClient, group, consumerIdString).getConsumerThreadIdsPerTopic();
             // map for all consumers in this group: topic->[groupid-consumer1-0,...,groupid-consumerX-N]
             Map<String, List<String>> consumersPerTopicMap = ZkUtils.getConsumersPerTopic(zkClient, group);
             // map for all broker-partitions for the topics in this consumerid: topic->[brokerid0-partition0,...,brokeridN-partitionN]
             Map<String, List<String>> brokerPartitionsPerTopicMap = ZkUtils.getPartitionsForTopics(zkClient,
                     myTopicThreadIdsMap.keySet());
-            /**
+            /*
              * fetchers must be stopped to avoid data duplication, since if the current
              * rebalancing attempt fails, the partitions that are released could be owned by
              * another consumer. But if we don't stop the fetchers first, this consumer would
              * continue returning data for released partitions in parallel. So, not stopping
              * the fetchers leads to duplicate data.
              */
-            closeFetchers(cluster, messagesStreams, myTopicThreadIdsMap);
+            closeFetchers(messagesStreams, myTopicThreadIdsMap);
             releasePartitionOwnership(topicRegistry);
             //
             Map<StringTuple, String> partitionOwnershipDecision = new HashMap<StringTuple, String>();
@@ -575,7 +555,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                             nConsumersWithExtraPart);
                     final int nParts = nPartsPerConsumer + ((myConsumerPosition + 1 > nConsumersWithExtraPart) ? 0 : 1);
 
-                    /**
+                    /*
                      * Range-partition the sorted partitions to consumers for better locality.
                      * The first few consumers pick up an extra partition, if any.
                      */
@@ -595,7 +575,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                 }
             }
             //
-            /**
+            /*
              * move the partition ownership here, since that can be used to indicate a truly
              * successful rebalancing attempt A rebalancing attempt is completed successfully
              * only after the fetchers have been started correctly
@@ -741,7 +721,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         }
 
 
-        private void closeFetchers(Cluster cluster, Map<String, List<MessageStream<T>>> messagesStreams2,
+        private void closeFetchers(Map<String, List<MessageStream<T>>> messagesStreams2,
                                    Map<String, Set<String>> myTopicThreadIdsMap) {
             // topicRegistry.values()
             List<BlockingQueue<FetchedDataChunk>> queuesToBeCleared = new ArrayList<BlockingQueue<FetchedDataChunk>>();
@@ -750,10 +730,10 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                     queuesToBeCleared.add(e.getValue());
                 }
             }
-            closeFetchersForQueues(cluster, messagesStreams2, queuesToBeCleared);
+            closeFetchersForQueues( messagesStreams2, queuesToBeCleared);
         }
 
-        private void closeFetchersForQueues(Cluster cluster, Map<String, List<MessageStream<T>>> messageStreams,
+        private void closeFetchersForQueues(Map<String, List<MessageStream<T>>> messageStreams,
                                             Collection<BlockingQueue<FetchedDataChunk>> queuesToBeCleared) {
             if (fetcher == null) {
                 return;
@@ -769,68 +749,52 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
         private void resetState() {
             topicRegistry.clear();
         }
+        //
 
-        ////////////////////////////////////////////////////////////
-    }
-
-    class ZKSessionExpireListener<T> implements IZkStateListener {
-
-        private final ZkGroupDirs zkGroupDirs;
-
-        private String consumerIdString;
-
-        private TopicCount topicCount;
-
-        private ZKRebalancerListener<T> loadRebalancerListener;
-
-        public ZKSessionExpireListener(ZkGroupDirs zkGroupDirs, String consumerIdString, TopicCount topicCount,
-                                       ZKRebalancerListener<T> loadRebalancerListener) {
-            super();
-            this.zkGroupDirs = zkGroupDirs;
-            this.consumerIdString = consumerIdString;
-            this.topicCount = topicCount;
-            this.loadRebalancerListener = loadRebalancerListener;
-        }
-
+        @Override
         public void handleNewSession() throws Exception {
             //Called after the zookeeper session has expired and a new session has been created. You would have to re-create
             // any ephemeral nodes here.
             //
-            /**
+            /*
              * When we get a SessionExpired event, we lost all ephemeral nodes and zkclient has
              * reestablished a connection for us. We need to release the ownership of the
              * current consumer and re-register this consumer in the consumer registry and
              * trigger a rebalance.
              */
             logger.info("Zk expired; release old broker partition ownership; re-register consumer " + consumerIdString);
-            loadRebalancerListener.resetState();
-            registerConsumerInZK(zkGroupDirs, consumerIdString, topicCount);
+            this.resetState();
+            this.registerConsumer();
             //explicitly trigger load balancing for this consumer
-            loadRebalancerListener.syncedRebalance();
+            this.syncedRebalance();
             //
             // There is no need to resubscribe to child and state changes.
             // The child change watchers will be set inside rebalance when we read the children list.
         }
 
+        @Override
         public void handleStateChanged(KeeperState state) throws Exception {
+            // nothing to do
         }
-    }
-
-    /**
-     * register consumer data in zookeeper
-     * <p>
-     * register path: /consumers/groupid/ids/groupid-consumerid <br>
-     * data: {topic:count,topic:count}
-     *
-     * @param zkGroupDirs      zookeeper group path
-     * @param consumerIdString groupid-consumerid
-     * @param topicCount       topic count
-     */
-    private void registerConsumerInZK(ZkGroupDirs zkGroupDirs, String consumerIdString, TopicCount topicCount) {
-        final String path = zkGroupDirs.consumerRegistryDir + "/" + consumerIdString;
-        final String data = topicCount.toJsonString();
-        logger.info(format("register consumer in zookeeper [%s] => [%s]", path, data));
-        ZkUtils.createEphemeralPathExpectConflict(zkClient, path, data);
+        ///////////////////////////////////////////////////////////
+        /**
+         * register the consumer in the zookeeper
+         * <p>
+         *     path: /consumers/groupid/ids/groupid-consumerid
+         *     data: {topic:count,topic:count}
+         * </p>
+         */
+        void registerConsumer(){
+            final String path = zkGroupDirs.consumerRegistryDir + "/" + consumerIdString;
+            final String data = topicCount.toJsonString();
+            boolean ok = true;
+            try {
+                ZkUtils.createEphemeralPathExpectConflict(zkClient, path, data);
+            }catch (Exception ex){
+                ok = false;
+            }
+            logger.info(format("register consumer in zookeeper [%s] => [%s] success?=%s", path, data, ok));
+        }
     }
 
 }
