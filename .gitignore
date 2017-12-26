@@ -18,3 +18,4 @@ __pycache__
 *.iml
 pom-*.xml
 dist
+release

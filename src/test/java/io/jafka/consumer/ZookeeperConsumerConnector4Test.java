@@ -107,17 +107,17 @@ public class ZookeeperConsumerConnector4Test extends BaseJafkaServer {
             data.add(msg);
             producer.send(data);
             if(i ==0) {
-                Thread.sleep(2000L);//waiting broker register this topic
+                //Thread.sleep(2000L);//waiting broker register this topic
             }
         }
-        Thread.sleep(1000L);
+        Thread.sleep(100L);
         //
         //flush all servers
         for (Jafka jafka : jafkas) {
             flush(jafka);
         }
         //waiting for sending over
-        Thread.sleep(1000L);
+        Thread.sleep(100L);
         producer.close();
         //
         props.setProperty("groupid", "group1");
@@ -126,7 +126,7 @@ public class ZookeeperConsumerConnector4Test extends BaseJafkaServer {
         KV<ExecutorService, ConsumerConnector> kv1 = createConsumer(props, 2, "photopark_sohu-1337926225553-6e3daba6",receiveCount);
         KV<ExecutorService, ConsumerConnector> kv2 = createConsumer(props, 2, "photopark_sohu-1337936606600-9c8a98c4",receiveCount);
 
-        Thread.sleep(3000L);
+        Thread.sleep(300L);
         KV<ExecutorService, ConsumerConnector> kv3 = createConsumer(props, 2, "photopark_sohu-1337936716354-ab3c9481",receiveCount);
         while(receiveCount.get()<messageCount) {
         }

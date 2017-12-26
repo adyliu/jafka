@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.jafka</groupId>
     <artifactId>jafka</artifactId>
-    <version>3.0.3</version>
+    <version>3.0.4</version>
     <packaging>jar</packaging>
     <name>jafka</name>
     <url>https://github.com/adyliu/jafka</url>
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.github.adyliu</groupId>
             <artifactId>zkclient</artifactId>
-            <version>2.1.1</version>
+            <version>2.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
