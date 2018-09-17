@@ -17,6 +17,8 @@
 
 package io.jafka.utils;
 
+import org.junit.Test;
+
 import static io.jafka.utils.Utils.caculateShortString;
 import static io.jafka.utils.Utils.crc32;
 import static io.jafka.utils.Utils.getBoolean;
@@ -32,12 +34,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.Test;
 
 
 /**

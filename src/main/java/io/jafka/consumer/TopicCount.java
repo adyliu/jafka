@@ -17,16 +17,15 @@
 
 package io.jafka.consumer;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 
 /**
  * @author adyliu (imxylz@gmail.com)
@@ -109,10 +108,6 @@ public class TopicCount {
         try {
             Map<String, Integer> topicCountMap = mapper.readValue(jsonString, new TypeReference<Map<String, Integer>>() {});
             return new TopicCount(consumerIdString, topicCountMap);
-        } catch (JsonParseException e) {
-            throw new IllegalArgumentException("error parse consumer json string " + jsonString, e);
-        } catch (JsonMappingException e) {
-            throw new IllegalArgumentException("error parse consumer json string " + jsonString, e);
         } catch (IOException e) {
             throw new IllegalArgumentException("error parse consumer json string " + jsonString, e);
         }

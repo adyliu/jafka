@@ -18,14 +18,9 @@
 package io.jafka.consumer;
 
 import com.github.zkclient.ZkServer;
-import io.jafka.BaseJafkaServer;
-import io.jafka.DataLogCleaner;
-import io.jafka.Jafka;
-import io.jafka.PortUtils;
-import io.jafka.TestUtil;
-import io.jafka.ZkServerTestUtil;
-import io.jafka.producer.StringProducers;
+import io.jafka.*;
 import io.jafka.producer.StringProducerData;
+import io.jafka.producer.StringProducers;
 import io.jafka.producer.serializer.Decoder;
 import org.junit.After;
 import org.junit.Assert;
@@ -40,7 +35,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author adyliu (imxylz@gmail.com)
