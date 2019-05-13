@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.jafka</groupId>
     <artifactId>jafka</artifactId>
-    <version>3.0.5</version>
+    <version>3.0.6</version>
     <packaging>jar</packaging>
     <name>jafka</name>
     <url>https://github.com/adyliu/jafka</url>
@@ -40,12 +40,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.26</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.26</version>
             <optional>true</optional>
         </dependency>
         <!--
@@ -65,14 +65,14 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.6</version>
+            <version>[2.9.8,)</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.9.6</version>
+            <version>[2.9.8,)</version>
         </dependency>
 
         <dependency>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.29.Final</version>
+            <version>4.1.36.Final</version>
         </dependency>
         <dependency>
             <groupId>net.sf.jopt-simple</groupId>
