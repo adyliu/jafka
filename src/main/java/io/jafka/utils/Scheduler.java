@@ -37,7 +37,7 @@ public class Scheduler {
 
     final private Logger logger = LoggerFactory.getLogger(getClass());
 
-    final AtomicLong threadId = new AtomicLong(0);
+    final static AtomicLong threadId = new AtomicLong(0);
 
     final ScheduledThreadPoolExecutor executor;
 
