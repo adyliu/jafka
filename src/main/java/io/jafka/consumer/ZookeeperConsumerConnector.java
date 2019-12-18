@@ -548,6 +548,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                     logger.debug(buf.toString());
                 }
                 //consumerThreadId=> groupid_consumerid-index (index from count)
+                List<String> emptyPartitionConsumers = new ArrayList<>();
                 for (String consumerThreadId : e.getValue()) {
                     final int myConsumerPosition = curConsumers.indexOf(consumerThreadId);
                     assert (myConsumerPosition >= 0);
@@ -559,19 +560,21 @@ public class ZookeeperConsumerConnector implements ConsumerConnector {
                      * Range-partition the sorted partitions to consumers for better locality.
                      * The first few consumers pick up an extra partition, if any.
                      */
-                    if (nParts <= 0) {
-                        logger.warn("No broker partition of topic {} for consumer {}, {} partitions and {} consumers",topic,consumerThreadId,//
-                                curBrokerPartitions.size(),curConsumers.size());
+                    if (nParts > 0) {
+                        emptyPartitionConsumers.add(consumerThreadId);
                     } else {
                         for (int i = startPart; i < startPart + nParts; i++) {
                             String brokerPartition = curBrokerPartitions.get(i);
-                            logger.info("[" + consumerThreadId + "] ==> " + brokerPartition + " claimming");
+                            logger.info("topic={} claim: consumer={} => {}", topic, consumerThreadId, brokerPartition);
                             addPartitionTopicInfo(currentTopicRegistry, topicDirs, brokerPartition, topic,
                                     consumerThreadId);
                             // record the partition ownership decision
                             partitionOwnershipDecision.put(new StringTuple(topic, brokerPartition), consumerThreadId);
                         }
                     }
+                }
+                if(emptyPartitionConsumers.size() > 0){
+                    logger.warn("topic={} partition={} consumers={} empty partition of consumers: {}", topic, curBrokerPartitions.size(), curConsumers.size(), emptyPartitionConsumers);
                 }
             }
             //
