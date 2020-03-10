@@ -88,15 +88,20 @@ public class ServerRegister implements IZkStateListener, Closeable {
                     List<String> brokers = ZkUtils.getChildrenParentMayNotExist(zkClient, topicPath);
                     if (brokers != null && brokers.size() == 0) {
                         ZkUtils.deletePath(zkClient, topicPath);
+                        logger.info("delete topic={} zkpath={}", task.topic, brokerTopicPath);
                     }
                     break;
                 case CREATE:
+                    final int partitionsCreated = getPartitions(task.topic);
                     topics.add(task.topic);
-                    ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + getPartitions(task.topic));
+                    ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + partitionsCreated);
+                    logger.info("create topic={} partitions={} zkpath={}", task.topic, partitionsCreated, brokerTopicPath);
                     break;
                 case ENLARGE:
+                    final int partitionsEnlarged = getPartitions(task.topic);
                     ZkUtils.deletePath(zkClient, brokerTopicPath);
                     ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerTopicPath, "" + getPartitions(task.topic));
+                    logger.info("enlarge topic={} partitions={} zkpath={}", task.topic, partitionsEnlarged, brokerTopicPath);
                     break;
                 default:
                     logger.error("unknow task: " + task);
