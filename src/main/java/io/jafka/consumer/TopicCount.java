@@ -55,7 +55,7 @@ public class TopicCount {
         Map<String, Set<String>> consumerThreadIdsPerTopicMap = new HashMap<String, Set<String>>();
         for (Map.Entry<String, Integer> e : topicCountMap.entrySet()) {
             Set<String> consumerSet = new HashSet<String>();
-            final int nCounsumers = e.getValue().intValue();
+            final int nCounsumers = e.getValue();
             for (int i = 0; i < nCounsumers; i++) {
                 consumerSet.add(consumerIdString + "-" + i);
             }
@@ -94,7 +94,7 @@ public class TopicCount {
     public String toJsonString() {
         try {
             return mapper.writeValueAsString(topicCountMap);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -108,7 +108,7 @@ public class TopicCount {
         try {
             Map<String, Integer> topicCountMap = mapper.readValue(jsonString, new TypeReference<Map<String, Integer>>() {});
             return new TopicCount(consumerIdString, topicCountMap);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("error parse consumer json string " + jsonString, e);
         }
     }
