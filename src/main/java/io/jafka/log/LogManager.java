@@ -508,9 +508,10 @@ public class LogManager implements PartitionChooser, Closeable {
     public int createLogs(String topic, final int partitions, final boolean forceEnlarge) {
         TopicNameValidator.validate(topic);
         synchronized (logCreationLock) {
-            final int configPartitions = getPartition(topic);
-            if (configPartitions >= partitions || !forceEnlarge) {
-                return configPartitions;
+            //final int configPartitions = getPartition(topic);
+            Pool<Integer, Log> parts = logs.get(topic);
+            if(parts != null && parts.size() >= partitions){
+                return parts.size();
             }
             topicPartitionsMap.put(topic, partitions);
             if (config.getEnableZookeeper()) {

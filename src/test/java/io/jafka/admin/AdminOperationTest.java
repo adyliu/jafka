@@ -118,7 +118,7 @@ public class AdminOperationTest extends BaseJafkaServer {
         int size = admin.createPartitions("demo", partitions - 1, false);
         assertEquals(partitions, size);
         size = admin.createPartitions("demo", partitions + 1, false);
-        assertEquals(partitions, size);
+        assertEquals(partitions+1, size);
         size = admin.createPartitions("demo", partitions + 3, true);
         assertEquals(partitions+3, size);
         //

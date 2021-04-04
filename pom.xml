@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.jafka</groupId>
     <artifactId>jafka</artifactId>
-    <version>3.0.6</version>
+    <version>3.0.8</version>
     <packaging>jar</packaging>
     <name>jafka</name>
     <url>https://github.com/adyliu/jafka</url>

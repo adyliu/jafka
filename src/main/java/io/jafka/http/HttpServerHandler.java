@@ -20,119 +20,32 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
+import static io.netty.handler.codec.http.HttpHeaderNames.*;
+import static io.netty.handler.codec.http.HttpHeaderUtil.is100ContinueExpected;
+import static io.netty.handler.codec.http.HttpHeaderUtil.isKeepAlive;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
-    private HttpRequest request;
     final HttpServer server;
-    public HttpServerHandler(HttpServer server){
-        this.server = server;
-    }
+    private HttpRequest request;
     /**
      * Buffer that stores the response content
      */
     //private final StringBuilder body = new StringBuilder();
     private ByteArrayOutputStream body;
-    private Map<String,String> args = null;
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) {
-        ctx.flush();
-    }
-
-    @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception{
-        if (msg instanceof HttpRequest) {
-            HttpRequest request = this.request = (HttpRequest) msg;
-
-            if (HttpHeaders.is100ContinueExpected(request)) {
-                send100Continue(ctx);
-            }
-            body = new ByteArrayOutputStream(64);
-            args = new HashMap<String, String>(4);
-            //
-            if (request.getMethod() != HttpMethod.POST) {
-                sendStatusMessage(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "POST METHOD REQUIRED");
-                return;
-            }
-            HttpHeaders headers = request.headers();
-            String contentType = headers.get("Content-Type");
-            // 处理 text or octstream
-            String key = headers.get("key");
-            key = key != null ? key : headers.get("request_key");
-            args.put("key",key);
-            args.put("topic",headers.get("topic"));
-            args.put("partition",headers.get("partition"));
-        }
-
-        if (msg instanceof HttpContent) {
-            HttpContent httpContent = (HttpContent) msg;
-
-            ByteBuf content = httpContent.content();
-            if (content.isReadable()) {
-                //body.write(content.array());
-                content.readBytes(body,content.readableBytes());
-                //body.append(content.toString(CharsetUtil.UTF_8));
-            }
-
-            if (msg instanceof LastHttpContent) {
-                //process request
-                if(server.handler != null) {
-                    server.handler.handle(args, body.toByteArray());
-                }
-                if (!writeResponse(ctx)) {
-                    // If keep-alive is off, close the connection once the content is fully written.
-                    ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-                }
-                body = null;
-                args = null;
-            }
-        }
-    }
-
-
-    private boolean writeResponse(ChannelHandlerContext ctx) {
-        // Decide whether to close the connection or not.
-        boolean keepAlive = HttpHeaders.isKeepAlive(request);
-        // Build the response object.
-        FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, OK,
-                Unpooled.copiedBuffer("OK", CharsetUtil.UTF_8));
-
-        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
-
-        if (keepAlive) {
-            // Add 'Content-Length' header only for a keep-alive connection.
-            response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-            // Add keep alive header as per:
-            // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
-            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        }
-
-        // Write the response.
-        ctx.write(response);
-
-        return keepAlive;
+    private Map<String, String> args = null;
+    public HttpServerHandler(HttpServer server) {
+        this.server = server;
     }
 
     private static void send100Continue(ChannelHandlerContext ctx) {
@@ -150,8 +63,87 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        ctx.flush();
+    }
+
+    @Override
+    protected void messageReceived(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof HttpRequest) {
+            HttpRequest request = this.request = (HttpRequest) msg;
+
+            if (is100ContinueExpected(request)) {
+                send100Continue(ctx);
+            }
+            body = new ByteArrayOutputStream(64);
+            args = new HashMap<String, String>(4);
+            //
+            if (request.method() != HttpMethod.POST) {
+                sendStatusMessage(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED, "POST METHOD REQUIRED");
+                return;
+            }
+            HttpHeaders headers = request.headers();
+            // 处理 text or octstream
+            String key = (String) headers.get("key");
+            key = key != null ? key : (String) headers.get("request_key");
+            args.put("key", key);
+            args.put("topic", (String) headers.get("topic"));
+            args.put("partition", (String) headers.get("partition"));
+        }
+
+        if (msg instanceof HttpContent) {
+            HttpContent httpContent = (HttpContent) msg;
+
+            ByteBuf content = httpContent.content();
+            if (content.isReadable()) {
+                //body.write(content.array());
+                content.readBytes(body, content.readableBytes());
+                //body.append(content.toString(CharsetUtil.UTF_8));
+            }
+
+            if (msg instanceof LastHttpContent) {
+                //process request
+                if (server.handler != null) {
+                    server.handler.handle(args, body.toByteArray());
+                }
+                if (!writeResponse(ctx)) {
+                    // If keep-alive is off, close the connection once the content is fully written.
+                    ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+                }
+                body = null;
+                args = null;
+            }
+        }
+    }
+
+    private boolean writeResponse(ChannelHandlerContext ctx) {
+        // Decide whether to close the connection or not.
+        boolean keepAlive = isKeepAlive(request);
+        // Build the response object.
+        FullHttpResponse response = new DefaultFullHttpResponse(
+                HTTP_1_1, OK,
+                Unpooled.copiedBuffer("OK", CharsetUtil.UTF_8));
+
+        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+
+        if (keepAlive) {
+            // Add 'Content-Length' header only for a keep-alive connection.
+            response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+            // Add keep alive header as per:
+            // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        }
+
+        // Write the response.
+        ctx.write(response);
+
+        return keepAlive;
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
     }
+
 }
